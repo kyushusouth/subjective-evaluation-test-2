@@ -1,0 +1,56 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Respondents {
+  id      Int       @id @default(autoincrement())
+  age     Int       @default(-1)
+  sex     String    @default("無回答")
+  auth_id String    @unique
+  Answers Answers[]
+}
+
+model SexItem {
+  id   Int    @id @default(autoincrement())
+  item String
+}
+
+model SampleMetaData {
+  id           Int       @id @default(autoincrement())
+  file_path    String    @unique
+  speaker_name String
+  model_name   String
+  sample_name  String
+  kind         String
+  Answers      Answers[]
+}
+
+model NaturalnessItem {
+  id      Int       @id @default(autoincrement())
+  item    String    @unique
+  Answers Answers[]
+}
+
+model IntelligibilityItem {
+  id      Int       @id @default(autoincrement())
+  item    String    @unique
+  Answers Answers[]
+}
+
+model Answers {
+  id                  Int                 @id @default(autoincrement())
+  respondent          Respondents         @relation(fields: [respondent_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  respondent_id       Int
+  sample_meta_data    SampleMetaData      @relation(fields: [sample_meta_data_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sample_meta_data_id Int
+  naturalness         NaturalnessItem     @relation(fields: [naturalness_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  naturalness_id      Int
+  intelligibility     IntelligibilityItem @relation(fields: [intelligibility_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  intelligibility_id  Int
+}
