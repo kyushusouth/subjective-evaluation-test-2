@@ -12,6 +12,7 @@ const storage = new Storage();
 function getWavFilesInDirectory(directoryPath: string): string[] {
   const files: string[] = [];
   const items = fs.readdirSync(directoryPath);
+  // eslint-disable-next-line no-restricted-syntax
   for (const item of items) {
     const itemPath = path.join(directoryPath, item);
     const stats = fs.statSync(itemPath);
@@ -24,17 +25,6 @@ function getWavFilesInDirectory(directoryPath: string): string[] {
   return files;
 }
 
-function generateRandomString(length: number): string {
-  const charset =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * charset.length);
-    result += charset[randomIndex];
-  }
-  return result;
-}
-
 async function listFiles(bucketName: string) {
   const [files] = await storage.bucket(bucketName).getFiles();
   return files;
@@ -43,7 +33,7 @@ async function listFiles(bucketName: string) {
 async function uploadFile(
   bucketName: string,
   filePath: string,
-  destFileName: string
+  destFileName: string,
 ) {
   const options = {
     destination: destFileName,
@@ -66,25 +56,28 @@ async function main() {
   }
 
   const gcsFiles = await listFiles(bucketName);
-  for (let file of gcsFiles) {
+  // eslint-disable-next-line no-restricted-syntax
+  for (const file of gcsFiles) {
     deleteFile(bucketName, file.name);
   }
 
   const filePathList = getWavFilesInDirectory(localWavDir);
   const sampleMetaDataList = [];
-  for (let filePath of filePathList) {
+  // eslint-disable-next-line no-restricted-syntax
+  for (const filePath of filePathList) {
     const filePathParts = filePath.split("/");
     const speakerName = filePathParts[filePathParts.length - 3];
     const modelName = filePathParts[filePathParts.length - 5];
     const sampleName = filePathParts[filePathParts.length - 2];
     const kind = filePathParts[filePathParts.length - 1].split(".")[0];
-    const randomizedFilePath = uuidv4() + ".wav";
+    const randomizedFilePath = `${uuidv4()}.wav`;
     uploadFile(bucketName, filePath, randomizedFilePath);
     sampleMetaDataList.push({
       file_path: randomizedFilePath,
       speaker_name: speakerName,
       model_name: modelName,
       sample_name: sampleName,
+      // eslint-disable-next-line object-shorthand
       kind: kind,
     });
   }

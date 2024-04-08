@@ -56,7 +56,7 @@ async function main() {
 	`;
 
   console.log(
-    "Finished adding triggers and functions for Respondents handling."
+    "Finished adding triggers and functions for Respondents handling.",
   );
   process.exit();
 }
