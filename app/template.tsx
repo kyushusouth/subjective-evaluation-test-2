@@ -15,7 +15,7 @@ export default async function RootTemplate({
   return (
     <>
       <NavBar isLoggedIn={isLoggedIn} />
-      <div className="mt-32">{children}</div>
+      <div className="mt-32 mb-16 max-w-screen-md">{children}</div>
     </>
   );
 }
