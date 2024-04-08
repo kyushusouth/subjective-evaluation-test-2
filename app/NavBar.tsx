@@ -13,8 +13,8 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     // fixedにより、ページをスクロールしてもナビゲーションバーが動かないようにする
-    <nav className="fixed w-screen bg-slate-300">
-      <div className="max-w-screen-md flex flex-wrap items-center justify-between mx-auto py-8">
+    <nav className="fixed w-screen bg-sky-100 px-10 z-50">
+      <div className="max-w-screen-md flex flex-wrap items-center justify-between py-8 mx-auto">
         <Link href="/" className="">
           主観評価実験
         </Link>
@@ -39,9 +39,9 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
               >
                 <path
                   stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
                   d="M1 1h15M1 7h15M1 13h15"
                 />
               </svg>
@@ -52,15 +52,15 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
               className="hidden w-full md:block md:w-auto"
               id="navbar-dropdown"
             >
-              <ul className="flex flex-wrap gap-4">
-                <li>
+              <ul className="flex flex-wrap gap-10">
+                <li className="hover:text-blue-700">
                   <Link href="/">Home</Link>
                 </li>
                 <li>
                   <button
-                    id="dropdownNavbarLink"
-                    data-dropdown-toggle="dropdownNavbar"
-                    className="flex items-center justify-between w-full py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent"
+                    id="dropdownNavbarButton"
+                    // className="flex items-center justify-between w-full py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent"
+                    className="flex items-center justify-between w-full hover:text-blue-700"
                     type="button"
                     onClick={handleClick}
                   >
@@ -74,9 +74,9 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
                     >
                       <path
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="m1 1 4 4 4-4"
                       />
                     </svg>
@@ -84,16 +84,21 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
                   {/* fixedにより、ドロップダウンメニューの表示によってナビゲーションバーのUIが影響を受けないようにする */}
                   <div
                     id="dropdownNavbar"
-                    className={`${isMenuOpen ? null : "hidden"} fixed font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600`}
+                    className={`${isMenuOpen ? null : "hidden"} fixed font-normal text-sm text-gray-700 bg-white divide-y divide-gray-100 rounded-lg shadow w-44`}
                   >
-                    <ul
-                      className="py-2 text-sm text-gray-700 dark:text-gray-400"
-                      aria-labelledby="dropdownLargeButton"
-                    >
+                    <ul className="py-2">
                       <li>
                         <Link
                           href="/info"
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                          className="block px-4 py-2 hover:text-blue-700 hover:bg-gray-100"
+                        >
+                          性別・年齢
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          href="/info"
+                          className="block px-4 py-2 hover:bg-gray-100 pointer-events-none line-through"
                         >
                           性別・年齢
                         </Link>
@@ -101,7 +106,7 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
                       <li>
                         <Link
                           href="/eval"
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                          className="block px-4 py-2 hover:text-blue-700 hover:bg-gray-100"
                         >
                           練習試行
                         </Link>
@@ -109,7 +114,7 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
                       <li>
                         <Link
                           href="/eval"
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                          className="block px-4 py-2 hover:text-blue-700 hover:bg-gray-100"
                         >
                           本番試行1
                         </Link>
@@ -119,7 +124,7 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
                       <form action={logOut}>
                         <button
                           type="submit"
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                          className="block px-4 py-2 w-full text-left hover:text-blue-700 hover:bg-gray-100"
                         >
                           ログアウト
                         </button>
