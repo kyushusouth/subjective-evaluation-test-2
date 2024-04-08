@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 

@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import { createBrowserClient } from "@supabase/ssr";
 
 export const createClient = () =>
