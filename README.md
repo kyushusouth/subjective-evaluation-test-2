@@ -2,7 +2,7 @@
 
 next.js
 
-tailwind css
+tailwindcss
 
 supabase
 
