@@ -1,7 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { prisma } from "@/app/lib/prisma";
 import createInfo from "@/app/info/actions";
+import { fetchSexItemList, fetchRespondent } from "@/app/lib/data";
+import SubmitButton from "@/app/info/SubmitButton";
 
 export default async function Info() {
   const supabase = createClient();
@@ -12,12 +13,8 @@ export default async function Info() {
     redirect("/login");
   }
 
-  const sexItemList = await prisma.sexItem.findMany();
-  const respondent = await prisma.respondents.findUnique({
-    where: {
-      auth_id: user.id,
-    },
-  });
+  const sexItemList = await fetchSexItemList();
+  const respondent = await fetchRespondent();
 
   return (
     <div className="my-10">
@@ -51,12 +48,7 @@ export default async function Info() {
               ))}
             </select>
           </label>
-          <button
-            type="submit"
-            className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
-          >
-            提出する
-          </button>
+          <SubmitButton>提出する</SubmitButton>
         </div>
       </form>
     </div>
