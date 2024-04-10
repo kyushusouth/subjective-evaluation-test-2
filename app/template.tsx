@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import NavBar from "@/app/NavBar";
+import NavBarDrawer from "@/app/NavBarDrawer";
 
 export default async function RootTemplate({
   children,
@@ -14,7 +14,7 @@ export default async function RootTemplate({
 
   return (
     <>
-      <NavBar isLoggedIn={isLoggedIn} />
+      <NavBarDrawer isLoggedIn={isLoggedIn} />
       <div className="mt-32 mb-16 max-w-screen-md">{children}</div>
     </>
   );
