@@ -8,18 +8,27 @@ export async function POST(request: Request) {
       data: answersData,
       skipDuplicates: true,
     });
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Answers created successfully.",
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ success: false }), {
-      status: 400,
-      headers: {
-        "Content-Type": "application/json",
+    return new Response(
+      JSON.stringify({ success: false, message: "Failed to create Answers." }),
+      {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
   }
 }
