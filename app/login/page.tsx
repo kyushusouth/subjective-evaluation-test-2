@@ -1,4 +1,5 @@
 import login from "@/app/login/action";
+import SubmitButton from "@/app/login/SubmitButton";
 
 export default async function Login({
   searchParams,
@@ -41,12 +42,7 @@ export default async function Login({
               </div>
             </div>
           )}
-          <button
-            type="submit"
-            className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
-          >
-            ログイン
-          </button>
+          <SubmitButton>ログイン</SubmitButton>
         </div>
       </form>
     </div>
