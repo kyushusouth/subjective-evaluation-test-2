@@ -1,5 +1,10 @@
 /* eslint-disable jsx-a11y/media-has-caption */
+
+"use client";
+
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+import clsx from "clsx";
 import {
   SampleMetaData,
   NaturalnessItem,
@@ -28,7 +33,10 @@ export default function Form({
 }) {
   const methods = useFormContext<SchemaType>();
 
-  const { register } = methods;
+  const {
+    register,
+    formState: { isValid },
+  } = methods;
 
   return (
     <div className="flex flex-col justify-center items-center gap-10 my-10">
@@ -47,9 +55,9 @@ export default function Form({
                 <select
                   id="naturalness"
                   className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  {...register(`naturalness_${sampleId}`)}
                   defaultValue=""
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  {...register(`naturalness_${sampleId}`, { required: true })}
                 >
                   <option value="" disabled hidden>
                     -----
@@ -66,9 +74,11 @@ export default function Form({
                 <select
                   id="intelligibility"
                   className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  {...register(`intelligibility_${sampleId}`)}
                   defaultValue=""
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  {...register(`intelligibility_${sampleId}`, {
+                    required: true,
+                  })}
                 >
                   <option value="" disabled hidden>
                     -----
@@ -91,15 +101,22 @@ export default function Form({
       <div className="flex flex-row justify-center items-center gap-10 mt-2">
         <button
           type="button"
-          className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
-          onClick={onPrev}
+          className={clsx("bg-slate-500 text-white py-2 px-4 rounded", {
+            "hover:bg-blue-700": pageNumber !== 1,
+            "cursor-not-allowed bg-slate-500/50": pageNumber === 1,
+          })}
           disabled={pageNumber === 1}
+          onClick={onPrev}
         >
           戻る
         </button>
         <button
           type="button"
-          className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded"
+          className={clsx("bg-slate-500 text-white py-2 px-4 rounded", {
+            "hover:bg-blue-700": isValid,
+            "cursor-not-allowed bg-slate-500/50": !isValid,
+          })}
+          disabled={!isValid}
           onClick={onNext}
         >
           進む
