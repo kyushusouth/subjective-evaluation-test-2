@@ -36,6 +36,8 @@ export default function Content({
   const lastPageNumber = Math.ceil(
     sampleMetaDataList.length / numSamplePerPage,
   );
+  const router = useRouter();
+  const { handleSubmit } = methods;
 
   const onNext = () => {
     setPageNumber((state) => state + 1);
@@ -47,8 +49,6 @@ export default function Content({
     window.scrollTo(0, 0);
   };
 
-  const router = useRouter();
-  const { handleSubmit } = methods;
   const onSubmit = async (data: SchemaType) => {
     const dataList = [];
     // eslint-disable-next-line no-restricted-syntax
