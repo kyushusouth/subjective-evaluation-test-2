@@ -27,11 +27,11 @@ export default async function Page() {
   return (
     <Contents
       sampleMetaDataList={sampleMetaDataListShuffled}
-      domainName={domainName}
-      bucketName={bucketName}
+      domainName={domainName!}
+      bucketName={bucketName!}
       naturalnessItemList={naturalnessItemList}
       intelligibilityItemList={intelligibilityItemList}
-      respondent={respondent}
+      respondent={respondent!}
     />
   );
 }
