@@ -1,8 +1,9 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { SampleMetaData } from "@prisma/client";
 
-const shuffleArray = (array: object[]) => {
+const shuffleArray = (array: SampleMetaData[]) => {
   const cloneArray = [...array];
   for (let i = cloneArray.length - 1; i >= 0; i -= 1) {
     const rand = Math.floor(Math.random() * (i + 1));
