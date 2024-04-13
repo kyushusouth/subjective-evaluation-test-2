@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       data: {
         age: Number(data.age),
         sex: String(data.sex),
+        is_finished_info: true,
       },
     });
     return new Response(
