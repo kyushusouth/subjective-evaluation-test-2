@@ -9,11 +9,14 @@ generator client {
 }
 
 model Respondents {
-  id      Int       @id @default(autoincrement())
-  age     Int       @default(-1)
-  sex     String    @default("無回答")
-  auth_id String    @unique
-  Answers Answers[]
+  id                   Int       @id @default(autoincrement())
+  age                  Int       @default(-1)
+  sex                  String    @default("無回答")
+  auth_id              String    @unique
+  is_finished_info     Boolean   @default(false)
+  is_finished_practice Boolean   @default(false)
+  is_finished_eval     Boolean   @default(false)
+  Answers              Answers[]
 }
 
 model SexItem {
