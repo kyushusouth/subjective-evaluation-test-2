@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import logOut from "@/app/lib/logOut";
+import { Respondents } from "@prisma/client";
 
-function Drawer() {
+function Drawer({ respondent }: { respondent: Respondents }) {
   const [isOpen, setIsOpen] = useState(false);
   const currentPathname = usePathname();
 
@@ -114,13 +115,35 @@ function Drawer() {
               <Link
                 href="/info"
                 className={clsx(
-                  "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
+                  "block px-4 py-2",
                   {
                     "text-blue-700 bg-gray-100": currentPathname === "/info",
+                  },
+                  {
+                    "text-black hover:text-blue-700 hover:bg-gray-100":
+                      !respondent.is_finished_info,
+                  },
+                  {
+                    "text-gray-400 pointer-events-none":
+                      respondent.is_finished_info,
                   },
                 )}
               >
                 性別・年齢
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/eval_practice"
+                className={clsx(
+                  "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
+                  {
+                    "text-blue-700 bg-gray-100":
+                      currentPathname === "/eval_practice",
+                  },
+                )}
+              >
+                練習試行
               </Link>
             </li>
             <li>
@@ -131,9 +154,19 @@ function Drawer() {
                   {
                     "text-blue-700 bg-gray-100": currentPathname === "/eval",
                   },
+                  {
+                    "text-black hover:text-blue-700 hover:bg-gray-100":
+                      !respondent.is_finished_eval &&
+                      respondent.is_finished_practice,
+                  },
+                  {
+                    "text-gray-400 pointer-events-none":
+                      respondent.is_finished_eval ||
+                      !respondent.is_finished_practice,
+                  },
                 )}
               >
-                練習試行
+                本番試行
               </Link>
             </li>
           </ul>
@@ -153,7 +186,13 @@ function Drawer() {
   );
 }
 
-export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
+export default function NavBar({
+  isLoggedIn,
+  respondent,
+}: {
+  isLoggedIn: boolean;
+  respondent: Respondents | undefined;
+}) {
   return (
     // fixedにより、ページをスクロールしてもナビゲーションバーが動かないようにする
     <nav className="fixed w-screen bg-cyan-600 px-10 z-50">
@@ -161,7 +200,7 @@ export default function NavBar({ isLoggedIn }: { isLoggedIn: boolean }) {
         <Link href="/" className="text-neutral-50">
           主観評価実験
         </Link>
-        {isLoggedIn && <Drawer />}
+        {isLoggedIn && <Drawer respondent={respondent!} />}
       </div>
     </nav>
   );
