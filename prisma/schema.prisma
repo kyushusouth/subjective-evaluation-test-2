@@ -48,6 +48,7 @@ model IntelligibilityItem {
 
 model Answers {
   id                  Int                 @id @default(autoincrement())
+  page_name           String
   respondent          Respondents         @relation(fields: [respondent_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   respondent_id       Int
   sample_meta_data    SampleMetaData      @relation(fields: [sample_meta_data_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
