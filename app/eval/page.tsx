@@ -17,12 +17,14 @@ export default async function Page() {
     redirect("/login");
   }
 
-  const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled();
+  const sampleMetaDataListShuffled =
+    await fetchSampleMetaDataListShuffled(undefined);
   const naturalnessItemList = await fetchNaturalnessItemList();
   const intelligibilityItemList = await fetchIntelligibilityList();
   const respondent = await fetchRespondent();
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
+  const numSamplePerPage = 5;
 
   return (
     <Contents
@@ -32,6 +34,7 @@ export default async function Page() {
       naturalnessItemList={naturalnessItemList}
       intelligibilityItemList={intelligibilityItemList}
       respondent={respondent!}
+      numSamplePerPage={numSamplePerPage}
     />
   );
 }
