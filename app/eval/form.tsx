@@ -20,6 +20,7 @@ export default function Form({
   naturalnessItemList,
   intelligibilityItemList,
   pageNumber,
+  lastPageNumber,
 }: {
   onNext: () => void;
   onPrev: () => void;
@@ -29,6 +30,7 @@ export default function Form({
   naturalnessItemList: NaturalnessItem[];
   intelligibilityItemList: IntelligibilityItem[];
   pageNumber: number;
+  lastPageNumber: number;
 }) {
   const methods = useFormContext<SchemaType>();
 
@@ -120,6 +122,15 @@ export default function Form({
         >
           進む
         </button>
+      </div>
+
+      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+        <div
+          className="bg-blue-600 h-2.5 rounded-full"
+          style={{ width: `${(pageNumber / lastPageNumber) * 100}%` }}
+        >
+          {/* progress bar */}
+        </div>
       </div>
     </div>
   );
