@@ -8,7 +8,7 @@ import { SchemaType } from "@/app/eval/schema";
 export default function Confirm({ onPrev }: { onPrev: () => void }) {
   const methods = useFormContext<SchemaType>();
   const {
-    formState: { isValid, isSubmitting, isSubmitted, errors },
+    formState: { isValid, isSubmitting, isSubmitted },
   } = methods;
 
   return (
