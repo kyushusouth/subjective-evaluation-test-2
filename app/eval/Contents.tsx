@@ -9,8 +9,8 @@ import {
   IntelligibilityItem,
   Respondents,
 } from "@prisma/client";
-import Form from "@/app/eval/Form";
-import Confirm from "@/app/eval/Confirm";
+import Form from "@/app/eval/form";
+import Confirm from "@/app/eval/confirm";
 import { SchemaType } from "@/app/eval/schema";
 
 export default function Content({
