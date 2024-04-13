@@ -13,15 +13,18 @@ export default async function RootTemplate({
   } = await supabase.auth.getUser();
   const isLoggedIn = user !== null;
 
-  const respondent = await prisma.respondents.findUnique({
-    where: {
-      auth_id: user?.id,
-    },
-  });
+  let respondent;
+  if (isLoggedIn) {
+    respondent = await prisma.respondents.findUnique({
+      where: {
+        auth_id: user.id,
+      },
+    });
+  }
 
   return (
     <>
-      <NavBarDrawer isLoggedIn={isLoggedIn} />
+      <NavBarDrawer isLoggedIn={isLoggedIn} respondent={respondent!} />
       <div className="mt-32 mb-16 max-w-screen-md">{children}</div>
     </>
   );
