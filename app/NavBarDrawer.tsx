@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import logOut from "@/app/lib/logOut";
+import logout from "@/app/lib/logout";
 import { Respondents } from "@prisma/client";
 
 function Drawer({ respondent }: { respondent: Respondents }) {
@@ -171,7 +171,7 @@ function Drawer({ respondent }: { respondent: Respondents }) {
             </li>
           </ul>
           <div className="w-full py-2">
-            <form action={logOut}>
+            <form action={logout}>
               <button
                 type="submit"
                 className="px-4 py-2 w-full text-left hover:text-blue-700 hover:bg-gray-100"
