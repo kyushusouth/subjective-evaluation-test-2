@@ -20,6 +20,7 @@ export default function Content({
   naturalnessItemList,
   intelligibilityItemList,
   respondent,
+  numSamplePerPage,
 }: {
   sampleMetaDataList: SampleMetaData[];
   domainName: string;
@@ -27,6 +28,7 @@ export default function Content({
   naturalnessItemList: NaturalnessItem[];
   intelligibilityItemList: IntelligibilityItem[];
   respondent: Respondents | undefined;
+  numSamplePerPage: number;
 }) {
   const methods = useForm<SchemaType>({
     mode: "onSubmit",
@@ -34,7 +36,6 @@ export default function Content({
   const { handleSubmit } = methods;
   const router = useRouter();
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const numSamplePerPage = 10;
   const lastPageNumber = Math.ceil(
     sampleMetaDataList.length / numSamplePerPage,
   );
@@ -99,6 +100,7 @@ export default function Content({
             naturalnessItemList={naturalnessItemList}
             intelligibilityItemList={intelligibilityItemList}
             pageNumber={pageNumber}
+            lastPageNumber={lastPageNumber}
           />
         )}
       </form>
