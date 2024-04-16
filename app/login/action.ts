@@ -12,7 +12,7 @@ const login = async (formData: FormData) => {
     password,
   });
   if (error) {
-    redirect("/login?message=Failed to authenticate.");
+    redirect("/login?message=Failed");
   }
   redirect("/");
 };
