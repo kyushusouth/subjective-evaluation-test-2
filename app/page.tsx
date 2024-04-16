@@ -24,6 +24,7 @@ export default async function Index() {
           <li>性別・年齢の回答</li>
           <li>練習試行</li>
           <li>本番試行</li>
+          <li>クラウドワークスでの連絡</li>
         </ul>
         <p className="leading-relaxed">
           本実験で取得したデータは研究における学会発表や論文執筆のために利用しますが、個人を特定できるような処理は一切致しません。
@@ -71,7 +72,20 @@ export default async function Index() {
           <span className="font-bold text-blue-700">本番試行</span>
           をクリックすることで回答ページにアクセス頂けます。
           <br />
+          練習試行を一度も行っていない場合、本番試行を選択できなくなっていると思いますが、そのような仕様のため問題ありません。
+          <br />
+          練習試行を一度完了しますと、選択可能になります。
+          <br />
           一度提出しますと、回答の修正は不可能となりますのでご注意ください。
+        </p>
+      </section>
+      <hr className="border-t border-gray-300" />
+      <section className="space-y-4 text-base">
+        <h2 className="text-lg">報告</h2>
+        <p className="leading-relaxed">
+          全ての実験項目を完了次第、クラウドワークスにて連絡をお願いします。
+          <br />
+          回答を確認次第、承認させていただきます。
         </p>
       </section>
     </div>
