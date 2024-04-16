@@ -26,6 +26,8 @@ export default function Page({
   } = useForm<Inputs>();
   const router = useRouter();
 
+  throw new Error();
+
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     const response = await fetch("api/respondent", {
       headers: {
