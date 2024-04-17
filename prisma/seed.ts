@@ -62,10 +62,12 @@ async function main() {
   }
 
   const filePathList = getWavFilesInDirectory(localWavDir);
+
   const sampleMetaDataList = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const filePath of filePathList) {
     const filePathParts = filePath.split("/");
+    const pageName = filePathParts[filePathParts.length - 7];
     const speakerName = filePathParts[filePathParts.length - 3];
     const modelName = filePathParts[filePathParts.length - 5];
     const sampleName = filePathParts[filePathParts.length - 2];
@@ -73,6 +75,7 @@ async function main() {
     const randomizedFilePath = `${uuidv4()}.wav`;
     uploadFile(bucketName, filePath, randomizedFilePath);
     sampleMetaDataList.push({
+      page_name: pageName,
       file_path: randomizedFilePath,
       speaker_name: speakerName,
       model_name: modelName,
