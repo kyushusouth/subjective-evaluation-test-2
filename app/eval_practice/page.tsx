@@ -17,7 +17,10 @@ export default async function Page() {
     redirect("/login");
   }
 
-  const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(10);
+  const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(
+    10,
+    "eval_practice",
+  );
   const naturalnessItemList = await fetchNaturalnessItemList();
   const intelligibilityItemList = await fetchIntelligibilityList();
   const respondent = await fetchRespondent();
