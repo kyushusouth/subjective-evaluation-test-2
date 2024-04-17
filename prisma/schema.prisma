@@ -15,7 +15,8 @@ model Respondents {
   auth_id              String    @unique
   is_finished_info     Boolean   @default(false)
   is_finished_practice Boolean   @default(false)
-  is_finished_eval     Boolean   @default(false)
+  is_finished_eval_1     Boolean   @default(false)
+  is_finished_eval_2     Boolean   @default(false)
   Answers              Answers[]
 }
 
@@ -26,6 +27,7 @@ model SexItem {
 
 model SampleMetaData {
   id           Int       @id @default(autoincrement())
+  page_name    String
   file_path    String    @unique
   speaker_name String
   model_name   String
@@ -48,7 +50,6 @@ model IntelligibilityItem {
 
 model Answers {
   id                  Int                 @id @default(autoincrement())
-  page_name           String
   respondent          Respondents         @relation(fields: [respondent_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   respondent_id       Int
   sample_meta_data    SampleMetaData      @relation(fields: [sample_meta_data_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
