@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   SampleMetaData,
   NaturalnessItem,
@@ -39,7 +39,6 @@ export default function Content({
   const lastPageNumber = Math.ceil(
     sampleMetaDataList.length / numSamplePerPage,
   );
-  const pathName = usePathname().replace(/\//g, "");
 
   const onNext = () => {
     setPageNumber((state) => state + 1);
@@ -59,7 +58,6 @@ export default function Content({
       const naturalness = Number(data[`naturalness_${sampleId}`]);
       const intelligibility = Number(data[`intelligibility_${sampleId}`]);
       dataList.push({
-        page_name: pathName,
         respondent_id: respondent?.id,
         sample_meta_data_id: sampleId,
         naturalness_id: naturalness,
