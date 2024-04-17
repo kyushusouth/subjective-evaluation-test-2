@@ -26,8 +26,6 @@ export default function Page({
   } = useForm<Inputs>();
   const router = useRouter();
 
-  throw new Error();
-
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     const response = await fetch("api/respondent", {
       headers: {
@@ -40,7 +38,7 @@ export default function Page({
     if (result.success) {
       router.push("/thanks");
     } else {
-      throw new Error("Failed to Submit.");
+      router.push("/error");
     }
   };
 
@@ -57,7 +55,10 @@ export default function Page({
               defaultValue={
                 respondent?.age === -1 ? undefined : respondent?.age
               }
-              {...register("age", { required: true, valueAsNumber: true })}
+              {...register("age", {
+                required: "required",
+                valueAsNumber: true,
+              })}
             />
           </label>
           {errors.age && <p>年齢を入力してください。</p>}

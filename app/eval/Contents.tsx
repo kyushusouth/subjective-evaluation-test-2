@@ -77,7 +77,7 @@ export default function Content({
     if (result.success) {
       router.push("/thanks");
     } else {
-      router.push("/eval");
+      router.push("/error");
     }
   };
 
