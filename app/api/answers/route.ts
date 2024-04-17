@@ -28,13 +28,22 @@ export async function POST(request: Request) {
           is_finished_practice: true,
         },
       });
-    } else if (pageName === "eval") {
+    } else if (pageName === "eval_1") {
       await prisma.respondents.update({
         where: {
           auth_id: user!.id,
         },
         data: {
-          is_finished_eval: true,
+          is_finished_eval_1: true,
+        },
+      });
+    } else if (pageName === "eval_2") {
+      await prisma.respondents.update({
+        where: {
+          auth_id: user!.id,
+        },
+        data: {
+          is_finished_eval_2: true,
         },
       });
     }
