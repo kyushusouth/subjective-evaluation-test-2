@@ -17,6 +17,7 @@ export default async function Page() {
     redirect("/login");
   }
 
+  const numSamplePerPage = 5;
   const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(
     10,
     "eval_practice",
@@ -26,7 +27,6 @@ export default async function Page() {
   const respondent = await fetchRespondent();
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
-  const numSamplePerPage = 5;
 
   return (
     <Contents
