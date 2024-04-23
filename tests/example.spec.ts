@@ -2,9 +2,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { test, expect } from "@playwright/test";
 
-const email = "user4@test.com";
+const email = "user12@test.com";
 const wrongEmail = "user@test.com";
-const password = "user4pass";
+const password = "user12pass";
 const wrongPassword = "user";
 const age = "48";
 const sex = "無回答";
