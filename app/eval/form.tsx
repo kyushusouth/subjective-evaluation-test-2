@@ -41,63 +41,72 @@ export default function Form({
 
   return (
     <div className="flex flex-col justify-center items-center gap-10 my-10">
-      {sampleMetaDataList.map((data) => {
-        const sampleId = data.id;
-        const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
-        return (
-          <div
-            key={sampleId}
-            className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
-          >
-            <audio src={sampleUrl} controls controlsList="nodownload" />
-            <div className="flex flex-row justify-between items-center gap-6">
-              <label htmlFor="naturalness" className="w-full">
-                自然性
-                <select
-                  id="naturalness"
-                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
-                  defaultValue=""
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  {...register(`naturalness_${sampleId}`, { required: true })}
-                >
-                  <option value="" disabled hidden>
-                    -----
-                  </option>
-                  {naturalnessItemList.map((naturalnessItem) => (
-                    <option key={naturalnessItem.id} value={naturalnessItem.id}>
-                      {naturalnessItem.item}
+      <ul className="flex flex-col justify-center items-center gap-10">
+        {sampleMetaDataList.map((data) => {
+          const sampleId = data.id;
+          const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
+          return (
+            <li
+              id="formItem"
+              data-test-id="formItem"
+              key={sampleId}
+              className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
+            >
+              <audio src={sampleUrl} controls controlsList="nodownload" />
+              <div className="flex flex-row justify-between items-center gap-6">
+                <label htmlFor="naturalness" className="w-full">
+                  自然性
+                  <select
+                    id="naturalness"
+                    data-test-id="naturalness"
+                    className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
+                    defaultValue=""
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...register(`naturalness_${sampleId}`, { required: true })}
+                  >
+                    <option value="" disabled hidden>
+                      -----
                     </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="intelligibility" className="w-full">
-                明瞭性
-                <select
-                  id="intelligibility"
-                  className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
-                  defaultValue=""
-                  // eslint-disable-next-line react/jsx-props-no-spreading
-                  {...register(`intelligibility_${sampleId}`, {
-                    required: true,
-                  })}
-                >
-                  <option value="" disabled hidden>
-                    -----
-                  </option>
-                  {intelligibilityItemList.map((intelligibilityItem) => (
-                    <option
-                      key={intelligibilityItem.id}
-                      value={intelligibilityItem.id}
-                    >
-                      {intelligibilityItem.item}
+                    {naturalnessItemList.map((naturalnessItem) => (
+                      <option
+                        key={naturalnessItem.id}
+                        value={naturalnessItem.id}
+                      >
+                        {naturalnessItem.item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label htmlFor="intelligibility" className="w-full">
+                  明瞭性
+                  <select
+                    id="intelligibility"
+                    data-test-id="intelligibility"
+                    className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
+                    defaultValue=""
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...register(`intelligibility_${sampleId}`, {
+                      required: true,
+                    })}
+                  >
+                    <option value="" disabled hidden>
+                      -----
                     </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </div>
-        );
-      })}
+                    {intelligibilityItemList.map((intelligibilityItem) => (
+                      <option
+                        key={intelligibilityItem.id}
+                        value={intelligibilityItem.id}
+                      >
+                        {intelligibilityItem.item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
 
       <div className="flex flex-row justify-center items-center gap-10 mt-2">
         <button
