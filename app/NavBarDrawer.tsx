@@ -50,7 +50,7 @@ function Drawer({ respondent }: { respondent: Respondents }) {
       {isOpen && (
         <button
           type="button"
-          className="fixed inset-0 bg-black opacity-50 z-40"
+          className="size-full fixed inset-0 bg-black opacity-50 z-40"
           onClick={handleClose}
         >
           {/* オーバーレイ */}
