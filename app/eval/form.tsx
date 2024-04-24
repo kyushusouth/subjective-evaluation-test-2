@@ -52,7 +52,12 @@ export default function Form({
               key={sampleId}
               className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
             >
-              <audio src={sampleUrl} controls controlsList="nodownload" />
+              <audio
+                src={sampleUrl}
+                controls
+                controlsList="nodownload"
+                className="w-full"
+              />
               <div className="flex flex-row justify-between items-center gap-6">
                 <label htmlFor="naturalness" className="w-full">
                   自然性
