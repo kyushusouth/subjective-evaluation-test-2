@@ -10,13 +10,13 @@ generator client {
 
 model Respondents {
   id                   Int       @id @default(autoincrement())
+  auth_id              String    @unique
   age                  Int       @default(-1)
   sex                  String    @default("無回答")
-  auth_id              String    @unique
+  audio_device         String    @default("無回答")
   is_finished_info     Boolean   @default(false)
   is_finished_practice Boolean   @default(false)
-  is_finished_eval_1     Boolean   @default(false)
-  is_finished_eval_2     Boolean   @default(false)
+  is_finished_eval_1   Boolean   @default(false)
   Answers              Answers[]
 }
 
@@ -26,14 +26,16 @@ model SexItem {
 }
 
 model SampleMetaData {
-  id           Int       @id @default(autoincrement())
-  page_name    String
-  file_path    String    @unique
-  speaker_name String
-  model_name   String
-  sample_name  String
-  kind         String
-  Answers      Answers[]
+  id               Int       @id @default(autoincrement())
+  file_path        String    @unique
+  model_name       String
+  speaker_name     String
+  sample_name      String
+  sample_group     Int
+  sample_page_name String
+  kind             String
+  n_selected       Int       @default(0)
+  Answers          Answers[]
 }
 
 model NaturalnessItem {

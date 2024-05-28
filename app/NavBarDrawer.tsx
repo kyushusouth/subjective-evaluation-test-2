@@ -166,30 +166,7 @@ function Drawer({ respondent }: { respondent: Respondents }) {
                   },
                 )}
               >
-                本番試行1
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/eval_2"
-                className={clsx(
-                  "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
-                  {
-                    "text-blue-700 bg-gray-100": currentPathname === "/eval_2",
-                  },
-                  {
-                    "text-black hover:text-blue-700 hover:bg-gray-100":
-                      !respondent.is_finished_eval_2 &&
-                      respondent.is_finished_practice,
-                  },
-                  {
-                    "text-gray-400 pointer-events-none":
-                      respondent.is_finished_eval_2 ||
-                      !respondent.is_finished_practice,
-                  },
-                )}
-              >
-                本番試行2
+                本番試行
               </Link>
             </li>
           </ul>

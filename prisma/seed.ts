@@ -4,12 +4,24 @@ import { PrismaClient } from "@prisma/client";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+import { execSync } from "child_process";
 import { v4 as uuidv4 } from "uuid";
 import { Storage } from "@google-cloud/storage";
 
 dotenv.config({ path: "../.env" });
 const prisma = new PrismaClient();
 const storage = new Storage();
+
+interface SampleMetaData {
+  file_path: string;
+  model_name: string;
+  speaker_name: string;
+  sample_name: string;
+  sample_group: number;
+  sample_page_name: string;
+  kind: string;
+  n_selected: number;
+}
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffledArray = array.slice();
@@ -35,67 +47,36 @@ function getWavFilesInDirectory(directoryPath: string): string[] {
   return files;
 }
 
+const makeNewDir = (dirPath: string): void => {
+  if (fs.existsSync(dirPath)) {
+    fs.rmdirSync(dirPath, { recursive: true });
+  }
+  fs.mkdirSync(dirPath, { recursive: true });
+};
+
+const copyFiles = (dirPath: string, srcDestFilePathList: string[][]): void => {
+  makeNewDir(dirPath);
+  for (const [srcFilePath, destFilePath] of srcDestFilePathList) {
+    fs.copyFileSync(srcFilePath, path.join(dirPath, destFilePath));
+  }
+};
+
 async function listFiles(bucketName: string) {
   const [files] = await storage.bucket(bucketName).getFiles();
   return files;
-}
-
-async function uploadFile(
-  bucketName: string,
-  filePath: string,
-  destFileName: string,
-) {
-  const options = {
-    destination: destFileName,
-  };
-  await storage.bucket(bucketName).upload(filePath, options);
 }
 
 async function deleteFile(bucketName: string, fileName: string) {
   await storage.bucket(bucketName).file(fileName).delete();
 }
 
-async function copyFile(
-  srcBucketName: string,
-  srcFileName: string,
-  destBucketName: string,
-  destFileName: string,
-) {
-  const copyDestination = storage.bucket(destBucketName).file(destFileName);
-  const copyOptions = {
-    preconditionOpts: {
-      ifGenerationMatch: 0,
-    },
-  };
-  await storage
-    .bucket(srcBucketName)
-    .file(srcFileName)
-    .copy(copyDestination, copyOptions);
-}
-
-function isUniqueArray(array: string[], arrays: string[][]): boolean {
-  for (const arr of arrays) {
-    if (JSON.stringify(arr) === JSON.stringify(array)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function addUniqueArray(newArray: string[], arrays: string[][]): boolean {
-  if (isUniqueArray(newArray, arrays)) {
-    arrays.push(newArray);
-    return true;
-  }
-  return false;
-}
-
 async function main() {
   const localWavDir = process.env.LOCAL_WAV_DIR;
+  const localWavDirRandomized = process.env.LOCAL_WAV_DIR_RANDOMIZED;
+  const bucketName = process.env.GCS_BUCKET_NAME;
   if (localWavDir === undefined) {
     throw new Error("LOCAL_WAV_DIR was not specified.");
   }
-  const bucketName = process.env.GCS_BUCKET_NAME;
   if (bucketName === undefined) {
     throw new Error("GCS_BUCKET_NAME was not specified.");
   }
@@ -105,9 +86,7 @@ async function main() {
     deleteFile(bucketName, file.name);
   }
 
-  const filePathList = getWavFilesInDirectory(
-    "/Users/minami/dev/nextjs/subjective-evaluation-test-2/wav_files_orig",
-  );
+  const filePathList = getWavFilesInDirectory(localWavDir);
 
   const modelNameList: string[] = [];
   const modelNameRule: Record<string, string> = {
@@ -185,7 +164,8 @@ async function main() {
     sampleGroupSizeCumsum += sampleGroupSize;
   }
 
-  const sampleMetaDataList = [];
+  const sampleMetaDataList: SampleMetaData[] = [];
+  const srcDestFilePathList: string[][] = [];
   for (const filePath of filePathList) {
     const filePathParts = filePath.split("/");
     const modelName = filePathParts[filePathParts.length - 4];
@@ -207,7 +187,7 @@ async function main() {
       // eslint-disable-next-line no-continue
       continue;
     }
-
+    srcDestFilePathList.push([filePath, randomizedFilePath]);
     sampleMetaDataList.push({
       file_path: randomizedFilePath,
       model_name: modelName,
@@ -220,60 +200,43 @@ async function main() {
     });
   }
 
-  // const sampleMetaDataList = [];
-  // for (const filePath of filePathList) {
-  //   const filePathParts = filePath.split("/");
-  //   const pageName = filePathParts[filePathParts.length - 5]; // page_nameによってeval_practiceとeval_1で取得するサンプルを切り替える
-  //   const modelName = filePathParts[filePathParts.length - 4];
-  //   const speakerName = filePathParts[filePathParts.length - 3];
-  //   const sampleName = filePathParts[filePathParts.length - 2];
-  //   const kind = filePathParts[filePathParts.length - 1].split(".")[0];
-  //   const randomizedFilePath = `${uuidv4()}.wav`;
+  copyFiles(localWavDirRandomized!, srcDestFilePathList);
+  execSync(`gsutil -m cp ${localWavDirRandomized}/*.wav gs://${bucketName}`);
 
-  //   uploadFile(bucketName, filePath, randomizedFilePath);
-  //   sampleMetaDataList.push({
-  //     file_path: randomizedFilePath,
-  //     page_name: pageName,
-  //     model_name: modelName,
-  //     speaker_name: speakerName,
-  //     sample_name: sampleName,
-  //     kind: kind,
-  //   });
-  // }
-  // await prisma.sampleMetaData.createMany({
-  //   data: sampleMetaDataList,
-  //   skipDuplicates: true,
-  // });
+  await prisma.sampleMetaData.createMany({
+    data: sampleMetaDataList,
+    skipDuplicates: true,
+  });
 
-  // const sexItemList = [{ item: "男性" }, { item: "女性" }, { item: "無回答" }];
-  // await prisma.sexItem.createMany({
-  //   data: sexItemList,
-  //   skipDuplicates: true,
-  // });
+  const sexItemList = [{ item: "男性" }, { item: "女性" }, { item: "無回答" }];
+  await prisma.sexItem.createMany({
+    data: sexItemList,
+    skipDuplicates: true,
+  });
 
-  // const naturalnessItemList = [
-  //   { item: "非常に悪い" },
-  //   { item: "悪い" },
-  //   { item: "普通" },
-  //   { item: "良い" },
-  //   { item: "非常に良い" },
-  // ];
-  // await prisma.naturalnessItem.createMany({
-  //   data: naturalnessItemList,
-  //   skipDuplicates: true,
-  // });
+  const naturalnessItemList = [
+    { item: "非常に悪い" },
+    { item: "悪い" },
+    { item: "普通" },
+    { item: "良い" },
+    { item: "非常に良い" },
+  ];
+  await prisma.naturalnessItem.createMany({
+    data: naturalnessItemList,
+    skipDuplicates: true,
+  });
 
-  // const intelligibilityItemList = [
-  //   { item: "非常に悪い" },
-  //   { item: "悪い" },
-  //   { item: "普通" },
-  //   { item: "良い" },
-  //   { item: "非常に良い" },
-  // ];
-  // await prisma.intelligibilityItem.createMany({
-  //   data: intelligibilityItemList,
-  //   skipDuplicates: true,
-  // });
+  const intelligibilityItemList = [
+    { item: "非常に悪い" },
+    { item: "悪い" },
+    { item: "普通" },
+    { item: "良い" },
+    { item: "非常に良い" },
+  ];
+  await prisma.intelligibilityItem.createMany({
+    data: intelligibilityItemList,
+    skipDuplicates: true,
+  });
 }
 
 main()

@@ -19,7 +19,7 @@ export default async function Page() {
 
   const numSamplePerPage = 5;
   const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(
-    10,
+    undefined,
     "eval_practice",
   );
   const naturalnessItemList = await fetchNaturalnessItemList();

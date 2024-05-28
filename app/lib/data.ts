@@ -16,14 +16,14 @@ const shuffleArray = (array: SampleMetaData[]) => {
 
 export async function fetchSampleMetaDataListShuffled(
   numTake: number | undefined,
-  page_name: string,
+  samplePageName: string,
 ) {
   noStore();
   try {
     const sampleMetaDataList = await prisma.sampleMetaData.findMany({
       take: numTake,
       where: {
-        page_name,
+        sample_page_name: samplePageName,
       },
     });
     const sampleMetaDataListShuffled = shuffleArray(sampleMetaDataList);
