@@ -37,15 +37,6 @@ export async function POST(request: Request) {
           is_finished_eval_1: true,
         },
       });
-    } else if (pageName === "eval_2") {
-      await prisma.respondents.update({
-        where: {
-          auth_id: user!.id,
-        },
-        data: {
-          is_finished_eval_2: true,
-        },
-      });
     }
 
     return new Response(JSON.stringify({ success: true }), {
