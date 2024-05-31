@@ -17,6 +17,8 @@ model Respondents {
   is_finished_info     Boolean   @default(false)
   is_finished_practice Boolean   @default(false)
   is_finished_eval_1   Boolean   @default(false)
+  is_invalid           Boolean   @default(false)
+  file_path_list       String[]  @default([])
   Answers              Answers[]
 }
 
@@ -29,12 +31,12 @@ model SampleMetaData {
   id               Int       @id @default(autoincrement())
   file_path        String    @unique
   model_name       String
+  model_id         Int
   speaker_name     String
   sample_name      String
   sample_group     Int
   sample_page_name String
   kind             String
-  n_selected       Int       @default(0)
   Answers          Answers[]
 }
 

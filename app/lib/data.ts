@@ -1,18 +1,17 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable @typescript-eslint/dot-notation */
 import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/app/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-import { SampleMetaData } from "@prisma/client";
 
-const shuffleArray = (array: SampleMetaData[]) => {
-  const cloneArray = [...array];
-  for (let i = cloneArray.length - 1; i >= 0; i -= 1) {
-    const rand = Math.floor(Math.random() * (i + 1));
-    const tmpStorage = cloneArray[i];
-    cloneArray[i] = cloneArray[rand];
-    cloneArray[rand] = tmpStorage;
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffledArray = array.slice();
+  for (let i = shuffledArray.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
   }
-  return cloneArray;
-};
+  return shuffledArray;
+}
 
 export async function fetchSampleMetaDataListShuffled(
   numTake: number | undefined,
@@ -20,12 +19,27 @@ export async function fetchSampleMetaDataListShuffled(
 ) {
   noStore();
   try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const respondent = await prisma.respondents.findUnique({
+      where: {
+        auth_id: user?.id,
+      },
+    });
+
     const sampleMetaDataList = await prisma.sampleMetaData.findMany({
       take: numTake,
       where: {
         sample_page_name: samplePageName,
+        file_path: {
+          in: respondent?.file_path_list,
+        },
       },
     });
+
     const sampleMetaDataListShuffled = shuffleArray(sampleMetaDataList);
     return sampleMetaDataListShuffled;
   } catch (error) {

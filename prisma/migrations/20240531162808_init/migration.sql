@@ -8,6 +8,8 @@ CREATE TABLE "Respondents" (
     "is_finished_info" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_practice" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_eval_1" BOOLEAN NOT NULL DEFAULT false,
+    "is_invalid" BOOLEAN NOT NULL DEFAULT false,
+    "file_path_list" TEXT[] DEFAULT ARRAY[]::TEXT[],
 
     CONSTRAINT "Respondents_pkey" PRIMARY KEY ("id")
 );
@@ -25,12 +27,12 @@ CREATE TABLE "SampleMetaData" (
     "id" SERIAL NOT NULL,
     "file_path" TEXT NOT NULL,
     "model_name" TEXT NOT NULL,
+    "model_id" INTEGER NOT NULL,
     "speaker_name" TEXT NOT NULL,
     "sample_name" TEXT NOT NULL,
     "sample_group" INTEGER NOT NULL,
     "sample_page_name" TEXT NOT NULL,
     "kind" TEXT NOT NULL,
-    "n_selected" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "SampleMetaData_pkey" PRIMARY KEY ("id")
 );
