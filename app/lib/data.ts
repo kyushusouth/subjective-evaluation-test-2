@@ -33,10 +33,17 @@ export async function fetchSampleMetaDataListShuffled(
     const sampleMetaDataList = await prisma.sampleMetaData.findMany({
       take: numTake,
       where: {
-        sample_page_name: samplePageName,
-        file_path: {
-          in: respondent?.file_path_list,
-        },
+        OR: [
+          {
+            sample_page_name: samplePageName,
+            file_path: {
+              in: respondent?.file_path_list,
+            },
+          },
+          {
+            is_dummy: true,
+          },
+        ],
       },
     });
 
@@ -72,6 +79,16 @@ export async function fetchSexItemList() {
     return sexItemList;
   } catch (error) {
     throw new Error("Failed to fetch sexItemList.");
+  }
+}
+
+export async function fetchAudioDeviceItemList() {
+  noStore();
+  try {
+    const audioDeviceItemList = await prisma.audioDeviceItem.findMany();
+    return audioDeviceItemList;
+  } catch (error) {
+    throw new Error("Failed to fetch audioDeviceItemList.");
   }
 }
 

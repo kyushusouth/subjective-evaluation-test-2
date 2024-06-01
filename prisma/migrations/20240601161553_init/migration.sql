@@ -23,6 +23,14 @@ CREATE TABLE "SexItem" (
 );
 
 -- CreateTable
+CREATE TABLE "AudioDeviceItem" (
+    "id" SERIAL NOT NULL,
+    "item" TEXT NOT NULL,
+
+    CONSTRAINT "AudioDeviceItem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "SampleMetaData" (
     "id" SERIAL NOT NULL,
     "file_path" TEXT NOT NULL,
@@ -33,6 +41,9 @@ CREATE TABLE "SampleMetaData" (
     "sample_group" INTEGER NOT NULL,
     "sample_page_name" TEXT NOT NULL,
     "kind" TEXT NOT NULL,
+    "is_dummy" BOOLEAN NOT NULL,
+    "naturalness_dummy_correct_answer_id" INTEGER NOT NULL,
+    "intelligibility_dummy_correct_answer_id" INTEGER NOT NULL,
 
     CONSTRAINT "SampleMetaData_pkey" PRIMARY KEY ("id")
 );
@@ -75,6 +86,12 @@ CREATE UNIQUE INDEX "NaturalnessItem_item_key" ON "NaturalnessItem"("item");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "IntelligibilityItem_item_key" ON "IntelligibilityItem"("item");
+
+-- AddForeignKey
+ALTER TABLE "SampleMetaData" ADD CONSTRAINT "SampleMetaData_naturalness_dummy_correct_answer_id_fkey" FOREIGN KEY ("naturalness_dummy_correct_answer_id") REFERENCES "NaturalnessItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SampleMetaData" ADD CONSTRAINT "SampleMetaData_intelligibility_dummy_correct_answer_id_fkey" FOREIGN KEY ("intelligibility_dummy_correct_answer_id") REFERENCES "IntelligibilityItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Answers" ADD CONSTRAINT "Answers_respondent_id_fkey" FOREIGN KEY ("respondent_id") REFERENCES "Respondents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

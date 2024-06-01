@@ -27,29 +27,41 @@ model SexItem {
   item String
 }
 
+model AudioDeviceItem {
+  id   Int    @id @default(autoincrement())
+  item String
+}
+
 model SampleMetaData {
-  id               Int       @id @default(autoincrement())
-  file_path        String    @unique
-  model_name       String
-  model_id         Int
-  speaker_name     String
-  sample_name      String
-  sample_group     Int
-  sample_page_name String
-  kind             String
-  Answers          Answers[]
+  id                                      Int                 @id @default(autoincrement())
+  file_path                               String              @unique
+  model_name                              String
+  model_id                                Int
+  speaker_name                            String
+  sample_name                             String
+  sample_group                            Int
+  sample_page_name                        String
+  kind                                    String
+  is_dummy                                Boolean
+  naturalness_dummy_correct_answer        NaturalnessItem     @relation(fields: [naturalness_dummy_correct_answer_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  naturalness_dummy_correct_answer_id     Int
+  intelligibility_dummy_correct_answer    IntelligibilityItem @relation(fields: [intelligibility_dummy_correct_answer_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  intelligibility_dummy_correct_answer_id Int
+  Answers                                 Answers[]
 }
 
 model NaturalnessItem {
-  id      Int       @id @default(autoincrement())
-  item    String    @unique
-  Answers Answers[]
+  id             Int              @id @default(autoincrement())
+  item           String           @unique
+  Answers        Answers[]
+  SampleMetaData SampleMetaData[]
 }
 
 model IntelligibilityItem {
-  id      Int       @id @default(autoincrement())
-  item    String    @unique
-  Answers Answers[]
+  id             Int              @id @default(autoincrement())
+  item           String           @unique
+  Answers        Answers[]
+  SampleMetaData SampleMetaData[]
 }
 
 model Answers {

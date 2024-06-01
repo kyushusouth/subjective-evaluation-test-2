@@ -77,6 +77,7 @@ function containsArray(arrays: string[][], array: string[]): boolean {
 
 async function main() {
   const localWavDir = process.env.LOCAL_WAV_DIR;
+  const localWavDirDummy = process.env.LOCAL_WAV_DIR_DUMMY;
   const localWavDirRandomized = process.env.LOCAL_WAV_DIR_RANDOMIZED;
   const bucketName = process.env.GCS_BUCKET_NAME;
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -93,6 +94,9 @@ async function main() {
 
   if (localWavDir === undefined) {
     throw new Error("LOCAL_WAV_DIR was not specified.");
+  }
+  if (localWavDirDummy === undefined) {
+    throw new Error("LOCAL_WAV_DIR_DUMMY was not specified.");
   }
   if (localWavDirRandomized === undefined) {
     throw new Error("LOCAL_WAV_DIR_RANDAMIZED was not specified.");
@@ -261,6 +265,9 @@ async function main() {
     sample_group: number;
     sample_page_name: string;
     kind: string;
+    is_dummy: boolean;
+    naturalness_dummy_correct_answer_id: number;
+    intelligibility_dummy_correct_answer_id: number;
   }[] = [];
   const srcDestFilePathList: string[][] = [];
   const emailPasswordList: { email: string; password: string }[] = [];
@@ -301,6 +308,9 @@ async function main() {
           sample_group: sampleGroup,
           sample_page_name: samplePageName,
           kind: kind,
+          is_dummy: false,
+          naturalness_dummy_correct_answer_id: 1,
+          intelligibility_dummy_correct_answer_id: 1,
         });
         break;
       }
@@ -432,14 +442,42 @@ async function main() {
   copyFiles(localWavDirRandomized!, srcDestFilePathList);
   execSync(`gsutil -m cp ${localWavDirRandomized}/*.wav gs://${bucketName}`);
 
-  await prisma.sampleMetaData.createMany({
-    data: sampleMetaDataList,
-    skipDuplicates: true,
-  });
+  const filePathDummyList = getWavFilesInDirectory(localWavDirDummy);
+  for (const filePath of filePathDummyList) {
+    const filePathParts = filePath.split("/");
+    const naturalnessId = Number(
+      filePathParts[filePathParts.length - 1].split(".")[0].split("_")[0],
+    );
+    const intellibilityId = Number(
+      filePathParts[filePathParts.length - 1].split(".")[0].split("_")[1],
+    );
+    const randomizedFilePath = `${uuidv4()}.wav`;
+
+    srcDestFilePathList.push([filePath, randomizedFilePath]);
+    sampleMetaDataList.push({
+      file_path: randomizedFilePath,
+      model_name: "dummy",
+      model_id: -1,
+      speaker_name: "dummy",
+      sample_name: "dummy",
+      sample_group: -1,
+      sample_page_name: "dummy",
+      kind: "dummy",
+      is_dummy: true,
+      naturalness_dummy_correct_answer_id: naturalnessId,
+      intelligibility_dummy_correct_answer_id: intellibilityId,
+    });
+  }
 
   const sexItemList = [{ item: "男性" }, { item: "女性" }, { item: "無回答" }];
   await prisma.sexItem.createMany({
     data: sexItemList,
+    skipDuplicates: true,
+  });
+
+  const audioDeviceList = [{ item: "ヘッドホン" }, { item: "イヤホン" }];
+  await prisma.audioDeviceItem.createMany({
+    data: audioDeviceList,
     skipDuplicates: true,
   });
 
@@ -464,6 +502,11 @@ async function main() {
   ];
   await prisma.intelligibilityItem.createMany({
     data: intelligibilityItemList,
+    skipDuplicates: true,
+  });
+
+  await prisma.sampleMetaData.createMany({
+    data: sampleMetaDataList,
     skipDuplicates: true,
   });
 }
