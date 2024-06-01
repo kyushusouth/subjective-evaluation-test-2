@@ -17,6 +17,7 @@ export async function POST(request: Request) {
       data: {
         age: Number(data.age),
         sex: String(data.sex),
+        audio_device: String(data.audio_device),
         is_finished_info: true,
       },
     });

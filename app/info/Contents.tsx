@@ -4,19 +4,22 @@
 
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { SexItem, Respondents } from "@prisma/client";
+import { SexItem, AudioDeviceItem, Respondents } from "@prisma/client";
 import clsx from "clsx";
 
 type Inputs = {
   age: number;
   sex: string;
+  audio_device: string;
 };
 
 export default function Page({
   sexItemList,
+  audioDeviceItemList,
   respondent,
 }: {
   sexItemList: SexItem[];
+  audioDeviceItemList: AudioDeviceItem[];
   respondent: Respondents;
 }) {
   const {
@@ -61,7 +64,9 @@ export default function Page({
               })}
             />
           </label>
+
           {errors.age && <p>年齢を入力してください。</p>}
+
           <label htmlFor="sex" className="w-full">
             性別
             <select
@@ -73,6 +78,22 @@ export default function Page({
               {sexItemList.map((sexItem) => (
                 <option key={sexItem.id} value={sexItem.item}>
                   {sexItem.item}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label htmlFor="audio_device" className="w-full">
+            利用される音響機器
+            <select
+              id="audio_device"
+              className="w-full px-3 py-2 border border-gray-500 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
+              defaultValue={respondent?.audio_device}
+              {...register("audio_device", { required: true })}
+            >
+              {audioDeviceItemList.map((audioDeviceItem) => (
+                <option key={audioDeviceItem.id} value={audioDeviceItem.item}>
+                  {audioDeviceItem.item}
                 </option>
               ))}
             </select>
