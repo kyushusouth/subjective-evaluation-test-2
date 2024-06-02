@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const answerList = await request.json();
     const fromUrl = request.headers.get("referer")!;
     const fromUrlSplit = fromUrl.split("/");
-    const pageName = fromUrlSplit[fromUrlSplit.length - 1];
+    const pageName = fromUrlSplit[fromUrlSplit.length - 2];
 
     const sampleMetaDataDummyList = await prisma.sampleMetaData.findMany({
       where: {
@@ -25,10 +25,10 @@ export async function POST(request: Request) {
     for (const answer of answerList) {
       for (const sampleMetaDataDummy of sampleMetaDataDummyList) {
         if (
-          answer.id === sampleMetaDataDummy.id &&
-          (answer.naturalnessId !==
+          answer.sample_meta_data_id === sampleMetaDataDummy.id &&
+          (answer.naturalness_id !==
             sampleMetaDataDummy.naturalness_dummy_correct_answer_id ||
-            answer.intellibilityId !==
+            answer.intelligibility_id !==
               sampleMetaDataDummy.intelligibility_dummy_correct_answer_id)
         ) {
           isInvalid = true;
