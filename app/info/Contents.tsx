@@ -30,7 +30,7 @@ export default function Page({
   const router = useRouter();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    const response = await fetch("api/respondent", {
+    const response = await fetch("/api/respondent", {
       headers: {
         "Content-Type": "application/json",
       },
@@ -88,9 +88,16 @@ export default function Page({
             <select
               id="audio_device"
               className="w-full px-3 py-2 border border-gray-500 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
-              defaultValue={respondent?.audio_device}
+              defaultValue={
+                respondent.audio_device === "無回答"
+                  ? "-----"
+                  : respondent.audio_device
+              }
               {...register("audio_device", { required: true })}
             >
+              <option value="-----" disabled>
+                -----
+              </option>
               {audioDeviceItemList.map((audioDeviceItem) => (
                 <option key={audioDeviceItem.id} value={audioDeviceItem.item}>
                   {audioDeviceItem.item}
