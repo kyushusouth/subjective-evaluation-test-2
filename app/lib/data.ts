@@ -30,23 +30,39 @@ export async function fetchSampleMetaDataListShuffled(
       },
     });
 
-    const sampleMetaDataList = await prisma.sampleMetaData.findMany({
-      take: numTake,
-      where: {
-        OR: [
-          {
-            sample_page_name: samplePageName,
-            file_path: {
-              in: respondent?.file_path_list,
+    let sampleMetaDataList;
+    if (samplePageName === "eval_practice") {
+      sampleMetaDataList = await prisma.sampleMetaData.findMany({
+        take: numTake,
+        where: {
+          OR: [
+            {
+              sample_page_name: samplePageName,
+              file_path: {
+                in: respondent?.file_path_list,
+              },
             },
-          },
-          {
-            is_dummy: true,
-          },
-        ],
-      },
-    });
-
+          ],
+        },
+      });
+    } else {
+      sampleMetaDataList = await prisma.sampleMetaData.findMany({
+        take: numTake,
+        where: {
+          OR: [
+            {
+              sample_page_name: samplePageName,
+              file_path: {
+                in: respondent?.file_path_list,
+              },
+            },
+            {
+              is_dummy: true,
+            },
+          ],
+        },
+      });
+    }
     const sampleMetaDataListShuffled = shuffleArray(sampleMetaDataList);
     return sampleMetaDataListShuffled;
   } catch (error) {
