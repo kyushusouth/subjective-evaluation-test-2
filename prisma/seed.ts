@@ -439,9 +439,6 @@ async function main() {
     });
   }
 
-  copyFiles(localWavDirRandomized!, srcDestFilePathList);
-  execSync(`gsutil -m cp ${localWavDirRandomized}/*.wav gs://${bucketName}`);
-
   const filePathDummyList = getWavFilesInDirectory(localWavDirDummy);
   for (const filePath of filePathDummyList) {
     const filePathParts = filePath.split("/");
@@ -468,6 +465,9 @@ async function main() {
       intelligibility_dummy_correct_answer_id: intellibilityId,
     });
   }
+
+  copyFiles(localWavDirRandomized!, srcDestFilePathList);
+  execSync(`gsutil -m cp ${localWavDirRandomized}/*.wav gs://${bucketName}`);
 
   const sexItemList = [{ item: "男性" }, { item: "女性" }, { item: "無回答" }];
   await prisma.sexItem.createMany({
