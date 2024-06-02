@@ -64,7 +64,7 @@ export default function Content({
         intelligibility_id: intelligibility,
       });
     }
-    const response = await fetch("api/answers", {
+    const response = await fetch("/api/answers", {
       headers: {
         "Content-Type": "application/json",
       },
