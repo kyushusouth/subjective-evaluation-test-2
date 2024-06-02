@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/media-has-caption */
 
 "use client";
@@ -41,6 +43,29 @@ export default function Form({
 
   return (
     <div className="flex flex-col justify-center items-center gap-10 my-10">
+      <section className="space-y-4 text-base">
+        <p className="leading-relaxed">
+          一つ目の評価項目である自然性は、
+          <br />
+          <span className="font-bold">
+            発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
+          </span>
+          を指します。
+          <br />
+          例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
+        </p>
+        <p className="leading-relaxed">
+          二つ目の評価項目である明瞭性は、
+          <br />
+          <span className="font-bold">
+            発話内容自体がどれくらい聞き取りやすかったか
+          </span>
+          を指します。
+          <br />
+          聞き取りやすさのみを評価の観点とする点が、自然性と異なります。
+        </p>
+      </section>
+
       <ul className="flex flex-col justify-center items-center gap-10">
         {sampleMetaDataList.map((data) => {
           const sampleId = data.id;
@@ -58,15 +83,29 @@ export default function Form({
                 controlsList="nodownload"
                 className="w-full"
               />
-              <div className="flex flex-row justify-between items-center gap-6">
-                <label htmlFor="naturalness" className="w-full">
+
+              <div className="flex flex-row justify-between items-center gap-x-16">
+                {/* <label htmlFor="naturalness" className="w-full">
                   自然性
+                  {naturalnessItemList.map((naturalnessItem) => (
+                    <div key={naturalnessItem.id}>
+                      <input
+                        id="naturalness_radio"
+                        type="radio"
+                        {...register(`naturalness_radio_${sampleId}`, {
+                          required: true,
+                        })}
+                      />
+                      <label htmlFor="naturalness_radio">
+                        {naturalnessItem.item}
+                      </label>
+                    </div>
+                  ))}
                   <select
                     id="naturalness"
                     data-test-id="naturalness"
                     className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
                     defaultValue=""
-                    // eslint-disable-next-line react/jsx-props-no-spreading
                     {...register(`naturalness_${sampleId}`, { required: true })}
                   >
                     <option value="" disabled hidden>
@@ -77,19 +116,19 @@ export default function Form({
                         key={naturalnessItem.id}
                         value={naturalnessItem.id}
                       >
-                        {naturalnessItem.item}
+                        {naturalnessItem.id}: {naturalnessItem.item}
                       </option>
                     ))}
                   </select>
-                </label>
-                <label htmlFor="intelligibility" className="w-full">
+                </label> */}
+
+                {/* <label htmlFor="intelligibility" className="w-full">
                   明瞭性
                   <select
                     id="intelligibility"
                     data-test-id="intelligibility"
                     className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
                     defaultValue=""
-                    // eslint-disable-next-line react/jsx-props-no-spreading
                     {...register(`intelligibility_${sampleId}`, {
                       required: true,
                     })}
@@ -102,11 +141,65 @@ export default function Form({
                         key={intelligibilityItem.id}
                         value={intelligibilityItem.id}
                       >
-                        {intelligibilityItem.item}
+                        {intelligibilityItem.id}: {intelligibilityItem.item}
                       </option>
                     ))}
                   </select>
-                </label>
+                </label> */}
+
+                <div className="w-full">
+                  <label
+                    htmlFor={`naturalness_${sampleId}`}
+                    className="w-full block relative group"
+                  >
+                    自然性
+                  </label>
+                  <div className="flex flex-col">
+                    {naturalnessItemList.map((naturalnessItem) => (
+                      <label
+                        key={naturalnessItem.id}
+                        className="flex items-center"
+                      >
+                        <input
+                          type="radio"
+                          value={naturalnessItem.id}
+                          {...register(`naturalness_${sampleId}`, {
+                            required: true,
+                          })}
+                          className="mr-2"
+                        />
+                        {naturalnessItem.id}: {naturalnessItem.item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-full">
+                  <label
+                    htmlFor={`intelligibility_${sampleId}`}
+                    className="w-full block"
+                  >
+                    明瞭性
+                  </label>
+                  <div className="flex flex-col">
+                    {intelligibilityItemList.map((intelligibilityItem) => (
+                      <label
+                        key={intelligibilityItem.id}
+                        className="flex items-center"
+                      >
+                        <input
+                          type="radio"
+                          value={intelligibilityItem.id}
+                          {...register(`intelligibility_${sampleId}`, {
+                            required: true,
+                          })}
+                          className="mr-2"
+                        />
+                        {intelligibilityItem.id}: {intelligibilityItem.item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
             </li>
           );
