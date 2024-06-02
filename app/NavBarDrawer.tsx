@@ -129,7 +129,7 @@ function Drawer({ respondent }: { respondent: Respondents }) {
                   },
                 )}
               >
-                性別・年齢
+                アンケート
               </Link>
             </li>
             <li>
@@ -194,7 +194,6 @@ export default function NavBar({
   respondent: Respondents | undefined;
 }) {
   return (
-    // fixedにより、ページをスクロールしてもナビゲーションバーが動かないようにする
     <nav className="fixed w-screen bg-cyan-600 px-10 z-50">
       <div className="max-w-screen-md flex flex-wrap items-center justify-between py-8 mx-auto">
         <Link href="/" className="text-neutral-50">
