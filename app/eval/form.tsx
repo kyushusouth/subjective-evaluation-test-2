@@ -76,8 +76,7 @@ export default function Form({
           const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
           return (
             <li
-              id="formItem"
-              data-test-id="formItem"
+              data-testid="formItem"
               key={sampleId}
               className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
             >
@@ -94,13 +93,13 @@ export default function Form({
                   {naturalnessItemList.map((naturalnessItem) => (
                     <div key={naturalnessItem.id}>
                       <input
-                        id="naturalness_radio"
+                        id="naturalness"
                         type="radio"
                         {...register(`naturalness_radio_${sampleId}`, {
                           required: true,
                         })}
                       />
-                      <label htmlFor="naturalness_radio">
+                      <label htmlFor="naturalness">
                         {naturalnessItem.item}
                       </label>
                     </div>
