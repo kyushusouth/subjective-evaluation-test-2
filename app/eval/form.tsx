@@ -45,7 +45,17 @@ export default function Form({
     <div className="flex flex-col justify-center items-center gap-10 my-10">
       <section className="space-y-4 text-base">
         <p className="leading-relaxed">
-          一つ目の評価項目である自然性は、
+          一つ目の評価項目である明瞭性は、
+          <br />
+          <span className="font-bold">
+            発話内容自体がどれくらい聞き取りやすかったか
+          </span>
+          を指します。
+          <br />
+          この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています。
+        </p>
+        <p className="leading-relaxed">
+          二つ目の評価項目である自然性は、
           <br />
           <span className="font-bold">
             発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
@@ -53,16 +63,10 @@ export default function Form({
           を指します。
           <br />
           例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
-        </p>
-        <p className="leading-relaxed">
-          二つ目の評価項目である明瞭性は、
           <br />
-          <span className="font-bold">
-            発話内容自体がどれくらい聞き取りやすかったか
-          </span>
-          を指します。
+          イントネーションなど聞き取りやすさに関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
           <br />
-          聞き取りやすさのみを評価の観点とする点が、自然性と異なります。
+          発話内容の聞き取りやすさではなく、音声全体の自然さが評価の対象です。この点が明瞭性の評価と異なる部分です。
         </p>
       </section>
 
@@ -149,33 +153,6 @@ export default function Form({
 
                 <div className="w-full">
                   <label
-                    htmlFor={`naturalness_${sampleId}`}
-                    className="w-full block relative group"
-                  >
-                    自然性
-                  </label>
-                  <div className="flex flex-col">
-                    {naturalnessItemList.map((naturalnessItem) => (
-                      <label
-                        key={naturalnessItem.id}
-                        className="flex items-center"
-                      >
-                        <input
-                          type="radio"
-                          value={naturalnessItem.id}
-                          {...register(`naturalness_${sampleId}`, {
-                            required: true,
-                          })}
-                          className="mr-2"
-                        />
-                        {naturalnessItem.id}: {naturalnessItem.item}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="w-full">
-                  <label
                     htmlFor={`intelligibility_${sampleId}`}
                     className="w-full block"
                   >
@@ -196,6 +173,33 @@ export default function Form({
                           className="mr-2"
                         />
                         {intelligibilityItem.id}: {intelligibilityItem.item}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-full">
+                  <label
+                    htmlFor={`naturalness_${sampleId}`}
+                    className="w-full block relative group"
+                  >
+                    自然性
+                  </label>
+                  <div className="flex flex-col">
+                    {naturalnessItemList.map((naturalnessItem) => (
+                      <label
+                        key={naturalnessItem.id}
+                        className="flex items-center"
+                      >
+                        <input
+                          type="radio"
+                          value={naturalnessItem.id}
+                          {...register(`naturalness_${sampleId}`, {
+                            required: true,
+                          })}
+                          className="mr-2"
+                        />
+                        {naturalnessItem.id}: {naturalnessItem.item}
                       </label>
                     ))}
                   </div>

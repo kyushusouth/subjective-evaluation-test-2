@@ -31,30 +31,28 @@ export default async function Page() {
         </p>
         <ol className="leading-relaxed list-decimal list-inside">
           <li>音声を聞く。</li>
-          <li>音声の自然性・明瞭性を五段階で評価する。</li>
+          <li>音声の明瞭性・自然性を五段階で評価する。</li>
         </ol>
         <p className="leading-relaxed">
           評価にあたり、音声は何度聞いていただいても構いません。
           <br />
-          評価項目である自然性・明瞭性については、どのような観点で評価するかを以下に記載しております。
-          <br />
-          ご確認ください。
+          評価項目である明瞭性・自然性について、どのような観点で評価するかを以下に記載しておりますので、ご確認ください。
         </p>
       </section>
 
       <hr className="border-t border-gray-300" />
 
       <section className="space-y-4 text-base">
-        <h2 className="text-lg">自然性とは？</h2>
+        <h2 className="text-lg">明瞭性とは？</h2>
         <p className="leading-relaxed">
-          一つ目の評価項目である自然性は、
+          一つ目の評価項目である明瞭性は、
           <br />
           <span className="font-bold">
-            発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
+            発話内容自体がどれくらい聞き取りやすかったか
           </span>
           を指します。
           <br />
-          例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
+          この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています。
         </p>
         <p>各音声ごとに、下記の五段階で評価してください。</p>
         <ol>
@@ -69,16 +67,20 @@ export default async function Page() {
       <hr className="border-t border-gray-300" />
 
       <section className="space-y-4 text-base">
-        <h2 className="text-lg">明瞭性とは？</h2>
+        <h2 className="text-lg">自然性とは？</h2>
         <p className="leading-relaxed">
-          二つ目の評価項目である明瞭性は、
+          二つ目の評価項目である自然性は、
           <br />
           <span className="font-bold">
-            発話内容自体がどれくらい聞き取りやすかったか
+            発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
           </span>
           を指します。
           <br />
-          聞き取りやすさのみを評価の観点とする点が、自然性と異なります。
+          例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
+          <br />
+          イントネーションなど聞き取りやすさに関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
+          <br />
+          発話内容の聞き取りやすさではなく、音声全体の自然さが評価の対象です。この点が明瞭性の評価と異なる部分です。
         </p>
         <p>各音声ごとに、下記の五段階で評価してください。</p>
         <ol>
