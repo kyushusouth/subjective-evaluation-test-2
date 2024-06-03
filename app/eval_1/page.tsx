@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { fetchRespondent } from "@/app/lib/data";
 
 export default async function Page() {
   const supabase = createClient();
@@ -9,6 +10,12 @@ export default async function Page() {
   } = await supabase.auth.getUser();
   if (user === null) {
     redirect("/login");
+  }
+
+  const respondent = await fetchRespondent();
+
+  if (respondent?.is_finished_info) {
+    redirect("/");
   }
 
   return (
