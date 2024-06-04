@@ -14,7 +14,7 @@ export default async function Page() {
 
   const respondent = await fetchRespondent();
 
-  if (respondent?.is_finished_info) {
+  if (!respondent?.is_finished_practice) {
     redirect("/");
   }
 
