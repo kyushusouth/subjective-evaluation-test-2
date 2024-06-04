@@ -76,7 +76,7 @@ export default function Form({
           const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
           return (
             <li
-              data-testid="formItem"
+              data-test-id="formItem"
               key={sampleId}
               className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
             >
