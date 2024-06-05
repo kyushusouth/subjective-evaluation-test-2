@@ -270,7 +270,8 @@ async function main() {
     intelligibility_dummy_correct_answer_id: number;
   }[] = [];
   const srcDestFilePathList: string[][] = [];
-  const emailPasswordList: { email: string; password: string }[] = [];
+  const authList: { respondent_id: number; email: string; password: string }[] =
+    [];
 
   for (const filePath of filePathList) {
     const filePathParts = filePath.split("/");
@@ -413,7 +414,8 @@ async function main() {
       password: password,
       email_confirm: true,
     });
-    emailPasswordList.push({
+    authList.push({
+      respondent_id: trial + 1,
       email: email,
       password: password,
     });
@@ -423,8 +425,8 @@ async function main() {
     });
   }
 
-  const dfEmailPassword = new dfd.DataFrame(emailPasswordList);
-  dfd.toCSV(dfEmailPassword, {
+  const dfAuth = new dfd.DataFrame(authList);
+  dfd.toCSV(dfAuth, {
     filePath: authLocalSavePath,
   });
 
