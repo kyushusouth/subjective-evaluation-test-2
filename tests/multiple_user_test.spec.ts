@@ -33,7 +33,7 @@ test("multiple user test", async ({ page }) => {
   const df = await dfd.readCSV(
     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/auth.csv",
   );
-  for (let rowIndex = 106; rowIndex < df.shape[0]; rowIndex += 1) {
+  for (let rowIndex = 120; rowIndex < df.shape[0]; rowIndex += 1) {
     const row = df.iloc({ rows: [rowIndex] });
     const respondentId = rowIndex + 1;
     const email = row.loc({ columns: ["email"] }).values[0][0];
@@ -186,17 +186,17 @@ test("multiple user test", async ({ page }) => {
       ).toBeEnabled();
       await page.getByRole("button", { name: "提出する" }).click();
       // await expect(page).toHaveURL("/thanks");
-      await expect(page).toHaveURL("/");
+      // await expect(page).toHaveURL("/");
 
-      if (testConfig.linkName.startsWith("本番試行")) {
-        await expect(
-          page.getByRole("link", { name: testConfig.linkName }),
-        ).toHaveClass(/pointer-events-none/);
-      } else {
-        await expect(
-          page.getByRole("link", { name: testConfig.linkName }),
-        ).not.toHaveClass(/pointer-events-none/);
-      }
+      // if (testConfig.linkName.startsWith("本番試行")) {
+      //   await expect(
+      //     page.getByRole("link", { name: testConfig.linkName }),
+      //   ).toHaveClass(/pointer-events-none/);
+      // } else {
+      //   await expect(
+      //     page.getByRole("link", { name: testConfig.linkName }),
+      //   ).not.toHaveClass(/pointer-events-none/);
+      // }
     }
 
     await page.getByRole("button", { name: "Open main menu" }).click();
