@@ -450,6 +450,7 @@ async function main() {
     const intellibilityId = Number(
       filePathParts[filePathParts.length - 1].split(".")[0].split("_")[1],
     );
+    const samplePageName = filePathParts[filePathParts.length - 2];
     const randomizedFilePath = `${uuidv4()}.wav`;
 
     srcDestFilePathList.push([filePath, randomizedFilePath]);
@@ -460,7 +461,7 @@ async function main() {
       speaker_name: "dummy",
       sample_name: "dummy",
       sample_group: -1,
-      sample_page_name: "dummy",
+      sample_page_name: samplePageName,
       kind: "dummy",
       is_dummy: true,
       naturalness_dummy_correct_answer_id: naturalnessId,
