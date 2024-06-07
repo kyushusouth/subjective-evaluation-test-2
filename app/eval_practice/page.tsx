@@ -99,7 +99,7 @@ export default async function Page() {
           <br />
           <br />
           <span className="font-bold">
-            「これはダミー音声です。自然性は〇〇を、明瞭性は〇〇を選択してください。」
+            「これはダミー音声です。明瞭性は〇〇を、自然性は〇〇を選択してください。」
           </span>
           <br />
           <br />

@@ -444,10 +444,10 @@ async function main() {
   const filePathDummyList = getWavFilesInDirectory(localWavDirDummy);
   for (const filePath of filePathDummyList) {
     const filePathParts = filePath.split("/");
-    const naturalnessId = Number(
+    const intellibilityId = Number(
       filePathParts[filePathParts.length - 1].split(".")[0].split("_")[0],
     );
-    const intellibilityId = Number(
+    const naturalnessId = Number(
       filePathParts[filePathParts.length - 1].split(".")[0].split("_")[1],
     );
     const samplePageName = filePathParts[filePathParts.length - 2];
