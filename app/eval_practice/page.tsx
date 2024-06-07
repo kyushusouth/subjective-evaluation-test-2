@@ -12,7 +12,7 @@ export default async function Page() {
   }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="my-10 flex flex-col gap-10">
       <section className="space-y-2 text-base">
         <h1 className="text-xl text-center mb-8">練習試行について</h1>
         <p className="leading-relaxed">
@@ -46,7 +46,6 @@ export default async function Page() {
         <h2 className="text-lg">明瞭性とは？</h2>
         <p className="leading-relaxed">
           一つ目の評価項目である明瞭性は、
-          <br />
           <span className="font-bold">
             発話内容自体がどれくらい聞き取りやすかったか
           </span>
@@ -70,7 +69,6 @@ export default async function Page() {
         <h2 className="text-lg">自然性とは？</h2>
         <p className="leading-relaxed">
           二つ目の評価項目である自然性は、
-          <br />
           <span className="font-bold">
             発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
           </span>
@@ -78,7 +76,7 @@ export default async function Page() {
           <br />
           例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
           <br />
-          イントネーションなど聞き取りやすさに関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
+          イントネーションなど発話内容に関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
           <br />
           発話内容の聞き取りやすさではなく、音声全体の自然さが評価の対象です。この点が明瞭性の評価と異なる部分です。
         </p>
@@ -101,16 +99,15 @@ export default async function Page() {
           <br />
           <br />
           <span className="font-bold">
-            「これはダミー音声です。自然性は「〇〇」を、明瞭性は「〇〇」を選択してください。」
+            「これはダミー音声です。自然性は〇〇を、明瞭性は〇〇を選択してください。」
           </span>
           <br />
           <br />
-          再生した音声がダミー音声であった場合、この音声で指定された評価値を選択してください。
+          再生した音声がダミー音声であった場合、必ずこの音声で指定された評価値を選択してください。これは、実験において適当な回答を防止するためのものです。
           <br />
-          これは、実験において適当な回答をしていないかチェックするために設けたものです。特に、
-          <br />
+          特に、
           <span className="font-bold">
-            本番試行においてダミー音声で間違えた回答を選んだ場合は、全回答を無効にさせていただきます。また、報酬もお支払い致しません（練習試行の結果は無関係です）。
+            本番試行においてダミー音声で指定された評価値を誤って選んだ場合は、全ての回答が無効となります。また、その場合は報酬もお支払いできません（練習試行の結果は無関係です）。
           </span>
           <br />
           誠に申し訳ありませんが、ご了承いただきますようよろしくお願い致します。

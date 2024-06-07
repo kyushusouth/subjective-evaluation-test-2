@@ -12,7 +12,7 @@ export default function Confirm({ onPrev }: { onPrev: () => void }) {
   } = methods;
 
   return (
-    <div className="flex flex-row justify-center items-center gap-10 my-10">
+    <div className=" my-10 flex flex-row justify-center items-center gap-10">
       <button
         type="button"
         className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded"

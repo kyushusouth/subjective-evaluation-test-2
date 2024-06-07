@@ -25,7 +25,7 @@ export default async function RootTemplate({
   return (
     <>
       <NavBarDrawer isLoggedIn={isLoggedIn} respondent={respondent!} />
-      <div className="mt-32 mb-16 max-w-screen-md">{children}</div>
+      <div className="mt-32 mb-16 max-w-screen-md w-full">{children}</div>
     </>
   );
 }

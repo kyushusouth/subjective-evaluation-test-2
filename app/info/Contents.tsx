@@ -46,7 +46,7 @@ export default function Page({
   };
 
   return (
-    <div className="my-10">
+    <div className="my-10 w-fit mx-auto">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col justify-center items-center gap-10">
           <label htmlFor="age" className="w-full">

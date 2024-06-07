@@ -47,14 +47,20 @@ export default function Form({
   const [isVisibleAccordion3, setIsVisibleAccordion3] = useState(false);
 
   return (
-    <div className="flex flex-col justify-center items-center gap-10 my-10">
+    <div className="my-10 flex flex-col justify-center items-center gap-10">
       <div id="accordion-open" data-accordion="open" className="w-full">
         <h2 id="accordion-open-heading-1">
           <button
             type="button"
-            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
+            className={clsx(
+              "flex items-center justify-between w-full p-5 font-medium rtl:text-right border border-b-0 rounded-t-xl hover:bg-gray-100 gap-3",
+              {
+                "text-gray-800": isVisibleAccordion1,
+                "text-gray-500": !isVisibleAccordion1,
+              },
+            )}
             data-accordion-target="#accordion-open-body-1"
-            aria-expanded="true"
+            aria-expanded={isVisibleAccordion1}
             aria-controls="accordion-open-body-1"
             onClick={() => setIsVisibleAccordion1(!isVisibleAccordion1)}
           >
@@ -66,16 +72,18 @@ export default function Form({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  fill-rule="evenodd"
+                  fillRule="evenodd"
                   d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
-                  clip-rule="evenodd"
+                  clipRule="evenodd"
                 />
-              </svg>{" "}
+              </svg>
               明瞭性とは？
             </span>
             <svg
               data-accordion-icon
-              className="w-3 h-3 rotate-180 shrink-0"
+              className={clsx("w-3 h-3 shrink-0", {
+                "rotate-180": !isVisibleAccordion1,
+              })}
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -83,9 +91,9 @@ export default function Form({
             >
               <path
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M9 5 5 1 1 5"
               />
             </svg>
@@ -102,7 +110,6 @@ export default function Form({
           <div className="p-5 space-y-4 text-base border border-b-0 border-gray-200 text-gray-500">
             <p className="leading-relaxed">
               一つ目の評価項目である明瞭性は、
-              <br />
               <span className="font-bold">
                 発話内容自体がどれくらい聞き取りやすかったか
               </span>
@@ -112,12 +119,19 @@ export default function Form({
             </p>
           </div>
         </div>
+
         <h2 id="accordion-open-heading-2">
           <button
             type="button"
-            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
+            className={clsx(
+              "flex items-center justify-between w-full p-5 font-medium rtl:text-right border border-b-0 hover:bg-gray-100 gap-3",
+              {
+                "text-gray-800": isVisibleAccordion2,
+                "text-gray-500": !isVisibleAccordion2,
+              },
+            )}
             data-accordion-target="#accordion-open-body-2"
-            aria-expanded="false"
+            aria-expanded={isVisibleAccordion2}
             aria-controls="accordion-open-body-2"
             onClick={() => setIsVisibleAccordion2(!isVisibleAccordion2)}
           >
@@ -129,16 +143,18 @@ export default function Form({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  fill-rule="evenodd"
+                  fillRule="evenodd"
                   d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
-                  clip-rule="evenodd"
+                  clipRule="evenodd"
                 />
               </svg>
               自然性とは？
             </span>
             <svg
               data-accordion-icon
-              className="w-3 h-3 rotate-180 shrink-0"
+              className={clsx("w-3 h-3 shrink-0", {
+                "rotate-180": !isVisibleAccordion2,
+              })}
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -146,9 +162,9 @@ export default function Form({
             >
               <path
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M9 5 5 1 1 5"
               />
             </svg>
@@ -165,7 +181,6 @@ export default function Form({
           <div className="p-5 space-y-4 text-base border border-b-0 border-gray-200 text-gray-500">
             <p className="leading-relaxed">
               二つ目の評価項目である自然性は、
-              <br />
               <span className="font-bold">
                 発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
               </span>
@@ -173,18 +188,25 @@ export default function Form({
               <br />
               例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
               <br />
-              イントネーションなど聞き取りやすさに関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
+              イントネーションなど発話内容に関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
               <br />
               発話内容の聞き取りやすさではなく、音声全体の自然さが評価の対象です。この点が明瞭性の評価と異なる部分です。
             </p>
           </div>
         </div>
+
         <h2 id="accordion-open-heading-3">
           <button
             type="button"
-            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
+            className={clsx(
+              "flex items-center justify-between w-full p-5 font-medium rtl:text-right border hover:bg-gray-100 gap-3",
+              {
+                "text-gray-800": isVisibleAccordion3,
+                "text-gray-500": !isVisibleAccordion3,
+              },
+            )}
             data-accordion-target="#accordion-open-body-3"
-            aria-expanded="false"
+            aria-expanded={isVisibleAccordion3}
             aria-controls="accordion-open-body-3"
             onClick={() => setIsVisibleAccordion3(!isVisibleAccordion3)}
           >
@@ -196,16 +218,18 @@ export default function Form({
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  fill-rule="evenodd"
+                  fillRule="evenodd"
                   d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
-                  clip-rule="evenodd"
+                  clipRule="evenodd"
                 />
               </svg>{" "}
               ダミー音声について
             </span>
             <svg
               data-accordion-icon
-              className="w-3 h-3 rotate-180 shrink-0"
+              className={clsx("w-3 h-3 shrink-0", {
+                "rotate-180": !isVisibleAccordion3,
+              })}
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -213,9 +237,9 @@ export default function Form({
             >
               <path
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M9 5 5 1 1 5"
               />
             </svg>
@@ -229,22 +253,21 @@ export default function Form({
           })}
           aria-labelledby="accordion-open-heading-3"
         >
-          <div className="p-5 space-y-4 text-base border border-gray-200 text-gray-500">
+          <div className="p-5 space-y-4 text-base border border-t-0 border-gray-200 text-gray-500">
             <p className="leading-relaxed">
               音声サンプル内には、ダミー音声が含まれています。ダミー音声では、以下のような音声が再生されます。
               <br />
               <br />
               <span className="font-bold">
-                「これはダミー音声です。自然性は「〇〇」を、明瞭性は「〇〇」を選択してください。」
+                「これはダミー音声です。自然性は〇〇を、明瞭性は〇〇を選択してください。」
               </span>
               <br />
               <br />
-              再生した音声がダミー音声であった場合、この音声で指定された評価値を選択してください。
+              再生した音声がダミー音声であった場合、必ずこの音声で指定された評価値を選択してください。これは、実験において適当な回答を防止するためのものです。
               <br />
-              これは、実験において適当な回答をしていないかチェックするために設けたものです。特に、
-              <br />
+              特に、
               <span className="font-bold">
-                本番試行においてダミー音声で間違えた回答を選んだ場合は、全回答を無効にさせていただきます。また、報酬もお支払い致しません（練習試行の結果は無関係です）。
+                本番試行においてダミー音声で指定された評価値を誤って選んだ場合は、全ての回答が無効となります。また、その場合は報酬もお支払いできません（練習試行の結果は無関係です）。
               </span>
               <br />
               誠に申し訳ありませんが、ご了承いただきますようよろしくお願い致します。

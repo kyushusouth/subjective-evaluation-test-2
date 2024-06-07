@@ -22,7 +22,7 @@ export default function Login({
   };
 
   return (
-    <div className="my-10">
+    <div className="my-10 w-fit mx-auto">
       <form action={login}>
         <div className="flex flex-col justify-center items-center gap-10">
           <label htmlFor="email" className="w-full">

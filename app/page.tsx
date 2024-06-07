@@ -12,7 +12,7 @@ export default async function Index() {
   }
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="my-10 flex flex-col gap-10">
       <section className="space-y-2 text-base">
         <h1 className="text-xl text-center mb-8">実験について</h1>
         <p className="leading-relaxed">
