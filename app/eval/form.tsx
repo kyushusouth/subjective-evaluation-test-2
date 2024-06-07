@@ -6,6 +6,7 @@
 
 import { useFormContext } from "react-hook-form";
 import clsx from "clsx";
+import { useState } from "react";
 import {
   SampleMetaData,
   NaturalnessItem,
@@ -41,173 +42,295 @@ export default function Form({
     formState: { isValid },
   } = methods;
 
+  const [isVisibleAccordion1, setIsVisibleAccordion1] = useState(false);
+  const [isVisibleAccordion2, setIsVisibleAccordion2] = useState(false);
+  const [isVisibleAccordion3, setIsVisibleAccordion3] = useState(false);
+
   return (
     <div className="flex flex-col justify-center items-center gap-10 my-10">
-      <section className="space-y-4 text-base">
-        <p className="leading-relaxed">
-          一つ目の評価項目である明瞭性は、
-          <br />
-          <span className="font-bold">
-            発話内容自体がどれくらい聞き取りやすかったか
-          </span>
-          を指します。
-          <br />
-          この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています。
-        </p>
-        <p className="leading-relaxed">
-          二つ目の評価項目である自然性は、
-          <br />
-          <span className="font-bold">
-            発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
-          </span>
-          を指します。
-          <br />
-          例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
-          <br />
-          イントネーションなど聞き取りやすさに関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
-          <br />
-          発話内容の聞き取りやすさではなく、音声全体の自然さが評価の対象です。この点が明瞭性の評価と異なる部分です。
-        </p>
-      </section>
-
-      <ul className="flex flex-col justify-center items-center gap-10">
-        {sampleMetaDataList.map((data) => {
-          const sampleId = data.id;
-          const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
-          return (
-            <li
-              data-test-id="formItem"
-              key={sampleId}
-              className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
+      <div id="accordion-open" data-accordion="open" className="w-full">
+        <h2 id="accordion-open-heading-1">
+          <button
+            type="button"
+            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
+            data-accordion-target="#accordion-open-body-1"
+            aria-expanded="true"
+            aria-controls="accordion-open-body-1"
+            onClick={() => setIsVisibleAccordion1(!isVisibleAccordion1)}
+          >
+            <span className="flex items-center">
+              <svg
+                className="w-5 h-5 me-2 shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                  clip-rule="evenodd"
+                />
+              </svg>{" "}
+              明瞭性とは？
+            </span>
+            <svg
+              data-accordion-icon
+              className="w-3 h-3 rotate-180 shrink-0"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 10 6"
             >
-              <audio
-                src={sampleUrl}
-                controls
-                controlsList="nodownload"
-                className="w-full"
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5 5 1 1 5"
               />
+            </svg>
+          </button>
+        </h2>
+        <div
+          id="accordion-open-body-1"
+          className={clsx("", {
+            hidden: !isVisibleAccordion1,
+            visible: isVisibleAccordion1,
+          })}
+          aria-labelledby="accordion-open-heading-1"
+        >
+          <div className="p-5 space-y-4 text-base border border-b-0 border-gray-200 text-gray-500">
+            <p className="leading-relaxed">
+              一つ目の評価項目である明瞭性は、
+              <br />
+              <span className="font-bold">
+                発話内容自体がどれくらい聞き取りやすかったか
+              </span>
+              を指します。
+              <br />
+              この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています。
+            </p>
+          </div>
+        </div>
+        <h2 id="accordion-open-heading-2">
+          <button
+            type="button"
+            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
+            data-accordion-target="#accordion-open-body-2"
+            aria-expanded="false"
+            aria-controls="accordion-open-body-2"
+            onClick={() => setIsVisibleAccordion2(!isVisibleAccordion2)}
+          >
+            <span className="flex items-center">
+              <svg
+                className="w-5 h-5 me-2 shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              自然性とは？
+            </span>
+            <svg
+              data-accordion-icon
+              className="w-3 h-3 rotate-180 shrink-0"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 10 6"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5 5 1 1 5"
+              />
+            </svg>
+          </button>
+        </h2>
+        <div
+          id="accordion-open-body-2"
+          className={clsx("", {
+            hidden: !isVisibleAccordion2,
+            visible: isVisibleAccordion2,
+          })}
+          aria-labelledby="accordion-open-heading-2"
+        >
+          <div className="p-5 space-y-4 text-base border border-b-0 border-gray-200 text-gray-500">
+            <p className="leading-relaxed">
+              二つ目の評価項目である自然性は、
+              <br />
+              <span className="font-bold">
+                発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
+              </span>
+              を指します。
+              <br />
+              例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
+              <br />
+              イントネーションなど聞き取りやすさに関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
+              <br />
+              発話内容の聞き取りやすさではなく、音声全体の自然さが評価の対象です。この点が明瞭性の評価と異なる部分です。
+            </p>
+          </div>
+        </div>
+        <h2 id="accordion-open-heading-3">
+          <button
+            type="button"
+            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
+            data-accordion-target="#accordion-open-body-3"
+            aria-expanded="false"
+            aria-controls="accordion-open-body-3"
+            onClick={() => setIsVisibleAccordion3(!isVisibleAccordion3)}
+          >
+            <span className="flex items-center">
+              <svg
+                className="w-5 h-5 me-2 shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                  clip-rule="evenodd"
+                />
+              </svg>{" "}
+              ダミー音声について
+            </span>
+            <svg
+              data-accordion-icon
+              className="w-3 h-3 rotate-180 shrink-0"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 10 6"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5 5 1 1 5"
+              />
+            </svg>
+          </button>
+        </h2>
+        <div
+          id="accordion-open-body-3"
+          className={clsx("", {
+            hidden: !isVisibleAccordion3,
+            visible: isVisibleAccordion3,
+          })}
+          aria-labelledby="accordion-open-heading-3"
+        >
+          <div className="p-5 space-y-4 text-base border border-gray-200 text-gray-500">
+            <p className="leading-relaxed">
+              音声サンプル内には、ダミー音声が含まれています。ダミー音声では、以下のような音声が再生されます。
+              <br />
+              <br />
+              <span className="font-bold">
+                「これはダミー音声です。自然性は「〇〇」を、明瞭性は「〇〇」を選択してください。」
+              </span>
+              <br />
+              <br />
+              再生した音声がダミー音声であった場合、この音声で指定された評価値を選択してください。
+              <br />
+              これは、実験において適当な回答をしていないかチェックするために設けたものです。特に、
+              <br />
+              <span className="font-bold">
+                本番試行においてダミー音声で間違えた回答を選んだ場合は、全回答を無効にさせていただきます。また、報酬もお支払い致しません（練習試行の結果は無関係です）。
+              </span>
+              <br />
+              誠に申し訳ありませんが、ご了承いただきますようよろしくお願い致します。
+            </p>
+          </div>
+        </div>
+      </div>
 
-              <div className="flex flex-row justify-between items-center gap-x-16">
-                {/* <label htmlFor="naturalness" className="w-full">
-                  自然性
-                  {naturalnessItemList.map((naturalnessItem) => (
-                    <div key={naturalnessItem.id}>
-                      <input
-                        id="naturalness"
-                        type="radio"
-                        {...register(`naturalness_radio_${sampleId}`, {
-                          required: true,
-                        })}
-                      />
-                      <label htmlFor="naturalness">
-                        {naturalnessItem.item}
-                      </label>
+      <div>
+        <ul className="flex flex-col justify-center items-center gap-10">
+          {sampleMetaDataList.map((data) => {
+            const sampleId = data.id;
+            const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
+            return (
+              <li
+                data-test-id="formItem"
+                key={sampleId}
+                className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
+              >
+                <audio
+                  src={sampleUrl}
+                  controls
+                  controlsList="nodownload"
+                  className="w-full"
+                />
+
+                <div className="flex flex-row justify-between items-center gap-x-16">
+                  <div className="w-full">
+                    <label
+                      htmlFor={`intelligibility_${sampleId}`}
+                      className="w-full block"
+                    >
+                      明瞭性
+                    </label>
+                    <div className="flex flex-col">
+                      {intelligibilityItemList.map((intelligibilityItem) => (
+                        <label
+                          key={intelligibilityItem.id}
+                          className="flex items-center"
+                        >
+                          <input
+                            type="radio"
+                            value={intelligibilityItem.id}
+                            {...register(`intelligibility_${sampleId}`, {
+                              required: true,
+                            })}
+                            className="mr-2"
+                          />
+                          {intelligibilityItem.id}: {intelligibilityItem.item}
+                        </label>
+                      ))}
                     </div>
-                  ))}
-                  <select
-                    id="naturalness"
-                    data-test-id="naturalness"
-                    className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
-                    defaultValue=""
-                    {...register(`naturalness_${sampleId}`, { required: true })}
-                  >
-                    <option value="" disabled hidden>
-                      -----
-                    </option>
-                    {naturalnessItemList.map((naturalnessItem) => (
-                      <option
-                        key={naturalnessItem.id}
-                        value={naturalnessItem.id}
-                      >
-                        {naturalnessItem.id}: {naturalnessItem.item}
-                      </option>
-                    ))}
-                  </select>
-                </label> */}
+                  </div>
 
-                {/* <label htmlFor="intelligibility" className="w-full">
-                  明瞭性
-                  <select
-                    id="intelligibility"
-                    data-test-id="intelligibility"
-                    className="w-full px-3 py-2 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
-                    defaultValue=""
-                    {...register(`intelligibility_${sampleId}`, {
-                      required: true,
-                    })}
-                  >
-                    <option value="" disabled hidden>
-                      -----
-                    </option>
-                    {intelligibilityItemList.map((intelligibilityItem) => (
-                      <option
-                        key={intelligibilityItem.id}
-                        value={intelligibilityItem.id}
-                      >
-                        {intelligibilityItem.id}: {intelligibilityItem.item}
-                      </option>
-                    ))}
-                  </select>
-                </label> */}
-
-                <div className="w-full">
-                  <label
-                    htmlFor={`intelligibility_${sampleId}`}
-                    className="w-full block"
-                  >
-                    明瞭性
-                  </label>
-                  <div className="flex flex-col">
-                    {intelligibilityItemList.map((intelligibilityItem) => (
-                      <label
-                        key={intelligibilityItem.id}
-                        className="flex items-center"
-                      >
-                        <input
-                          type="radio"
-                          value={intelligibilityItem.id}
-                          {...register(`intelligibility_${sampleId}`, {
-                            required: true,
-                          })}
-                          className="mr-2"
-                        />
-                        {intelligibilityItem.id}: {intelligibilityItem.item}
-                      </label>
-                    ))}
+                  <div className="w-full">
+                    <label
+                      htmlFor={`naturalness_${sampleId}`}
+                      className="w-full block relative group"
+                    >
+                      自然性
+                    </label>
+                    <div className="flex flex-col">
+                      {naturalnessItemList.map((naturalnessItem) => (
+                        <label
+                          key={naturalnessItem.id}
+                          className="flex items-center"
+                        >
+                          <input
+                            type="radio"
+                            value={naturalnessItem.id}
+                            {...register(`naturalness_${sampleId}`, {
+                              required: true,
+                            })}
+                            className="mr-2"
+                          />
+                          {naturalnessItem.id}: {naturalnessItem.item}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
-
-                <div className="w-full">
-                  <label
-                    htmlFor={`naturalness_${sampleId}`}
-                    className="w-full block relative group"
-                  >
-                    自然性
-                  </label>
-                  <div className="flex flex-col">
-                    {naturalnessItemList.map((naturalnessItem) => (
-                      <label
-                        key={naturalnessItem.id}
-                        className="flex items-center"
-                      >
-                        <input
-                          type="radio"
-                          value={naturalnessItem.id}
-                          {...register(`naturalness_${sampleId}`, {
-                            required: true,
-                          })}
-                          className="mr-2"
-                        />
-                        {naturalnessItem.id}: {naturalnessItem.item}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
       <div className="flex flex-row justify-center items-center gap-10 mt-2">
         <button
