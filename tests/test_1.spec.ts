@@ -25,10 +25,10 @@ async function reset(respondentId: number) {
   });
 }
 
-const respondentId = 1;
+const respondentId = 2;
 const email = `user${respondentId - 1}@test.com`;
 const wrongEmail = "wrong@test.com";
-const password = `HSE1Gh`;
+const password = `xEJmbF`;
 const wrongPassword = "wrong";
 const age = String(generateRandomInteger(1, 100));
 const sexItemList = ["男性", "女性", "無回答"];
