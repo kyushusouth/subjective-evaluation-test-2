@@ -5,14 +5,13 @@ import redirectToHome from "@/app/thanks/actions";
 
 export default function Page() {
   useEffect(() => {
-    redirectToHome();
-    // const timer = setTimeout(() => {
-    //   redirectToHome();
-    // }, 0);
-    // return () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      redirectToHome();
+    }, 1000);
+    return () => clearTimeout(timer);
   });
   return (
-    <div className="flex flex-col items-center gap-10">
+    <div className="my-10 flex flex-col items-center gap-10">
       <p className="leading-relaxed text-center text-base">
         提出完了致しました！
         <br />
