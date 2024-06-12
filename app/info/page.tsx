@@ -12,23 +12,32 @@ export default async function Page() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   if (user === null) {
     redirect("/login");
+    return null;
   }
 
-  const sexItemList = await fetchSexItemList();
-  const audioDeviceItemList = await fetchAudioDeviceItemList();
-  const respondent = await fetchRespondent();
+  try {
+    const sexItemList = await fetchSexItemList();
+    const audioDeviceItemList = await fetchAudioDeviceItemList();
+    const respondent = await fetchRespondent();
 
-  if (respondent?.is_finished_info) {
-    redirect("/");
+    if (respondent?.is_finished_info) {
+      redirect("/");
+      return null;
+    }
+
+    return (
+      <Contents
+        sexItemList={sexItemList}
+        audioDeviceItemList={audioDeviceItemList}
+        respondent={respondent!}
+      />
+    );
+  } catch (error) {
+    console.error("Error loading page data:", error);
+    redirect("/error");
+    return null;
   }
-
-  return (
-    <Contents
-      sexItemList={sexItemList}
-      audioDeviceItemList={audioDeviceItemList}
-      respondent={respondent!}
-    />
-  );
 }
