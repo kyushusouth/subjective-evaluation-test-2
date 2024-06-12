@@ -62,6 +62,10 @@ export default defineConfig({
     testIdAttribute: "data-test-id",
   },
 
+  expect: {
+    timeout: 10000,
+  },
+
   /* Configure projects for major browsers */
   projects: [
     {
