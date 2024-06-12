@@ -14,8 +14,9 @@ export default async function Page() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user === null) {
+  if (!user) {
     redirect("/login");
+    return null;
   }
 
   const numSamplePerPage = 5;
@@ -26,23 +27,25 @@ export default async function Page() {
   const naturalnessItemList = await fetchNaturalnessItemList();
   const intelligibilityItemList = await fetchIntelligibilityList();
   const respondent = await fetchRespondent();
+
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
 
-  const sampleMetaDataListShuffledForDummy =
-    await fetchSampleMetaDataListShuffled(undefined, "eval_practice");
-  let sampleMetaDataDummyExample;
-  for (const sampleMetaData of sampleMetaDataListShuffledForDummy) {
-    if (sampleMetaData.is_dummy) {
-      sampleMetaDataDummyExample = sampleMetaData;
-    }
+  if (!domainName || !bucketName) {
+    console.error("環境変数が定義されていません");
+    redirect("/error"); // エラーページにリダイレクト
+    return null;
   }
+
+  const sampleMetaDataDummyExample = sampleMetaDataListShuffled.find(
+    (sampleMetaData) => sampleMetaData.is_dummy,
+  );
 
   return (
     <Contents
       sampleMetaDataList={sampleMetaDataListShuffled}
-      domainName={domainName!}
-      bucketName={bucketName!}
+      domainName={domainName}
+      bucketName={bucketName}
       naturalnessItemList={naturalnessItemList}
       intelligibilityItemList={intelligibilityItemList}
       respondent={respondent!}

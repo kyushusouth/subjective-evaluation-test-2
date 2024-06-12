@@ -13,28 +13,36 @@ export default async function Page() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user === null) {
+  if (!user) {
     redirect("/login");
+    return null;
   }
 
   const respondent = await fetchRespondent();
 
   if (!respondent?.is_finished_practice) {
     redirect("/");
+    return null;
   }
 
   const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(
     undefined,
     "eval_practice",
   );
-  let sampleMetaDataDummyExample;
-  for (const sampleMetaData of sampleMetaDataListShuffled) {
-    if (sampleMetaData.is_dummy) {
-      sampleMetaDataDummyExample = sampleMetaData;
-    }
-  }
+
+  const sampleMetaDataDummyExample = sampleMetaDataListShuffled.find(
+    (sampleMetaData) => sampleMetaData.is_dummy,
+  );
+
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
+
+  if (!domainName || !bucketName) {
+    console.error("環境変数が定義されていません");
+    redirect("/error"); // エラーページにリダイレクト
+    return null;
+  }
+
   const sampleUrl = `${domainName}/${bucketName}/${sampleMetaDataDummyExample?.file_path}`;
 
   return (

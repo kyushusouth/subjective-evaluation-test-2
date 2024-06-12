@@ -10,20 +10,19 @@ export default async function Page() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user === null) {
+  if (!user) {
     redirect("/login");
+    return null;
   }
 
   const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(
     undefined,
     "eval_practice",
   );
-  let sampleMetaDataDummyExample;
-  for (const sampleMetaData of sampleMetaDataListShuffled) {
-    if (sampleMetaData.is_dummy) {
-      sampleMetaDataDummyExample = sampleMetaData;
-    }
-  }
+  const sampleMetaDataDummyExample = sampleMetaDataListShuffled.find(
+    (sampleMetaData) => sampleMetaData.is_dummy,
+  );
+
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
   const sampleUrl = `${domainName}/${bucketName}/${sampleMetaDataDummyExample?.file_path}`;
