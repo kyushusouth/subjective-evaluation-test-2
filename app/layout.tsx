@@ -1,5 +1,7 @@
 import { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -27,6 +29,8 @@ export default function RootLayout({
       <body className="bg-background text-foreground px-10 text-base">
         <main className="min-h-screen flex flex-col items-center">
           {children}
+          <Analytics />
+          <SpeedInsights />
         </main>
       </body>
     </html>
