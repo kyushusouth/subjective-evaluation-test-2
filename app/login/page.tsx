@@ -54,21 +54,35 @@ export default function Login({
               </button>
             </div>
           </label>
-          {searchParams?.message && (
-            <div className="text-center">
-              <div
-                className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
-                role="alert"
-              >
-                認証に失敗しました。
-                <br />
-                正しいメールアドレスとパスワードの入力をお願い致します。
-              </div>
-            </div>
-          )}
           <SubmitButton>ログイン</SubmitButton>
         </div>
       </form>
+      <div className="mt-10">
+        {searchParams?.message === "Failed" && (
+          <div className="text-center">
+            <div
+              className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
+              role="alert"
+            >
+              認証に失敗しました。
+              <br />
+              正しいメールアドレスとパスワードの入力をお願い致します。
+            </div>
+          </div>
+        )}
+        {searchParams?.message === "ExceedLimit" && (
+          <div className="text-center">
+            <div
+              className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50"
+              role="alert"
+            >
+              サーバーが混み合っており、ログインが困難です。
+              <br />
+              しばらく待ってからの再試行をお願い致します。
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

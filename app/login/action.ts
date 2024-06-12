@@ -12,7 +12,11 @@ const login = async (formData: FormData) => {
     password,
   });
   if (error) {
-    redirect("/login?message=Failed");
+    if (error.status === 429) {
+      redirect("/login?message=ExceedLimit");
+    } else {
+      redirect("/login?message=Failed");
+    }
   }
   redirect("/");
 };
