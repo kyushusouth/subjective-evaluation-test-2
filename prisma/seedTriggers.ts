@@ -16,20 +16,21 @@ async function main() {
 		create or replace function public.handle_new_user()
 		returns trigger
 		language plpgsql
-		security definer set search_path = public
+		security definer
+		set search_path = 'public'
 		as $$
 		begin
-				insert into public."Respondents" (auth_id)
-				values (new.id);
-				return new;
+			insert into public."Respondents" (auth_id)
+			values (new.id);
+			return new;
 		end;
 		$$;
 	`;
   await sql`
 		create or replace trigger on_auth_user_created
-				after insert on auth.users
-				for each row 
-				execute procedure public.handle_new_user();
+			after insert on auth.users
+			for each row 
+			execute procedure public.handle_new_user();
 	`;
 
   await sql`
@@ -39,11 +40,12 @@ async function main() {
 		create or replace function public.handle_user_delete()
 		returns trigger
 		language plpgsql
-		security definer set search_path = public
+		security definer
+		set search_path = 'public'
 		as $$
 		begin
-				delete from auth.users where id = old.id;
-				return old;
+			delete from auth.users where id = old.id;
+			return old;
 		end;
 		$$;
 	`;

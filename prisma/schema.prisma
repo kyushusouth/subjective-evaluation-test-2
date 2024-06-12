@@ -11,6 +11,7 @@ generator client {
 model Respondents {
   id                   Int       @id @default(autoincrement())
   auth_id              String    @unique
+  created_at           DateTime  @default(now())
   age                  Int       @default(-1)
   sex                  String    @default("無回答")
   audio_device         String    @default("無回答")
@@ -66,6 +67,7 @@ model IntelligibilityItem {
 
 model Answers {
   id                  Int                 @id @default(autoincrement())
+  created_at          DateTime            @default(now())
   respondent          Respondents         @relation(fields: [respondent_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   respondent_id       Int
   sample_meta_data    SampleMetaData      @relation(fields: [sample_meta_data_id], references: [id], onDelete: Restrict, onUpdate: Cascade)

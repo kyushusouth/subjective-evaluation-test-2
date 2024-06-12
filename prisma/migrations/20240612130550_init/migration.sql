@@ -2,6 +2,7 @@
 CREATE TABLE "Respondents" (
     "id" SERIAL NOT NULL,
     "auth_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "age" INTEGER NOT NULL DEFAULT -1,
     "sex" TEXT NOT NULL DEFAULT '無回答',
     "audio_device" TEXT NOT NULL DEFAULT '無回答',
@@ -67,6 +68,7 @@ CREATE TABLE "IntelligibilityItem" (
 -- CreateTable
 CREATE TABLE "Answers" (
     "id" SERIAL NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "respondent_id" INTEGER NOT NULL,
     "sample_meta_data_id" INTEGER NOT NULL,
     "naturalness_id" INTEGER NOT NULL,
