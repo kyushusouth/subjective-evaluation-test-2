@@ -59,13 +59,18 @@ export default function Page({
                 respondent?.age === -1 ? undefined : respondent?.age
               }
               {...register("age", {
-                required: "required",
+                required: "年齢を入力してください。",
                 valueAsNumber: true,
+                min: {
+                  value: 0,
+                  message: "0以上の年齢を入力してください。",
+                },
               })}
             />
+            {errors.age && (
+              <p className="text-red-600 mt-1">{errors.age.message}</p>
+            )}
           </label>
-
-          {errors.age && <p>年齢を入力してください。</p>}
 
           <label htmlFor="sex" className="w-full">
             性別
@@ -73,7 +78,7 @@ export default function Page({
               id="sex"
               className="w-full px-3 py-2 border border-gray-500 rounded-md focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white"
               defaultValue={respondent.sex === "無回答" ? "" : respondent.sex}
-              {...register("sex", { required: true })}
+              {...register("sex", { required: "性別を選択してください。" })}
             >
               <option value="" disabled>
                 -----
@@ -84,6 +89,9 @@ export default function Page({
                 </option>
               ))}
             </select>
+            {errors.sex && (
+              <p className="text-red-600 mt-1">{errors.sex.message}</p>
+            )}
           </label>
 
           <label htmlFor="audio_device" className="w-full">
@@ -96,7 +104,9 @@ export default function Page({
                   ? ""
                   : respondent.audio_device
               }
-              {...register("audio_device", { required: true })}
+              {...register("audio_device", {
+                required: "音響機器を選択してください。",
+              })}
             >
               <option value="" disabled>
                 -----
@@ -107,6 +117,9 @@ export default function Page({
                 </option>
               ))}
             </select>
+            {errors.audio_device && (
+              <p className="text-red-600 mt-1">{errors.audio_device.message}</p>
+            )}
           </label>
 
           {isSubmitting || isSubmitted ? (
