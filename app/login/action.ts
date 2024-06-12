@@ -7,10 +7,12 @@ const login = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const supabase = createClient();
+
   const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
+
   if (error) {
     if (error.status === 429) {
       redirect("/login?message=ExceedLimit");
@@ -18,6 +20,7 @@ const login = async (formData: FormData) => {
       redirect("/login?message=Failed");
     }
   }
+
   redirect("/");
 };
 
