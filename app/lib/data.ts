@@ -24,11 +24,15 @@ export async function fetchSampleMetaDataListShuffled(
       data: { user },
     } = await supabase.auth.getUser();
 
+    if (!user) throw new Error("User not authenticated.");
+
     const respondent = await prisma.respondents.findUnique({
       where: {
-        auth_id: user?.id,
+        auth_id: user.id,
       },
     });
+
+    if (!respondent) throw new Error("Respondent not found.");
 
     const sampleMetaDataList = await prisma.sampleMetaData.findMany({
       take: numTake,
@@ -37,7 +41,7 @@ export async function fetchSampleMetaDataListShuffled(
           {
             sample_page_name: samplePageName,
             file_path: {
-              in: respondent?.file_path_list,
+              in: respondent.file_path_list,
             },
           },
           {
@@ -47,10 +51,14 @@ export async function fetchSampleMetaDataListShuffled(
         ],
       },
     });
-    const sampleMetaDataListShuffled = shuffleArray(sampleMetaDataList);
-    return sampleMetaDataListShuffled;
+
+    if (!sampleMetaDataList.length)
+      throw new Error("No sample meta data found.");
+
+    return shuffleArray(sampleMetaDataList);
   } catch (error) {
-    throw new Error("Failed to fetch sampleMetaDataListShuffled.");
+    console.error("Error in fetchSampleMetaDataListShuffled:", error);
+    throw new Error("Failed to fetch and shuffle sample meta data list.");
   }
 }
 
@@ -61,13 +69,20 @@ export async function fetchRespondent() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    if (!user) throw new Error("User not authenticated.");
+
     const respondent = await prisma.respondents.findUnique({
       where: {
-        auth_id: user?.id,
+        auth_id: user.id,
       },
     });
+
+    if (!respondent) throw new Error("Respondent not found.");
+
     return respondent;
   } catch (error) {
+    console.error("Error in fetchRespondent:", error);
     throw new Error("Failed to fetch respondent.");
   }
 }
@@ -76,9 +91,11 @@ export async function fetchSexItemList() {
   noStore();
   try {
     const sexItemList = await prisma.sexItem.findMany();
+    if (!sexItemList.length) throw new Error("No sex items found.");
     return sexItemList;
   } catch (error) {
-    throw new Error("Failed to fetch sexItemList.");
+    console.error("Error in fetchSexItemList:", error);
+    throw new Error("Failed to fetch sex item list.");
   }
 }
 
@@ -86,9 +103,12 @@ export async function fetchAudioDeviceItemList() {
   noStore();
   try {
     const audioDeviceItemList = await prisma.audioDeviceItem.findMany();
+    if (!audioDeviceItemList.length)
+      throw new Error("No audio device items found.");
     return audioDeviceItemList;
   } catch (error) {
-    throw new Error("Failed to fetch audioDeviceItemList.");
+    console.error("Error in fetchAudioDeviceItemList:", error);
+    throw new Error("Failed to fetch audio device item list.");
   }
 }
 
@@ -96,9 +116,12 @@ export async function fetchNaturalnessItemList() {
   noStore();
   try {
     const naturalnessItemList = await prisma.naturalnessItem.findMany();
+    if (!naturalnessItemList.length)
+      throw new Error("No naturalness items found.");
     return naturalnessItemList;
   } catch (error) {
-    throw new Error("Failed to fetch naturalnessItemList.");
+    console.error("Error in fetchNaturalnessItemList:", error);
+    throw new Error("Failed to fetch naturalness item list.");
   }
 }
 
@@ -106,8 +129,11 @@ export async function fetchIntelligibilityList() {
   noStore();
   try {
     const intelligibilityItemList = await prisma.intelligibilityItem.findMany();
+    if (!intelligibilityItemList.length)
+      throw new Error("No intelligibility items found.");
     return intelligibilityItemList;
   } catch (error) {
-    throw new Error("Failed to fetch intelligibilityItemList.");
+    console.error("Error in fetchIntelligibilityList:", error);
+    throw new Error("Failed to fetch intelligibility item list.");
   }
 }
