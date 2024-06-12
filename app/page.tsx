@@ -7,8 +7,9 @@ export default async function Index() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user === null) {
+  if (!user) {
     redirect("/login");
+    return null;
   }
 
   return (
