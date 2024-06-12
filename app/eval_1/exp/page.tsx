@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Contents from "@/app/eval/Contents";
@@ -28,6 +29,15 @@ export default async function Page() {
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
 
+  const sampleMetaDataListShuffledForDummy =
+    await fetchSampleMetaDataListShuffled(undefined, "eval_practice");
+  let sampleMetaDataDummyExample;
+  for (const sampleMetaData of sampleMetaDataListShuffledForDummy) {
+    if (sampleMetaData.is_dummy) {
+      sampleMetaDataDummyExample = sampleMetaData;
+    }
+  }
+
   return (
     <Contents
       sampleMetaDataList={sampleMetaDataListShuffled}
@@ -37,6 +47,7 @@ export default async function Page() {
       intelligibilityItemList={intelligibilityItemList}
       respondent={respondent!}
       numSamplePerPage={numSamplePerPage}
+      sampleMetaDataDummyExample={sampleMetaDataDummyExample!}
     />
   );
 }

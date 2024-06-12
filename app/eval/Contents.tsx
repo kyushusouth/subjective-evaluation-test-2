@@ -21,6 +21,7 @@ export default function Content({
   intelligibilityItemList,
   respondent,
   numSamplePerPage,
+  sampleMetaDataDummyExample,
 }: {
   sampleMetaDataList: SampleMetaData[];
   domainName: string;
@@ -29,6 +30,7 @@ export default function Content({
   intelligibilityItemList: IntelligibilityItem[];
   respondent: Respondents | undefined;
   numSamplePerPage: number;
+  sampleMetaDataDummyExample: SampleMetaData;
 }) {
   const methods = useForm<SchemaType>({
     mode: "onSubmit",
@@ -99,6 +101,7 @@ export default function Content({
             intelligibilityItemList={intelligibilityItemList}
             pageNumber={pageNumber}
             lastPageNumber={lastPageNumber}
+            sampleMetaDataDummyExample={sampleMetaDataDummyExample}
           />
         )}
       </form>

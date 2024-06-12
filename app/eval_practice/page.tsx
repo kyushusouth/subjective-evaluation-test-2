@@ -1,6 +1,9 @@
+/* eslint-disable jsx-a11y/media-has-caption */
+/* eslint-disable no-restricted-syntax */
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { fetchSampleMetaDataListShuffled } from "@/app/lib/data";
 
 export default async function Page() {
   const supabase = createClient();
@@ -10,6 +13,20 @@ export default async function Page() {
   if (user === null) {
     redirect("/login");
   }
+
+  const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(
+    undefined,
+    "eval_practice",
+  );
+  let sampleMetaDataDummyExample;
+  for (const sampleMetaData of sampleMetaDataListShuffled) {
+    if (sampleMetaData.is_dummy) {
+      sampleMetaDataDummyExample = sampleMetaData;
+    }
+  }
+  const domainName = process.env.GCS_DOMAIN_NAME;
+  const bucketName = process.env.GCS_BUCKET_NAME;
+  const sampleUrl = `${domainName}/${bucketName}/${sampleMetaDataDummyExample?.file_path}`;
 
   return (
     <div className="my-10 flex flex-col gap-10">
@@ -104,6 +121,23 @@ export default async function Page() {
           <br />
           <br />
           再生した音声がダミー音声であった場合、必ずこの音声で指定された評価値を選択してください。これは、実験において適当な回答を防止するためのものです。
+          <br />
+          <br />
+          例として、下記の音声では、
+          <span className="font-bold">
+            「これはダミー音声です。明瞭性は「2: 悪い」を、自然性は「1:
+            非常に悪い」を選択してください。」
+          </span>
+          と指定しています。
+          <audio
+            src={sampleUrl}
+            controls
+            controlsList="nodownload"
+            className="my-4 mx-auto"
+          />
+          この場合、明瞭性は「2:
+          悪い」、自然性は「1:非常に悪い」を選択します。音声自体の明瞭性や自然性を評価するわけではないため、ご注意ください。
+          <br />
           <br />
           特に、
           <span className="font-bold">

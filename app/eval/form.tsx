@@ -24,6 +24,7 @@ export default function Form({
   intelligibilityItemList,
   pageNumber,
   lastPageNumber,
+  sampleMetaDataDummyExample,
 }: {
   onNext: () => void;
   onPrev: () => void;
@@ -34,6 +35,7 @@ export default function Form({
   intelligibilityItemList: IntelligibilityItem[];
   pageNumber: number;
   lastPageNumber: number;
+  sampleMetaDataDummyExample: SampleMetaData;
 }) {
   const methods = useFormContext<SchemaType>();
 
@@ -264,6 +266,23 @@ export default function Form({
               <br />
               <br />
               再生した音声がダミー音声であった場合、必ずこの音声で指定された評価値を選択してください。これは、実験において適当な回答を防止するためのものです。
+              <br />
+              <br />
+              例として、下記の音声では、
+              <span className="font-bold">
+                「これはダミー音声です。明瞭性は「2: 悪い」を、自然性は「1:
+                非常に悪い」を選択してください。」
+              </span>
+              と指定しています。
+              <audio
+                src={`${domainName}/${bucketName}/${sampleMetaDataDummyExample?.file_path}`}
+                controls
+                controlsList="nodownload"
+                className="my-4 mx-auto"
+              />
+              この場合、明瞭性は「2:
+              悪い」、自然性は「1:非常に悪い」を選択します。音声自体の明瞭性や自然性を評価するわけではないため、ご注意ください。
+              <br />
               <br />
               特に、
               <span className="font-bold">
