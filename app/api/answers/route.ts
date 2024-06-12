@@ -21,6 +21,7 @@ export async function POST(request: Request) {
         is_dummy: true,
       },
     });
+
     let isInvalid = false;
     for (const answer of answerList) {
       for (const sampleMetaDataDummy of sampleMetaDataDummyList) {
@@ -36,31 +37,33 @@ export async function POST(request: Request) {
       }
     }
 
-    await prisma.answers.createMany({
-      data: answerList,
-      skipDuplicates: true,
-    });
+    await prisma.$transaction(async (tx) => {
+      await tx.answers.createMany({
+        data: answerList,
+        skipDuplicates: true,
+      });
 
-    if (pageName === "eval_practice") {
-      await prisma.respondents.update({
-        where: {
-          auth_id: user!.id,
-        },
-        data: {
-          is_finished_practice: true,
-        },
-      });
-    } else if (pageName === "eval_1") {
-      await prisma.respondents.update({
-        where: {
-          auth_id: user!.id,
-        },
-        data: {
-          is_finished_eval_1: true,
-          is_invalid: isInvalid,
-        },
-      });
-    }
+      if (pageName === "eval_practice") {
+        await tx.respondents.update({
+          where: {
+            auth_id: user!.id,
+          },
+          data: {
+            is_finished_practice: true,
+          },
+        });
+      } else if (pageName === "eval_1") {
+        await tx.respondents.update({
+          where: {
+            auth_id: user!.id,
+          },
+          data: {
+            is_finished_eval_1: true,
+            is_invalid: isInvalid,
+          },
+        });
+      }
+    });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -69,6 +72,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    console.error("Error occurred during transaction:", error);
     return new Response(JSON.stringify({ success: false }), {
       status: 400,
       headers: {
