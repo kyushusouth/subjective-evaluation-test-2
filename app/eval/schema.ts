@@ -1,24 +1,12 @@
-import { object, number, InferType } from "yup";
+import * as Yup from "yup";
 
-interface Obj {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [prop: string]: any;
-}
+const createSchema = (numSamples: number) => {
+  const obj: Record<string, Yup.NumberSchema> = {};
+  for (let i = 1; i <= numSamples; i += 1) {
+    obj[`intelligibility_${i}`] = Yup.number().required();
+    obj[`naturalness_${i}`] = Yup.number().required();
+  }
+  return Yup.object().shape(obj);
+};
 
-const numSamples = 120;
-
-const keys = [];
-for (let i = 1; i <= numSamples; i += 1) {
-  keys.push(`naturalness_${i}`);
-  keys.push(`intelligibility_${i}`);
-}
-
-const obj: Obj = {};
-// eslint-disable-next-line no-restricted-syntax
-for (const key of keys) {
-  obj[key] = number();
-}
-
-export const Schema = object(obj);
-
-export type SchemaType = InferType<typeof Schema>;
+export default createSchema;

@@ -11,7 +11,8 @@ import {
 } from "@prisma/client";
 import Form from "@/app/eval/form";
 import Confirm from "@/app/eval/confirm";
-import { SchemaType } from "@/app/eval/schema";
+import createSchema from "@/app/eval/schema";
+import * as Yup from "yup";
 
 export default function Content({
   sampleMetaDataList,
@@ -32,6 +33,9 @@ export default function Content({
   numSamplePerPage: number;
   sampleMetaDataDummyExample: SampleMetaData;
 }) {
+  const Schema = createSchema(sampleMetaDataList.length);
+  type SchemaType = Yup.InferType<typeof Schema>;
+
   const methods = useForm<SchemaType>({
     mode: "onSubmit",
   });
@@ -86,7 +90,7 @@ export default function Content({
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
         {pageNumber === lastPageNumber + 1 ? (
-          <Confirm onPrev={onPrev} />
+          <Confirm onPrev={onPrev} sampleMetaDataList={sampleMetaDataList} />
         ) : (
           <Form
             onNext={onNext}

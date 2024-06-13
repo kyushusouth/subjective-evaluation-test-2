@@ -12,7 +12,8 @@ import {
   NaturalnessItem,
   IntelligibilityItem,
 } from "@prisma/client";
-import { SchemaType } from "@/app/eval/schema";
+import createSchema from "@/app/eval/schema";
+import * as Yup from "yup";
 
 export default function Form({
   onNext,
@@ -37,6 +38,9 @@ export default function Form({
   lastPageNumber: number;
   sampleMetaDataDummyExample: SampleMetaData;
 }) {
+  const Schema = createSchema(sampleMetaDataList.length);
+  type SchemaType = Yup.InferType<typeof Schema>;
+
   const methods = useFormContext<SchemaType>();
 
   const {
