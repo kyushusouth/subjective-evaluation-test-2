@@ -7,7 +7,11 @@ import clsx from "clsx";
 import logout from "@/app/lib/logout";
 import { Respondents } from "@prisma/client";
 
-function Drawer({ respondent }: { respondent: Respondents }) {
+function Drawer({ respondent }: { respondent: Respondents | undefined }) {
+  if (!respondent) {
+    throw new Error("Respondent must be defined.");
+  }
+
   const [isOpen, setIsOpen] = useState(false);
   const currentPathname = usePathname();
 
@@ -117,11 +121,12 @@ function Drawer({ respondent }: { respondent: Respondents }) {
                 className={clsx(
                   "block px-4 py-2",
                   {
-                    "text-blue-700 bg-gray-100": currentPathname === "/info",
+                    "text-blue-700 bg-gray-100":
+                      currentPathname.startsWith("/info"),
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      !respondent.is_finished_info,
+                      respondent.is_finished_info,
                   },
                   {
                     "text-gray-400 pointer-events-none":
@@ -139,7 +144,7 @@ function Drawer({ respondent }: { respondent: Respondents }) {
                   "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
                   {
                     "text-blue-700 bg-gray-100":
-                      currentPathname === "/eval_practice",
+                      currentPathname.startsWith("/eval_practice"),
                   },
                 )}
               >
@@ -152,17 +157,18 @@ function Drawer({ respondent }: { respondent: Respondents }) {
                 className={clsx(
                   "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
                   {
-                    "text-blue-700 bg-gray-100": currentPathname === "/eval_1",
+                    "text-blue-700 bg-gray-100":
+                      currentPathname.startsWith("/eval_1"),
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      !respondent.is_finished_eval_1 &&
+                      respondent.is_finished_eval_1 &&
                       respondent.is_finished_practice,
                   },
                   {
                     "text-gray-400 pointer-events-none":
                       respondent.is_finished_eval_1 ||
-                      !respondent.is_finished_practice,
+                      respondent.is_finished_practice,
                   },
                 )}
               >
@@ -199,7 +205,7 @@ export default function NavBar({
         <Link href="/" className="text-neutral-50">
           主観評価実験
         </Link>
-        {isLoggedIn && <Drawer respondent={respondent!} />}
+        {isLoggedIn && <Drawer respondent={respondent} />}
       </div>
     </nav>
   );
