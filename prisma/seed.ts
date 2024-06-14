@@ -496,16 +496,6 @@ async function main() {
       selectedData.is_selected.push(1);
     }
 
-    const indicesShuffled = shuffleArray(
-      Array.from({ length: selectedData.file_path.length }, (_, i) => i),
-    );
-    const selectedDataShuffled = { ...selectedData };
-    for (const key of Object.keys(selectedDataShuffled)) {
-      selectedDataShuffled[key] = indicesShuffled.map(
-        (i) => selectedDataShuffled[key][i],
-      );
-    }
-
     const dfSelectedData = new dfd.DataFrame(selectedData);
     for (const col of dfSelectedData.columns) {
       if (
@@ -545,7 +535,7 @@ async function main() {
 
     respondentFilePathList.push({
       id: trial + 1,
-      file_path_list: selectedDataShuffled.file_path,
+      file_path_list: selectedData.file_path,
     });
   }
 
@@ -577,6 +567,7 @@ async function main() {
   }
 
   const filePathDummyList = getWavFilesInDirectory(localWavDirDummy);
+
   for (const filePath of filePathDummyList) {
     const filePathParts = filePath.split("/");
     const intellibilityId = Number(
