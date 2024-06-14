@@ -67,12 +67,253 @@ const copyFiles = (dirPath: string, srcDestFilePathList: string[][]): void => {
   }
 };
 
+/**
+ * Extracts model names and sample names from a list of file paths based on a given rule.
+ *
+ * @param filePathList - An array of file paths to process.
+ * @param modelNameRule - A mapping of model names to their corresponding rules.
+ * @returns An object containing two arrays: modelNameList and sampleNameList.
+ */
+function getModelNameAndSampleNameList(
+  filePathList: string[],
+  modelNameRule: Record<string, string>,
+): { modelNameList: string[]; sampleNameList: string[] } {
+  const modelNameSet: Set<string> = new Set();
+  const sampleNameSet: Set<string> = new Set();
+
+  for (const filePath of filePathList) {
+    const filePathParts = filePath.split("/");
+    const modelName = filePathParts[filePathParts.length - 4];
+    const sampleName = filePathParts[filePathParts.length - 2];
+
+    for (const [key, value] of Object.entries(modelNameRule)) {
+      if (modelName === value) {
+        modelNameSet.add(key);
+      }
+    }
+
+    modelNameSet.add(modelName);
+    sampleNameSet.add(sampleName);
+  }
+
+  return {
+    modelNameList: Array.from(modelNameSet),
+    sampleNameList: Array.from(sampleNameSet),
+  };
+}
+
+/**
+ * Divides the sampleNameList into groups based on the modelNameList,
+ * returning the number of samples in each group.
+ *
+ * @param modelNameList - An array of model names.
+ * @param sampleNameList - An array of sample names.
+ * @returns An array of numbers representing the size of each sample group.
+ */
+function getSampleGroupSizeList(
+  modelNameList: string[],
+  sampleNameList: string[],
+): number[] {
+  const modelCount = modelNameList.length;
+  const sampleCount = sampleNameList.length;
+  const baseSize = Math.floor(sampleCount / modelCount);
+  const remainder = sampleCount % modelCount;
+
+  const sampleGroupSizeList = Array(modelCount).fill(baseSize);
+
+  for (let i = 0; i < remainder; i += 1) {
+    sampleGroupSizeList[i] += 1;
+  }
+
+  return sampleGroupSizeList;
+}
+
+/**
+ * Assigns samples to groups and maps them to page names.
+ *
+ * @param sampleNameList - An array of sample names.
+ * @param sampleGroupSizeList - An array of group sizes.
+ * @returns An object containing the sample group map and sample page name map.
+ */
+function assignSampleGroups(
+  sampleNameList: string[],
+  sampleGroupSizeList: number[],
+): {
+  sampleGroupMap: Record<string, number>;
+  samplePageNameMap: Record<string, string>;
+} {
+  const sampleNameListShuffled = shuffleArray(sampleNameList);
+  const sampleGroupMap: Record<string, number> = {};
+  const samplePageNameMap: Record<string, string> = {};
+  let cumulativeSize = 0;
+
+  for (
+    let groupIndex = 0;
+    groupIndex < sampleGroupSizeList.length;
+    groupIndex += 1
+  ) {
+    const groupSize = sampleGroupSizeList[groupIndex];
+    const groupSamples = sampleNameListShuffled.slice(
+      cumulativeSize,
+      cumulativeSize + groupSize,
+    );
+    const practiceIndex = Math.floor(Math.random() * groupSamples.length);
+
+    groupSamples.forEach((sampleName, index) => {
+      sampleGroupMap[sampleName] = groupIndex;
+      samplePageNameMap[sampleName] =
+        index === practiceIndex ? "eval_practice" : "eval_1";
+    });
+
+    cumulativeSize += groupSize;
+  }
+
+  return { sampleGroupMap, samplePageNameMap };
+}
+
+/**
+ * Checks if a 2D array contains a specific sub-array.
+ *
+ * @param arrays - The 2D array to check.
+ * @param array - The sub-array to search for.
+ * @returns True if the sub-array is found, otherwise false.
+ */
 function containsArray(arrays: string[][], array: string[]): boolean {
   return arrays.some(
     (a) =>
       a.length === array.length &&
       a.every((val, index) => val === array[index]),
   );
+}
+
+/**
+ * Extracts unique model name and kind pairs from file paths based on a given rule.
+ *
+ * @param filePathList - An array of file paths to process.
+ * @param modelNameRule - A mapping of model names to their corresponding rules.
+ * @returns An array of unique model name and kind pairs.
+ */
+function getModelNameKindPairs(
+  filePathList: string[],
+  modelNameRule: Record<string, string>,
+): string[][] {
+  const modelNameKindPairs: string[][] = [];
+
+  filePathList.forEach((filePath) => {
+    const filePathParts = filePath.split("/");
+    const modelName = filePathParts[filePathParts.length - 4];
+    const kind = filePathParts[filePathParts.length - 1].split(".")[0];
+
+    // Skip if the kind and modelName do not match the rules
+    if (
+      (kind === "gt" && modelName !== modelNameRule.gt) ||
+      (kind === "abs" && modelName !== modelNameRule.absMel)
+    ) {
+      return;
+    }
+
+    // Add unique modelName and kind pair
+    if (!containsArray(modelNameKindPairs, [modelName, kind])) {
+      modelNameKindPairs.push([modelName, kind]);
+    }
+  });
+
+  return modelNameKindPairs;
+}
+
+/**
+ * Extracts metadata and file path mappings from a list of file paths.
+ *
+ * @param filePathList - An array of file paths to process.
+ * @param sampleGroupMap - A mapping of sample names to group indices.
+ * @param samplePageNameMap - A mapping of sample names to page names.
+ * @param modelNameRule - A mapping of model names to their corresponding rules.
+ * @param modelNameKindPairlist - A list of model name and kind pairs.
+ * @returns An object containing sample metadata and source-destination file path mappings.
+ */
+function generateSampleMetaData(
+  filePathList: string[],
+  sampleGroupMap: Record<string, number>,
+  samplePageNameMap: Record<string, string>,
+  modelNameRule: Record<string, string>,
+  modelNameKindPairlist: string[][],
+): {
+  sampleMetaDataList: {
+    file_path: string;
+    model_name: string;
+    model_id: number;
+    speaker_name: string;
+    sample_name: string;
+    sample_group: number;
+    sample_page_name: string;
+    kind: string;
+    is_dummy: boolean;
+    naturalness_dummy_correct_answer_id: number;
+    intelligibility_dummy_correct_answer_id: number;
+  }[];
+  srcDestFilePathList: string[][];
+} {
+  const sampleMetaDataList: {
+    file_path: string;
+    model_name: string;
+    model_id: number;
+    speaker_name: string;
+    sample_name: string;
+    sample_group: number;
+    sample_page_name: string;
+    kind: string;
+    is_dummy: boolean;
+    naturalness_dummy_correct_answer_id: number;
+    intelligibility_dummy_correct_answer_id: number;
+  }[] = [];
+
+  const srcDestFilePathList: string[][] = [];
+
+  filePathList.forEach((filePath) => {
+    const filePathParts = filePath.split("/");
+    const modelName = filePathParts[filePathParts.length - 4];
+    const speakerName = filePathParts[filePathParts.length - 3];
+    const sampleName = filePathParts[filePathParts.length - 2];
+    const sampleGroup = sampleGroupMap[sampleName];
+    const samplePageName = samplePageNameMap[sampleName];
+    const kind = filePathParts[filePathParts.length - 1].split(".")[0];
+    const randomizedFilePath = `${uuidv4()}.wav`;
+
+    // Skip if the model name and kind do not match the rules
+    if (
+      (kind === "gt" && modelName !== modelNameRule.gt) ||
+      (kind === "abs" && modelName !== modelNameRule.absMel)
+    ) {
+      return; // Continue to the next file path
+    }
+
+    // Find the model ID based on the model name and kind pair
+    const modelId = modelNameKindPairlist.findIndex(
+      (pair) => pair[0] === modelName && pair[1] === kind,
+    );
+
+    if (modelId === -1) {
+      return; // Continue to the next file path if no matching pair is found
+    }
+
+    srcDestFilePathList.push([filePath, randomizedFilePath]);
+
+    sampleMetaDataList.push({
+      file_path: randomizedFilePath,
+      model_name: modelName,
+      model_id: modelId,
+      speaker_name: speakerName,
+      sample_name: sampleName,
+      sample_group: sampleGroup,
+      sample_page_name: samplePageName,
+      kind: kind,
+      is_dummy: false,
+      naturalness_dummy_correct_answer_id: 1,
+      intelligibility_dummy_correct_answer_id: 1,
+    });
+  });
+
+  return { sampleMetaDataList, srcDestFilePathList };
 }
 
 async function main() {
@@ -158,187 +399,70 @@ async function main() {
 
   const filePathList = getWavFilesInDirectory(localWavDir);
 
-  const modelNameList: string[] = [];
   const modelNameRule: Record<string, string> = {
     gt: modelNameGt,
     absMel: modelNameAbsMel,
-    absCatMelHubertEncoder: modelNameAbsCatMelHubertEncoder,
-    absCatMelHubertCluster: modelNameAbsCatMelHubertCluster,
-    absCatMelHubertEncoderHubertCluster:
-      modelNameAbsCatMelHubertEncoderHubertCluster,
+    // absCatMelHubertEncoder: modelNameAbsCatMelHubertEncoder,
+    // absCatMelHubertCluster: modelNameAbsCatMelHubertCluster,
+    // absCatMelHubertEncoderHubertCluster:
+    //   modelNameAbsCatMelHubertEncoderHubertCluster,
   };
-  let sampleNameList: string[] = [];
-  for (const filePath of filePathList) {
-    const filePathParts = filePath.split("/");
-    const modelName = filePathParts[filePathParts.length - 4];
-    const sampleName = filePathParts[filePathParts.length - 2];
-    for (const [key, value] of Object.entries(modelNameRule)) {
-      if (modelName === value && !modelNameList.includes(key)) {
-        modelNameList.push(key);
-      }
-    }
-    if (!modelNameList.includes(modelName)) {
-      modelNameList.push(modelName);
-    }
-    if (!sampleNameList.includes(sampleName)) {
-      sampleNameList.push(sampleName);
-    }
-  }
 
-  const sampleGroupSizeList: number[] = [];
-  const sampleGroupSizeListIndices: number[] = [];
-  for (let i = 0; i < modelNameList.length; i += 1) {
-    sampleGroupSizeList.push(
-      Math.floor(sampleNameList.length / modelNameList.length),
-    );
-    sampleGroupSizeListIndices.push(i);
-  }
-  const remainder = sampleNameList.length % modelNameList.length;
-  for (let i = 0; i < remainder; i += 1) {
-    const randomIndex = Math.floor(
-      Math.random() * sampleGroupSizeListIndices.length,
-    );
-    sampleGroupSizeList[sampleGroupSizeListIndices[randomIndex]] += 1;
-    sampleGroupSizeListIndices.splice(randomIndex, 1);
-  }
+  const { modelNameList, sampleNameList } = getModelNameAndSampleNameList(
+    filePathList,
+    modelNameRule,
+  );
 
-  sampleNameList = shuffleArray(sampleNameList);
-  const sampleGroupMap: Record<string, number> = {};
-  const samplePageNameMap: Record<string, string> = {};
-  let sampleGroupSizeCumsum = 0;
-  for (
-    let sampleGroupIndex = 0;
-    sampleGroupIndex < sampleGroupSizeList.length;
-    sampleGroupIndex += 1
-  ) {
-    const sampleGroupSize = sampleGroupSizeList[sampleGroupIndex];
-    const sampleNameListSliced = sampleNameList.slice(
-      sampleGroupSizeCumsum,
-      sampleGroupSize + sampleGroupSizeCumsum,
-    );
-    const practiceIndex = Math.floor(
-      Math.random() * sampleNameListSliced.length,
-    );
-    for (
-      let sampleNameIndex = 0;
-      sampleNameIndex < sampleNameListSliced.length;
-      sampleNameIndex += 1
-    ) {
-      const sampleName = sampleNameListSliced[sampleNameIndex];
-      sampleGroupMap[sampleName] = sampleGroupIndex;
-      if (sampleNameIndex === practiceIndex) {
-        samplePageNameMap[sampleName] = "eval_practice";
-      } else {
-        samplePageNameMap[sampleName] = "eval_1";
-      }
-    }
-    sampleGroupSizeCumsum += sampleGroupSize;
-  }
+  const sampleGroupSizeList = getSampleGroupSizeList(
+    modelNameList,
+    sampleNameList,
+  );
 
-  const modelNameKindPairlist: string[][] = [];
-  for (const filePath of filePathList) {
-    const filePathParts = filePath.split("/");
-    const modelName = filePathParts[filePathParts.length - 4];
-    const kind = filePathParts[filePathParts.length - 1].split(".")[0];
-    if (
-      (kind === "gt" && modelName !== modelNameRule.gt) ||
-      (kind === "abs" &&
-        modelName !== modelNameRule.absMel &&
-        modelName !== modelNameRule.absCatMelHubertEncoder &&
-        modelName !== modelNameRule.absCatMelHubertCluster &&
-        modelName !== modelNameRule.absCatMelHubertEncoderHubertCluster)
-    ) {
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-    if (!containsArray(modelNameKindPairlist, [modelName, kind])) {
-      modelNameKindPairlist.push([modelName, kind]);
-    }
-  }
+  const { sampleGroupMap, samplePageNameMap } = assignSampleGroups(
+    sampleNameList,
+    sampleGroupSizeList,
+  );
 
-  const sampleMetaDataList: {
-    file_path: string;
-    model_name: string;
-    model_id: number;
-    speaker_name: string;
-    sample_name: string;
-    sample_group: number;
-    sample_page_name: string;
-    kind: string;
-    is_dummy: boolean;
-    naturalness_dummy_correct_answer_id: number;
-    intelligibility_dummy_correct_answer_id: number;
-  }[] = [];
-  const srcDestFilePathList: string[][] = [];
-  const authList: { respondent_id: number; email: string; password: string }[] =
-    [];
+  const modelNameKindPairlist = getModelNameKindPairs(
+    filePathList,
+    modelNameRule,
+  );
 
-  for (const filePath of filePathList) {
-    const filePathParts = filePath.split("/");
-    const modelName = filePathParts[filePathParts.length - 4];
-    const speakerName = filePathParts[filePathParts.length - 3];
-    const sampleName = filePathParts[filePathParts.length - 2];
-    const sampleGroup = sampleGroupMap[sampleName];
-    const samplePageName = samplePageNameMap[sampleName];
-    const kind = filePathParts[filePathParts.length - 1].split(".")[0];
-    const randomizedFilePath = `${uuidv4()}.wav`;
-    if (
-      (kind === "gt" && modelName !== modelNameRule.gt) ||
-      (kind === "abs" &&
-        modelName !== modelNameRule.absMel &&
-        modelName !== modelNameRule.absCatMelHubertEncoder &&
-        modelName !== modelNameRule.absCatMelHubertCluster &&
-        modelName !== modelNameRule.absCatMelHubertEncoderHubertCluster)
-    ) {
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-    for (let i = 0; i < modelNameKindPairlist.length; i += 1) {
-      if (
-        modelNameKindPairlist[i][0] === modelName &&
-        modelNameKindPairlist[i][1] === kind
-      ) {
-        const modelId = i;
-        srcDestFilePathList.push([filePath, randomizedFilePath]);
-        sampleMetaDataList.push({
-          file_path: randomizedFilePath,
-          model_name: modelName,
-          model_id: modelId,
-          speaker_name: speakerName,
-          sample_name: sampleName,
-          sample_group: sampleGroup,
-          sample_page_name: samplePageName,
-          kind: kind,
-          is_dummy: false,
-          naturalness_dummy_correct_answer_id: 1,
-          intelligibility_dummy_correct_answer_id: 1,
-        });
-        break;
-      }
-    }
-  }
+  const { sampleMetaDataList, srcDestFilePathList } = generateSampleMetaData(
+    filePathList,
+    sampleGroupMap,
+    samplePageNameMap,
+    modelNameRule,
+    modelNameKindPairlist,
+  );
 
   let df = new dfd.DataFrame(sampleMetaDataList);
-  const nSelectedList = [];
-  for (let i = 0; i < sampleMetaDataList.length; i += 1) {
-    nSelectedList.push(0);
-  }
-  df.addColumn("n_selected", nSelectedList, { inplace: true });
+
+  df.addColumn("n_selected", Array(sampleMetaDataList.length).fill(0), {
+    inplace: true,
+  });
+
   const nSpeaker = df["speaker_name"].nUnique();
   const nModel = df["model_id"].nUnique();
   const nAnsPerSample = 3;
   const nTrial = nSpeaker * nModel * nAnsPerSample;
   const passwordLength = 6;
+
   const respondentFilePathList: { id: number; file_path_list: string[] }[] = [];
+  const authList: { respondent_id: number; email: string; password: string }[] =
+    [];
 
   for (let trial = 0; trial < nTrial; trial += 1) {
-    let dfCand;
-    if (df["n_selected"].nUnique() === 1) {
-      dfCand = df.copy();
-    } else {
-      const nSelectedMax = df["n_selected"].max();
-      dfCand = df.loc({ rows: df["n_selected"].lt(nSelectedMax) }).copy();
-    }
+    const dfCand =
+      df["n_selected"].nUnique() === 1
+        ? df.copy()
+        : df.loc({ rows: df["n_selected"].lt(df["n_selected"].max()) }).copy();
+
+    dfCand.addColumn(
+      "model_assign_id",
+      dfCand["sample_group"].add(trial).mod(nModel),
+      { inplace: true },
+    );
 
     const selectedData: {
       file_path: string[];
@@ -349,11 +473,6 @@ async function main() {
       is_selected: [],
     };
 
-    dfCand.addColumn(
-      "model_assign_id",
-      dfCand["sample_group"].add(trial).mod(nModel),
-      { inplace: true },
-    );
     for (const sampleName of dfCand["sample_name"].unique().values) {
       let dfCandSampled = dfCand
         .loc({
@@ -372,18 +491,9 @@ async function main() {
 
       const selectIndex = Math.floor(Math.random() * dfCandSampled.shape[0]);
       dfCandSampled = dfCandSampled.iloc({ rows: [selectIndex] });
+
       selectedData.file_path.push(dfCandSampled["file_path"].values[0]);
       selectedData.is_selected.push(1);
-    }
-
-    const { length } = selectedData.file_path;
-    const indices = Array.from({ length }, (_, i) => i);
-    const indicesShuffled = shuffleArray(indices);
-    const selectedDataShuffled = { ...selectedData };
-    for (const key of Object.keys(selectedDataShuffled)) {
-      selectedDataShuffled[key] = indicesShuffled.map(
-        (i) => selectedDataShuffled[key][i],
-      );
     }
 
     const dfSelectedData = new dfd.DataFrame(selectedData);
@@ -404,25 +514,40 @@ async function main() {
         how: "left",
       })
       .fillNa([0], { columns: ["is_selected"] });
+
     df["n_selected"] = df["n_selected"].add(df["is_selected"]);
     df.drop({ columns: ["is_selected"], inplace: true });
 
     const email = `user${trial}@test.com`;
     const password = generateRandomString(passwordLength);
+
     await supabase.auth.admin.createUser({
       email: email,
       password: password,
       email_confirm: true,
     });
+
     authList.push({
       respondent_id: trial + 1,
       email: email,
       password: password,
     });
+
     respondentFilePathList.push({
       id: trial + 1,
-      file_path_list: selectedDataShuffled.file_path,
+      file_path_list: selectedData.file_path,
     });
+  }
+
+  if (
+    df["n_selected"].unique().values.length !== 1 ||
+    df["n_selected"].unique().values[0] !== nAnsPerSample
+  ) {
+    throw new Error(
+      `Each sample must be selected the number of times specified by nAnsPerSample.
+      df["n_selected"].unique().values.length = ${df["n_selected"].unique().values.length}
+      df["n_selected"].unique().values.length[0] = ${df["n_selected"].unique().values[0]}`,
+    );
   }
 
   const dfAuth = new dfd.DataFrame(authList);
@@ -442,6 +567,7 @@ async function main() {
   }
 
   const filePathDummyList = getWavFilesInDirectory(localWavDirDummy);
+
   for (const filePath of filePathDummyList) {
     const filePathParts = filePath.split("/");
     const intellibilityId = Number(

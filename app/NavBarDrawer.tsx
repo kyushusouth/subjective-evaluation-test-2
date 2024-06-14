@@ -126,7 +126,7 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      respondent.is_finished_info,
+                      !respondent.is_finished_info,
                   },
                   {
                     "text-gray-400 pointer-events-none":
@@ -162,13 +162,13 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      respondent.is_finished_eval_1 &&
+                      !respondent.is_finished_eval_1 &&
                       respondent.is_finished_practice,
                   },
                   {
                     "text-gray-400 pointer-events-none":
                       respondent.is_finished_eval_1 ||
-                      respondent.is_finished_practice,
+                      !respondent.is_finished_practice,
                   },
                 )}
               >

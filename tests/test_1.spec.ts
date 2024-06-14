@@ -28,7 +28,7 @@ async function reset(respondentId: number) {
 const respondentId = 1;
 const email = `user${respondentId - 1}@test.com`;
 const wrongEmail = "wrong@test.com";
-const password = `uWZX4u`;
+const password = `Dz8aRS`;
 const wrongPassword = "wrong";
 const age = String(generateRandomInteger(1, 100));
 const sexItemList = ["男性", "女性", "無回答"];
@@ -51,11 +51,11 @@ const intelligibilityItemList = [
   "5: 非常に良い",
 ];
 const numSamplesPerPage = 5;
-const numTotalSamplesPractice = 13;
+const numTotalSamplesPractice = 10;
 const numTotalPagesPractice = Math.ceil(
   numTotalSamplesPractice / numSamplesPerPage,
 );
-const numTotalSamples1 = 43;
+const numTotalSamples1 = 46;
 const numTotalPages1 = Math.ceil(numTotalSamples1 / numSamplesPerPage);
 
 reset(respondentId);
