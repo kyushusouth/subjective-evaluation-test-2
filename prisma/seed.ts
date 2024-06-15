@@ -6,7 +6,6 @@ import { PrismaClient } from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
 import { execSync } from "child_process";
 import { v4 as uuidv4 } from "uuid";
 import { Storage } from "@google-cloud/storage";
@@ -14,7 +13,6 @@ import { Storage } from "@google-cloud/storage";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dfd = require("danfojs-node");
 
-dotenv.config({ path: "../.env" });
 const prisma = new PrismaClient();
 const storage = new Storage();
 
@@ -161,8 +159,9 @@ function assignSampleGroups(
 
     groupSamples.forEach((sampleName, index) => {
       sampleGroupMap[sampleName] = groupIndex;
-      samplePageNameMap[sampleName] =
-        index === practiceIndex ? "eval_practice" : "eval_1";
+      samplePageNameMap[sampleName] = index === practiceIndex
+        ? "eval_practice"
+        : "eval_1";
     });
 
     cumulativeSize += groupSize;
@@ -321,8 +320,8 @@ async function main() {
   const localWavDirDummy = process.env.LOCAL_WAV_DIR_DUMMY;
   const localWavDirRandomized = process.env.LOCAL_WAV_DIR_RANDOMIZED;
   const bucketName = process.env.GCS_BUCKET_NAME;
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL_DEV;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY_DEV;
   const authLocalSavePath = process.env.LOCAL_AUTH_SAVE_PATH;
   const modelNameGt = process.env.MODEL_NAME_GT;
   const modelNameAbsMel = process.env.MODEL_NAME_ABS_MEL;
@@ -346,10 +345,10 @@ async function main() {
     throw new Error("GCS_BUCKET_NAME was not specified.");
   }
   if (supabaseUrl === undefined) {
-    throw new Error("SUPABASE_URL was not specified.");
+    throw new Error("SUPABASE_URL_DEV was not specified.");
   }
   if (serviceRoleKey === undefined) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY was not specified.");
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY_DEV was not specified.");
   }
   if (authLocalSavePath === undefined) {
     throw new Error("LOCAL_AUTH_SAVE_PATH was not specified.");
@@ -383,12 +382,27 @@ async function main() {
   while (true) {
     const {
       data: { users },
+      error: listUserError,
     } = await supabase.auth.admin.listUsers();
+
+    if (listUserError) {
+      console.error(`listUserError: ${listUserError}`);
+      process.exit(1);
+    }
+
     if (users.length === 0) {
       break;
     }
+
     for (const user of users) {
-      await supabase.auth.admin.deleteUser(user.id);
+      const { error: deleteUserError } = await supabase.auth.admin.deleteUser(
+        user.id,
+      );
+
+      if (deleteUserError) {
+        console.error(`deleteUserError: ${deleteUserError}`);
+        process.exit(1);
+      }
     }
   }
 
@@ -453,10 +467,9 @@ async function main() {
     [];
 
   for (let trial = 0; trial < nTrial; trial += 1) {
-    const dfCand =
-      df["n_selected"].nUnique() === 1
-        ? df.copy()
-        : df.loc({ rows: df["n_selected"].lt(df["n_selected"].max()) }).copy();
+    const dfCand = df["n_selected"].nUnique() === 1
+      ? df.copy()
+      : df.loc({ rows: df["n_selected"].lt(df["n_selected"].max()) }).copy();
 
     dfCand.addColumn(
       "model_assign_id",
@@ -521,11 +534,15 @@ async function main() {
     const email = `user${trial}@test.com`;
     const password = generateRandomString(passwordLength);
 
-    await supabase.auth.admin.createUser({
-      email: email,
-      password: password,
-      email_confirm: true,
-    });
+    const { error: createUserError } = await supabase
+      .auth.admin.createUser({
+        email: email,
+        password: password,
+        email_confirm: true,
+      });
+    if (createUserError) {
+      console.error(`createUserError: ${createUserError}`);
+    }
 
     authList.push({
       respondent_id: trial + 1,
@@ -545,8 +562,12 @@ async function main() {
   ) {
     throw new Error(
       `Each sample must be selected the number of times specified by nAnsPerSample.
-      df["n_selected"].unique().values.length = ${df["n_selected"].unique().values.length}
-      df["n_selected"].unique().values.length[0] = ${df["n_selected"].unique().values[0]}`,
+      df["n_selected"].unique().values.length = ${
+        df["n_selected"].unique().values.length
+      }
+      df["n_selected"].unique().values.length[0] = ${
+        df["n_selected"].unique().values[0]
+      }`,
     );
   }
 
