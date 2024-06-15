@@ -106,7 +106,7 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
               <Link
                 href="/"
                 className={clsx(
-                  "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
+                  "block px-4 py-2 text-black hover:text-blue-700 hover:bg-gray-100",
                   {
                     "text-blue-700 bg-gray-100": currentPathname === "/",
                   },
@@ -141,7 +141,7 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
               <Link
                 href="/eval_practice"
                 className={clsx(
-                  "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
+                  "block px-4 py-2 text-black hover:text-blue-700 hover:bg-gray-100",
                   {
                     "text-blue-700 bg-gray-100":
                       currentPathname.startsWith("/eval_practice"),
