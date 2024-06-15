@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-async-client-component */
+
 "use client";
 
 import { useEffect } from "react";
@@ -8,8 +10,10 @@ export default function Page() {
     const timer = setTimeout(() => {
       redirectToHome();
     }, 1000);
+
     return () => clearTimeout(timer);
   });
+
   return (
     <div className="my-10 flex flex-col items-center gap-10">
       <p className="leading-relaxed text-center text-base">
