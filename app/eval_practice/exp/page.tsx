@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-syntax */
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Contents from "@/app/eval/Contents";
 import {
@@ -10,15 +9,6 @@ import {
 } from "@/app/lib/data";
 
 export default async function Page() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/login");
-    return null;
-  }
-
   const numSamplePerPage = 5;
   const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffled(
     undefined,

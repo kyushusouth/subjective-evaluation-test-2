@@ -1,7 +1,23 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
+import { createClient } from "@/utils/supabase/server";
 
 export async function middleware(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/login") || pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
   const session = await updateSession(request);
   return session;
 }

@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable no-restricted-syntax */
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -9,15 +8,6 @@ import {
 } from "@/app/lib/data";
 
 export default async function Page() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/login");
-    return null;
-  }
-
   const respondent = await fetchRespondent();
 
   if (!respondent?.is_finished_practice) {

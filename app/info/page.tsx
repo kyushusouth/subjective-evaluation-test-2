@@ -1,4 +1,3 @@
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import {
   fetchSexItemList,
@@ -8,16 +7,6 @@ import {
 import Contents from "@/app/info/Contents";
 
 export default async function Page() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user === null) {
-    redirect("/login");
-    return null;
-  }
-
   try {
     const sexItemList = await fetchSexItemList();
     const audioDeviceItemList = await fetchAudioDeviceItemList();
