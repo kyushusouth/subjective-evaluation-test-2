@@ -6,13 +6,14 @@
     "start": "next start",
     "lint": "next lint --fix",
     "migrate-dev": "npx prisma migrate dev && npx tsx prisma/seedTriggers.ts && npx prisma db seed",
+    "migrate-deploy": "npx prisma migrate deploy && npx tsx prisma/seedTriggers.ts && npx prisma db seed",
     "secretlint": "secretlint --maskSecrets --secretlintignore .gitignore '**/*'",
     "prettier-check": "prettier . --check",
     "prettier-fix": "prettier . --write",
     "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProd.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
