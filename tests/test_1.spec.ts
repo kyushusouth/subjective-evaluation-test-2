@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable import/no-extraneous-dependencies */
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 function generateRandomInteger(min: number, max: number) {
@@ -28,7 +28,7 @@ async function reset(respondentId: number) {
 const respondentId = 1;
 const email = `user${respondentId - 1}@test.com`;
 const wrongEmail = "wrong@test.com";
-const password = `Dz8aRS`;
+const password = `btPtOn`;
 const wrongPassword = "wrong";
 const age = String(generateRandomInteger(1, 100));
 const sexItemList = ["男性", "女性", "無回答"];
