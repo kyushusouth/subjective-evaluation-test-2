@@ -26,8 +26,6 @@ export async function POST(request: Request) {
       });
     });
 
-    throw new Error();
-
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
