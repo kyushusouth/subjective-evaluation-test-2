@@ -78,6 +78,7 @@ async function main() {
 
 	for (let i = 0; i < dfAuth.shape[0]; i += 1) {
 		const row = dfAuth.iloc({ rows: [i] }).values[0];
+		const respondentId = row[0];
 		const email = row[1];
 		const password = row[2];
 
@@ -94,6 +95,25 @@ async function main() {
 			console.error(createUserError);
 			process.exit(1);
 		}
+
+		const { data: respondentData, error: respondentSelectError } =
+			await supabaseDev
+				.from("Respondents")
+				.select("file_path_list").eq("id", respondentId);
+
+		if (respondentSelectError) {
+			console.error(respondentSelectError);
+			process.exit(1);
+		}
+
+		await prisma.respondents.update({
+			where: {
+				id: respondentId,
+			},
+			data: {
+				file_path_list: respondentData[0].file_path_list,
+			},
+		});
 	}
 
 	const { data: audioDeviceItemList, error: audioDeviceItemSelectError } =
