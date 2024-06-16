@@ -4,7 +4,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import fs from "fs";
 import { parse } from "csv-parse/sync";
-import { expect, test } from "@playwright/test";
+import { expect, Page, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 function generateRandomInteger(min: number, max: number) {
@@ -39,6 +39,25 @@ async function checkAudioPlayable(audio: HTMLAudioElement): Promise<boolean> {
 	}
 }
 
+async function reliableReload(
+	page: Page,
+	maxRetries: number = 3,
+): Promise<void> {
+	for (let i = 0; i < maxRetries; i += 1) {
+		try {
+			await page.reload({ waitUntil: "load" });
+			return;
+		} catch (error) {
+			const err = error as Error;
+			console.warn(`Reload attempt ${i + 1} failed: ${err.message}`);
+			if (i === maxRetries - 1) throw err;
+			await new Promise((res) => {
+				setTimeout(res, 1000);
+			});
+		}
+	}
+}
+
 const authLocalSavePath = process.env.LOCAL_AUTH_SAVE_PATH;
 if (authLocalSavePath === undefined) {
 	throw new Error("LOCAL_AUTH_SAVE_PATH was not specified.");
@@ -49,7 +68,7 @@ const records = parse(fs.readFileSync(authLocalSavePath), {
 	skip_empty_lines: true,
 });
 
-for (const record of records.slice(0, 1)) {
+for (const record of records.slice(0, 5)) {
 	const respondentId = Number(record.respondent_id);
 	const { email, password } = record;
 	const wrongEmail = "wrong@test.com";
@@ -118,6 +137,7 @@ for (const record of records.slice(0, 1)) {
 			"visiting the index page at the first time",
 			async ({ page }) => {
 				await page.goto("/");
+				await page.waitForURL("/login");
 				await expect(page).toHaveURL("/login");
 				await expect(
 					page.getByRole("button", { name: "Open main menu" }),
@@ -128,6 +148,7 @@ for (const record of records.slice(0, 1)) {
 		test.afterEach("logout", async ({ page }) => {
 			await page.getByRole("button", { name: "Open main menu" }).click();
 			await page.getByRole("button", { name: "ログアウト" }).click();
+			await page.waitForURL("/login");
 			await expect(page).toHaveURL("/login");
 		});
 
@@ -161,6 +182,7 @@ for (const record of records.slice(0, 1)) {
 			);
 
 			await page.getByRole("button", { name: "ログイン" }).click();
+			await page.waitForURL("/");
 			await expect(page).toHaveURL("/");
 			await expect(
 				page.getByRole("heading", { name: "実験について" }),
@@ -174,6 +196,7 @@ for (const record of records.slice(0, 1)) {
 			await page.getByLabel("メールアドレス").fill(wrongEmail);
 			await page.getByLabel("パスワード").fill(wrongPassword);
 			await page.getByRole("button", { name: "ログイン" }).click();
+			await page.waitForURL("/login?message=Failed");
 			await expect(page).toHaveURL("/login?message=Failed");
 			await expect(page.getByText("認証に失敗しました。")).toBeVisible();
 			await expect(
@@ -185,6 +208,7 @@ for (const record of records.slice(0, 1)) {
 			await page.getByLabel("メールアドレス").fill(email);
 			await page.getByLabel("パスワード").fill(wrongPassword);
 			await page.getByRole("button", { name: "ログイン" }).click();
+			await page.waitForURL("/login?message=Failed");
 			await expect(page).toHaveURL("/login?message=Failed");
 			await expect(page.getByText("認証に失敗しました。")).toBeVisible();
 			await expect(
@@ -196,6 +220,7 @@ for (const record of records.slice(0, 1)) {
 			await page.getByLabel("メールアドレス").fill(wrongEmail);
 			await page.getByLabel("パスワード").fill(password);
 			await page.getByRole("button", { name: "ログイン" }).click();
+			await page.waitForURL("/login?message=Failed");
 			await expect(page).toHaveURL("/login?message=Failed");
 			await expect(page.getByText("認証に失敗しました。")).toBeVisible();
 			await expect(
@@ -207,6 +232,7 @@ for (const record of records.slice(0, 1)) {
 			await page.getByLabel("メールアドレス").fill(email);
 			await page.getByLabel("パスワード").fill(password);
 			await page.getByRole("button", { name: "ログイン" }).click();
+			await page.waitForURL("/");
 			await expect(page).toHaveURL("/");
 			await expect(
 				page.getByRole("heading", { name: "実験について" }),
@@ -220,15 +246,19 @@ for (const record of records.slice(0, 1)) {
 	test.describe(`${respondentId}: after login successed`, () => {
 		test.beforeEach("login", async ({ page }) => {
 			await page.goto("/");
+			await page.waitForURL("/login");
+			await expect(page).toHaveURL("/login");
 			await page.getByLabel("メールアドレス").fill(email);
 			await page.getByLabel("パスワード").fill(password);
 			await page.getByRole("button", { name: "ログイン" }).click();
+			await page.waitForURL("/");
 			await expect(page).toHaveURL("/");
 		});
 
 		test.afterEach("logout", async ({ page }) => {
 			await page.getByRole("button", { name: "Open main menu" }).click();
 			await page.getByRole("button", { name: "ログアウト" }).click();
+			await page.waitForURL("/login");
 			await expect(page).toHaveURL("/login");
 		});
 
@@ -245,12 +275,16 @@ for (const record of records.slice(0, 1)) {
 				page.getByRole("link", { name: "アンケート", exact: true }),
 			).toHaveClass(/text-black hover:text-blue-700 hover:bg-gray-100/);
 
-			await expect(page.getByRole("link", { name: "練習試行", exact: true }))
+			await expect(
+				page.getByRole("link", { name: "練習試行", exact: true }),
+			)
 				.toHaveClass(
 					/text-black hover:text-blue-700 hover:bg-gray-100/,
 				);
 
-			await expect(page.getByRole("link", { name: "本番試行", exact: true }))
+			await expect(
+				page.getByRole("link", { name: "本番試行", exact: true }),
+			)
 				.toHaveClass(
 					/text-gray-400 pointer-events-none/,
 				);
@@ -259,6 +293,7 @@ for (const record of records.slice(0, 1)) {
 		test("info", async ({ page }) => {
 			await page.getByRole("button", { name: "Open main menu" }).click();
 			await page.getByRole("link", { name: "アンケート" }).click();
+			await page.waitForURL("/info");
 			await expect(page).toHaveURL("/info");
 
 			await expect(page.getByRole("link", { name: "HOME", exact: true }))
@@ -270,12 +305,16 @@ for (const record of records.slice(0, 1)) {
 				page.getByRole("link", { name: "アンケート", exact: true }),
 			).toHaveClass(/text-blue-700 bg-gray-100/);
 
-			await expect(page.getByRole("link", { name: "練習試行", exact: true }))
+			await expect(
+				page.getByRole("link", { name: "練習試行", exact: true }),
+			)
 				.not.toHaveClass(
 					/text-blue-700 bg-gray-100/,
 				);
 
-			await expect(page.getByRole("link", { name: "本番試行", exact: true }))
+			await expect(
+				page.getByRole("link", { name: "本番試行", exact: true }),
+			)
 				.not.toHaveClass(
 					/text-blue-700 bg-gray-100/,
 				);
@@ -286,21 +325,26 @@ for (const record of records.slice(0, 1)) {
 			await page.getByLabel("年齢").fill(age);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			await page.reload({ waitUntil: "load" });
+			// await page.reload({ waitUntil: "load" });
+			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
 
 			await page.getByLabel("性別").selectOption(sex);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			await page.reload();
+			// await page.reload();
+			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
 
-			await page.getByLabel("利用される音響機器").selectOption(audioDevice);
+			await page.getByLabel("利用される音響機器").selectOption(
+				audioDevice,
+			);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			await page.reload();
+			// await page.reload();
+			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
 
@@ -308,29 +352,38 @@ for (const record of records.slice(0, 1)) {
 			await page.getByLabel("性別").selectOption(sex);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			await page.reload();
+			// await page.reload();
+			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
 
 			await page.getByLabel("年齢").fill(age);
-			await page.getByLabel("利用される音響機器").selectOption(audioDevice);
+			await page.getByLabel("利用される音響機器").selectOption(
+				audioDevice,
+			);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			await page.reload();
+			// await page.reload();
+			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
 
 			await page.getByLabel("性別").selectOption(sex);
-			await page.getByLabel("利用される音響機器").selectOption(audioDevice);
+			await page.getByLabel("利用される音響機器").selectOption(
+				audioDevice,
+			);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			await page.reload();
+			// await page.reload();
+			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
 
 			await page.getByLabel("年齢").fill(age);
 			await page.getByLabel("性別").selectOption(sex);
-			await page.getByLabel("利用される音響機器").selectOption(audioDevice);
+			await page.getByLabel("利用される音響機器").selectOption(
+				audioDevice,
+			);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeEnabled();
 			await page.getByRole("button", { name: "提出する" }).click();
@@ -349,12 +402,16 @@ for (const record of records.slice(0, 1)) {
 				page.getByRole("link", { name: "アンケート", exact: true }),
 			).toHaveClass(/text-gray-400 pointer-events-none/);
 
-			await expect(page.getByRole("link", { name: "練習試行", exact: true }))
+			await expect(
+				page.getByRole("link", { name: "練習試行", exact: true }),
+			)
 				.not.toHaveClass(
 					/text-blue-700 bg-gray-100/,
 				);
 
-			await expect(page.getByRole("link", { name: "本番試行", exact: true }))
+			await expect(
+				page.getByRole("link", { name: "本番試行", exact: true }),
+			)
 				.not.toHaveClass(
 					/text-blue-700 bg-gray-100/,
 				);
@@ -371,14 +428,16 @@ for (const record of records.slice(0, 1)) {
 					linkName: "練習試行",
 					url: "/eval_practice",
 					numTotalPages: numTotalPagesPractice,
-					numSampleLastPage: numTotalSamplesPractice % numSamplesPerPage,
+					numSampleLastPage: numTotalSamplesPractice %
+						numSamplesPerPage,
 				},
 				{
 					testName: "eval_practice_2",
 					linkName: "練習試行",
 					url: "/eval_practice",
 					numTotalPages: numTotalPagesPractice,
-					numSampleLastPage: numTotalSamplesPractice % numSamplesPerPage,
+					numSampleLastPage: numTotalSamplesPractice %
+						numSamplesPerPage,
 				},
 				{
 					testName: "eval_1",
@@ -395,22 +454,29 @@ for (const record of records.slice(0, 1)) {
 						.click();
 					await page.getByRole("link", { name: testConfig.linkName })
 						.click();
+					await page.waitForURL(testConfig.url);
 					await expect(page).toHaveURL(testConfig.url);
 
 					const audioHandleExample1 = await page.locator("audio");
 					expect(audioHandleExample1).not.toBeNull();
-					const isPlayableExample1 = await audioHandleExample1!.evaluate(
-						checkAudioPlayable,
-					);
+					const isPlayableExample1 = await audioHandleExample1!
+						.evaluate(
+							checkAudioPlayable,
+						);
 					expect(isPlayableExample1).toBe(true);
 
-					await expect(page.getByRole("link", { name: "HOME", exact: true }))
+					await expect(
+						page.getByRole("link", { name: "HOME", exact: true }),
+					)
 						.not.toHaveClass(
 							/text-blue-700 bg-gray-100/,
 						);
 
 					await expect(
-						page.getByRole("link", { name: "アンケート", exact: true }),
+						page.getByRole("link", {
+							name: "アンケート",
+							exact: true,
+						}),
 					)
 						.not.toHaveClass(
 							/text-blue-700 bg-gray-100/,
@@ -418,48 +484,69 @@ for (const record of records.slice(0, 1)) {
 
 					if (testConfig.testName === "eval_practice_1") {
 						await expect(
-							page.getByRole("link", { name: "練習試行", exact: true }),
+							page.getByRole("link", {
+								name: "練習試行",
+								exact: true,
+							}),
 						)
 							.toHaveClass(
 								/text-blue-700 bg-gray-100/,
 							);
 
 						await expect(
-							page.getByRole("link", { name: "本番試行", exact: true }),
+							page.getByRole("link", {
+								name: "本番試行",
+								exact: true,
+							}),
 						)
 							.toHaveClass(
 								/text-gray-400 pointer-events-none/,
 							);
 					} else if (testConfig.linkName === "eval_practice_2") {
 						await expect(
-							page.getByRole("link", { name: "練習試行", exact: true }),
+							page.getByRole("link", {
+								name: "練習試行",
+								exact: true,
+							}),
 						)
 							.toHaveClass(
 								/text-blue-700 bg-gray-100/,
 							);
 
 						await expect(
-							page.getByRole("link", { name: "本番試行", exact: true }),
+							page.getByRole("link", {
+								name: "本番試行",
+								exact: true,
+							}),
 						).not
 							.toHaveClass(
 								/pointer-events-none/,
 							);
 						await expect(
-							page.getByRole("link", { name: "本番試行", exact: true }),
+							page.getByRole("link", {
+								name: "本番試行",
+								exact: true,
+							}),
 						)
 							.toHaveClass(
 								/text-black hover:text-blue-700 hover:bg-gray-100/,
 							);
 					} else if (testConfig.linkName === "eval_1") {
 						await expect(
-							page.getByRole("link", { name: "練習試行", exact: true }),
+							page.getByRole("link", {
+								name: "練習試行",
+								exact: true,
+							}),
 						)
 							.not.toHaveClass(
 								/text-blue-700 bg-gray-100/,
 							);
 
 						await expect(
-							page.getByRole("link", { name: "本番試行", exact: true }),
+							page.getByRole("link", {
+								name: "本番試行",
+								exact: true,
+							}),
 						)
 							.toHaveClass(
 								/text-blue-700 bg-gray-100/,
@@ -474,7 +561,10 @@ for (const record of records.slice(0, 1)) {
 					await expect(page).toHaveURL(`${testConfig.url}/exp`);
 
 					await expect(
-						page.getByRole("link", { name: testConfig.linkName, exact: true }),
+						page.getByRole("link", {
+							name: testConfig.linkName,
+							exact: true,
+						}),
 					)
 						.toHaveClass(
 							/text-blue-700 bg-gray-100/,
@@ -508,7 +598,8 @@ for (const record of records.slice(0, 1)) {
 							.not.toBeVisible();
 
 						// 明瞭性
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -516,7 +607,8 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -525,7 +617,8 @@ for (const record of records.slice(0, 1)) {
 							.not.toBeVisible();
 
 						// 自然性
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -533,7 +626,8 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -542,7 +636,9 @@ for (const record of records.slice(0, 1)) {
 							.not.toBeVisible();
 
 						// ダミー
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -555,12 +651,15 @@ for (const record of records.slice(0, 1)) {
 							"ダミー音声について",
 						).locator("audio");
 						expect(audioHandleExample2).not.toBeNull();
-						const isPlayableExample2 = await audioHandleExample2!.evaluate(
-							checkAudioPlayable,
-						);
+						const isPlayableExample2 = await audioHandleExample2!
+							.evaluate(
+								checkAudioPlayable,
+							);
 						expect(isPlayableExample2).toBe(true);
 
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -570,7 +669,8 @@ for (const record of records.slice(0, 1)) {
 							.not.toBeVisible();
 
 						// 明瞭性と自然性
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -578,7 +678,8 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -586,7 +687,8 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -594,7 +696,8 @@ for (const record of records.slice(0, 1)) {
 						)
 							.not.toBeVisible();
 
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -603,7 +706,8 @@ for (const record of records.slice(0, 1)) {
 							.not.toBeVisible();
 
 						// 明瞭性とダミー
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -611,7 +715,9 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -624,12 +730,14 @@ for (const record of records.slice(0, 1)) {
 							"ダミー音声について",
 						).locator("audio");
 						expect(audioHandleExample3).not.toBeNull();
-						const isPlayableExample3 = await audioHandleExample3!.evaluate(
-							checkAudioPlayable,
-						);
+						const isPlayableExample3 = await audioHandleExample3!
+							.evaluate(
+								checkAudioPlayable,
+							);
 						expect(isPlayableExample3).toBe(true);
 
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -637,7 +745,9 @@ for (const record of records.slice(0, 1)) {
 						)
 							.not.toBeVisible();
 
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -647,7 +757,8 @@ for (const record of records.slice(0, 1)) {
 							.not.toBeVisible();
 
 						// 自然性とダミー
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -655,7 +766,9 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -668,12 +781,14 @@ for (const record of records.slice(0, 1)) {
 							"ダミー音声について",
 						).locator("audio");
 						expect(audioHandleExample4).not.toBeNull();
-						const isPlayableExample4 = await audioHandleExample4!.evaluate(
-							checkAudioPlayable,
-						);
+						const isPlayableExample4 = await audioHandleExample4!
+							.evaluate(
+								checkAudioPlayable,
+							);
 						expect(isPlayableExample4).toBe(true);
 
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -681,7 +796,9 @@ for (const record of records.slice(0, 1)) {
 						)
 							.not.toBeVisible();
 
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -691,7 +808,8 @@ for (const record of records.slice(0, 1)) {
 							.not.toBeVisible();
 
 						// 明瞭性と自然性とダミー
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -699,7 +817,8 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -707,7 +826,9 @@ for (const record of records.slice(0, 1)) {
 						)
 							.toBeVisible();
 
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -720,12 +841,14 @@ for (const record of records.slice(0, 1)) {
 							"ダミー音声について",
 						).locator("audio");
 						expect(audioHandleExample5).not.toBeNull();
-						const isPlayableExample5 = await audioHandleExample5!.evaluate(
-							checkAudioPlayable,
-						);
+						const isPlayableExample5 = await audioHandleExample5!
+							.evaluate(
+								checkAudioPlayable,
+							);
 						expect(isPlayableExample5).toBe(true);
 
-						await page.getByRole("button", { name: "明瞭性とは？" }).click();
+						await page.getByRole("button", { name: "明瞭性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"一つ目の評価項目である明瞭性は、発話内容自体がどれくらい聞き取りやすかったかを指します。この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています",
@@ -733,7 +856,8 @@ for (const record of records.slice(0, 1)) {
 						)
 							.not.toBeVisible();
 
-						await page.getByRole("button", { name: "自然性とは？" }).click();
+						await page.getByRole("button", { name: "自然性とは？" })
+							.click();
 						await expect(
 							page.getByText(
 								"二つ目の評価項目である自然性は、発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたかを指します。例えば、音質自体やイントネーションの自然さなど",
@@ -741,7 +865,9 @@ for (const record of records.slice(0, 1)) {
 						)
 							.not.toBeVisible();
 
-						await page.getByRole("button", { name: "ダミー音声について" })
+						await page.getByRole("button", {
+							name: "ダミー音声について",
+						})
 							.click();
 						await expect(
 							page.getByText(
@@ -777,9 +903,10 @@ for (const record of records.slice(0, 1)) {
 								break;
 							}
 
-							const audioHandleExample6 = await page.locator("ul").filter({
-								hasText: "明瞭性1: 非常に悪い2: 悪い3: 普通4: 良い5",
-							}).locator("audio").nth(sampleId);
+							const audioHandleExample6 = await page.locator("ul")
+								.filter({
+									hasText: "明瞭性1: 非常に悪い2: 悪い3: 普通4: 良い5",
+								}).locator("audio").nth(sampleId);
 							expect(audioHandleExample6).not.toBeNull();
 							const isPlayableExample6 = await audioHandleExample6!.evaluate(
 								checkAudioPlayable,
@@ -824,7 +951,8 @@ for (const record of records.slice(0, 1)) {
 						await expect(
 							page.getByRole("button", { name: "進む" }),
 						).toBeEnabled();
-						await page.getByRole("button", { name: "進む" }).click();
+						await page.getByRole("button", { name: "進む" })
+							.click();
 					}
 
 					await expect(page.getByRole("button", { name: "戻る" }))
@@ -832,27 +960,36 @@ for (const record of records.slice(0, 1)) {
 					await expect(
 						page.getByRole("button", { name: "提出する" }),
 					).toBeEnabled();
-					await page.getByRole("button", { name: "提出する" }).click();
+					await page.getByRole("button", { name: "提出する" })
+						.click();
 
 					await page.waitForURL("/thanks");
 					await expect(page).toHaveURL("/thanks");
 					await page.waitForURL("/");
 					await expect(page).toHaveURL("/");
 
-					await expect(page.getByRole("link", { name: "HOME", exact: true }))
+					await expect(
+						page.getByRole("link", { name: "HOME", exact: true }),
+					)
 						.toHaveClass(
 							/text-blue-700 bg-gray-100/,
 						);
 
 					await expect(
-						page.getByRole("link", { name: "アンケート", exact: true }),
+						page.getByRole("link", {
+							name: "アンケート",
+							exact: true,
+						}),
 					)
 						.not.toHaveClass(
 							/text-blue-700 bg-gray-100/,
 						);
 
 					await expect(
-						page.getByRole("link", { name: "練習試行", exact: true }),
+						page.getByRole("link", {
+							name: "練習試行",
+							exact: true,
+						}),
 					)
 						.not.toHaveClass(
 							/text-blue-700 bg-gray-100/,
@@ -860,20 +997,29 @@ for (const record of records.slice(0, 1)) {
 
 					if (testConfig.linkName.startsWith("本番試行")) {
 						await expect(
-							page.getByRole("link", { name: "本番試行", exact: true }),
+							page.getByRole("link", {
+								name: "本番試行",
+								exact: true,
+							}),
 						)
 							.toHaveClass(
 								/text-gray-400 pointer-events-none/,
 							);
 					} else {
 						await expect(
-							page.getByRole("link", { name: "本番試行", exact: true }),
+							page.getByRole("link", {
+								name: "本番試行",
+								exact: true,
+							}),
 						).not
 							.toHaveClass(
 								/pointer-events-none/,
 							);
 						await expect(
-							page.getByRole("link", { name: "本番試行", exact: true }),
+							page.getByRole("link", {
+								name: "本番試行",
+								exact: true,
+							}),
 						)
 							.toHaveClass(
 								/text-black hover:text-blue-700 hover:bg-gray-100/,
