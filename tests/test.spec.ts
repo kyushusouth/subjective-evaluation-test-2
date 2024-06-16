@@ -89,9 +89,8 @@ const records = parse(fs.readFileSync(authLocalSavePath), {
 	columns: true,
 	skip_empty_lines: true,
 });
-const numTestRespondents = 1;
 
-for (const record of records.slice(0, numTestRespondents)) {
+for (const record of records.slice(6, 7)) {
 	const respondentId = Number(record.respondent_id);
 	const { email, password } = record;
 	const wrongEmail = "wrong@test.com";
