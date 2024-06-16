@@ -3,6 +3,8 @@ import { updateSession } from "@/utils/supabase/middleware";
 import { createClient } from "@/utils/supabase/server";
 
 export async function middleware(request: NextRequest) {
+  const session = await updateSession(request);
+
   const url = request.nextUrl.clone();
   const { pathname } = request.nextUrl;
 
@@ -18,7 +20,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  const session = await updateSession(request);
   return session;
 }
 
