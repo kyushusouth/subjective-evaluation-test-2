@@ -6,26 +6,16 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const { pathname } = request.nextUrl;
 
-  console.log(`Middleware called for path: ${pathname}`);
-
-  // セッションを常に更新
   const session = await updateSession(request);
-  console.log("Session updated:", session);
 
   if (pathname.startsWith("/login") || pathname.startsWith("/api")) {
-    console.log("Skipping middleware for login or API paths");
     return NextResponse.next();
   }
 
   const supabase = createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
 
-  if (error) {
-    console.error("Error getting user:", error);
-  }
-
   if (!user) {
-    console.log("User not found, redirecting to /login");
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
