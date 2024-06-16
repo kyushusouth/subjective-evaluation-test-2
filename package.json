@@ -10,7 +10,8 @@
     "secretlint": "secretlint --maskSecrets --secretlintignore .gitignore '**/*'",
     "prettier-check": "prettier . --check",
     "prettier-fix": "prettier . --write",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "init": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' admin_utils/init.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProd.ts"
