@@ -12,19 +12,6 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // await prisma.respondents.update({
-    //   where: {
-    //     auth_id: user?.id,
-    //   },
-    //   data: {
-    //     age: Number(data.age),
-    //     sex: String(data.sex),
-    //     audio_device: String(data.audio_device),
-    //     is_finished_info: true,
-    //   },
-    // });
-    // throw new Error();
-
     await prisma.$transaction(async (tx) => {
       await tx.respondents.update({
         where: {
@@ -37,8 +24,9 @@ export async function POST(request: Request) {
           is_finished_info: true,
         },
       });
-      throw new Error();
     });
+
+    throw new Error();
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

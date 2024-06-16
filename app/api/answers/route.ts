@@ -37,38 +37,12 @@ export async function POST(request: Request) {
       }
     }
 
-    // await prisma.answers.createMany({
-    //   data: answerList,
-    //   skipDuplicates: true,
-    // });
-    // throw new Error();
-    // if (pageName === "eval_practice") {
-    //   await prisma.respondents.update({
-    //     where: {
-    //       auth_id: user!.id,
-    //     },
-    //     data: {
-    //       is_finished_practice: true,
-    //     },
-    //   });
-    // } else if (pageName === "eval_1") {
-    //   await prisma.respondents.update({
-    //     where: {
-    //       auth_id: user!.id,
-    //     },
-    //     data: {
-    //       is_finished_eval_1: true,
-    //       is_invalid: isInvalid,
-    //     },
-    //   });
-    // }
-
     await prisma.$transaction(async (tx) => {
       await tx.answers.createMany({
         data: answerList,
         skipDuplicates: true,
       });
-      throw new Error();
+
       if (pageName === "eval_practice") {
         await tx.respondents.update({
           where: {
@@ -90,6 +64,8 @@ export async function POST(request: Request) {
         });
       }
     });
+
+    throw new Error();
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
