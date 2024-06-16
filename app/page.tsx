@@ -80,9 +80,19 @@ export default async function Index() {
       <hr className="border-t border-gray-300" />
 
       <section className="space-y-4 text-base">
-        <h2 className="text-lg">実験終了の報告</h2>
+        <h2 className="text-lg">エラーが起きた時の対処方法</h2>
         <p className="leading-relaxed">
-          全ての実験項目を完了次第、クラウドワークスにて連絡をお願いします。
+          サーバーの不調により、エラーが起きる場合がございます。この場合、「エラーが発生しました。」と表示されるページに遷移しますので、ご承知おきください。
+        </p>
+        <p className="leading-relaxed">
+          エラーが発生した場合には、必ず以下の手順で対応してください。
+          <ol className="leading-relaxed list-decimal list-inside">
+            <li>一度ページを閉じて、再度ホームページにアクセスする。</li>
+            <li>ページをリロードする。</li>
+          </ol>
+        </p>
+        <p className="leading-relaxed">
+          アンケートや本番試行の提出中に生じたエラーについて、アンケートや本番試行の提出処理が完了している場合、リロードするとメニューから選択できなくなります。逆に、リロードしても選択できる場合は、提出処理が完了していない状態でエラーが発生したことになります。この場合、誠に申し訳ありませんが、再度提出をお願い致します。
         </p>
       </section>
     </div>
