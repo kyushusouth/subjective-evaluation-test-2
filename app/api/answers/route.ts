@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         if (
           answer.sample_meta_data_id === sampleMetaDataDummy.id &&
           (answer.naturalness_id !==
-            sampleMetaDataDummy.naturalness_dummy_correct_answer_id ||
+              sampleMetaDataDummy.naturalness_dummy_correct_answer_id ||
             answer.intelligibility_id !==
               sampleMetaDataDummy.intelligibility_dummy_correct_answer_id)
         ) {
@@ -36,6 +36,8 @@ export async function POST(request: Request) {
         }
       }
     }
+
+    throw new Error();
 
     await prisma.$transaction(async (tx) => {
       await tx.answers.createMany({

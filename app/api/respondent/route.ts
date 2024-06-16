@@ -12,6 +12,8 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    throw new Error();
+
     await prisma.$transaction(async (tx) => {
       await tx.respondents.update({
         where: {
