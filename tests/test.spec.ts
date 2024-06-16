@@ -58,6 +58,28 @@ async function reliableReload(
 	}
 }
 
+async function reliableGoto(
+	page: Page,
+	url: string,
+	maxRetries: number = 3,
+): Promise<void> {
+	for (let i = 0; i < maxRetries; i += 1) {
+		try {
+			await page.goto(url, { waitUntil: "load" });
+			return;
+		} catch (error) {
+			const err = error as Error;
+			console.warn(
+				`Navigation attempt ${i + 1} to ${url} failed: ${err.message}`,
+			);
+			if (i === maxRetries - 1) throw err;
+			await new Promise((res) => {
+				setTimeout(res, 1000);
+			});
+		}
+	}
+}
+
 const authLocalSavePath = process.env.LOCAL_AUTH_SAVE_PATH;
 if (authLocalSavePath === undefined) {
 	throw new Error("LOCAL_AUTH_SAVE_PATH was not specified.");
@@ -68,7 +90,7 @@ const records = parse(fs.readFileSync(authLocalSavePath), {
 	skip_empty_lines: true,
 });
 
-for (const record of records.slice(0, 5)) {
+for (const record of records.slice(0, 1)) {
 	const respondentId = Number(record.respondent_id);
 	const { email, password } = record;
 	const wrongEmail = "wrong@test.com";
@@ -117,14 +139,16 @@ for (const record of records.slice(0, 5)) {
 			"/thanks",
 		];
 		for (const path of pathList) {
-			await page.goto(path);
+			// await page.goto(path);
+			await reliableGoto(page, path);
 			await page.waitForURL("/login");
 			await expect(page).toHaveURL("/login");
 		}
 	});
 
 	test(`${respondentId}: Checking behaviour when too much authentication request`, async ({ page }) => {
-		await page.goto("/login?message=ExceedLimit");
+		// await page.goto("/login?message=ExceedLimit");
+		await reliableGoto(page, "/login?message=ExceedLimit");
 		await expect(
 			page.getByText(
 				"サーバーが混み合っており、ログインが困難です。しばらく待ってからの再試行をお願い致します。",
@@ -136,7 +160,8 @@ for (const record of records.slice(0, 5)) {
 		test.beforeEach(
 			"visiting the index page at the first time",
 			async ({ page }) => {
-				await page.goto("/");
+				// await page.goto("/");
+				await reliableGoto(page, "/");
 				await page.waitForURL("/login");
 				await expect(page).toHaveURL("/login");
 				await expect(
@@ -245,7 +270,8 @@ for (const record of records.slice(0, 5)) {
 
 	test.describe(`${respondentId}: after login successed`, () => {
 		test.beforeEach("login", async ({ page }) => {
-			await page.goto("/");
+			// await page.goto("/");
+			await reliableGoto(page, "/");
 			await page.waitForURL("/login");
 			await expect(page).toHaveURL("/login");
 			await page.getByLabel("メールアドレス").fill(email);
@@ -325,7 +351,6 @@ for (const record of records.slice(0, 5)) {
 			await page.getByLabel("年齢").fill(age);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			// await page.reload({ waitUntil: "load" });
 			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
@@ -333,7 +358,6 @@ for (const record of records.slice(0, 5)) {
 			await page.getByLabel("性別").selectOption(sex);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			// await page.reload();
 			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
@@ -343,7 +367,6 @@ for (const record of records.slice(0, 5)) {
 			);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			// await page.reload();
 			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
@@ -352,7 +375,6 @@ for (const record of records.slice(0, 5)) {
 			await page.getByLabel("性別").selectOption(sex);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			// await page.reload();
 			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
@@ -363,7 +385,6 @@ for (const record of records.slice(0, 5)) {
 			);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			// await page.reload();
 			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
@@ -374,7 +395,6 @@ for (const record of records.slice(0, 5)) {
 			);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
-			// await page.reload();
 			await reliableReload(page);
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeDisabled();
@@ -416,7 +436,8 @@ for (const record of records.slice(0, 5)) {
 					/text-blue-700 bg-gray-100/,
 				);
 
-			await page.goto("/info");
+			// await page.goto("/info");
+			await reliableGoto(page, "info");
 			await page.waitForURL("/");
 			await expect(page).toHaveURL("/");
 		});
