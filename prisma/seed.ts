@@ -325,12 +325,6 @@ async function main() {
   const authLocalSavePath = process.env.LOCAL_AUTH_SAVE_PATH;
   const modelNameGt = process.env.MODEL_NAME_GT;
   const modelNameAbsMel = process.env.MODEL_NAME_ABS_MEL;
-  const modelNameAbsCatMelHubertEncoder =
-    process.env.MODEL_NAME_CAT_MEL_HUBERT_ENCODER;
-  const modelNameAbsCatMelHubertCluster =
-    process.env.MODEL_NAME_CAT_MEL_HUBERT_CLUSTER;
-  const modelNameAbsCatMelHubertEncoderHubertCluster =
-    process.env.MODEL_NAME_CAT_MEL_HUBERT_ENCODER_HUBERT_CLUSTER;
 
   if (localWavDir === undefined) {
     throw new Error("LOCAL_WAV_DIR was not specified.");
@@ -358,17 +352,6 @@ async function main() {
   }
   if (modelNameAbsMel === undefined) {
     throw new Error("MODEL_NAME_ABS_MEL was not specified.");
-  }
-  if (modelNameAbsCatMelHubertEncoder === undefined) {
-    throw new Error("MODEL_NAME_CAT_MEL_HUBERT_ENCODER was not specified.");
-  }
-  if (modelNameAbsCatMelHubertCluster === undefined) {
-    throw new Error("MODEL_NAME_CAT_MEL_HUBERT_CLUSTER was not specified.");
-  }
-  if (modelNameAbsCatMelHubertEncoderHubertCluster === undefined) {
-    throw new Error(
-      "MODEL_NAME_CAT_MEL_HUBERT_ENCODER_HUBERT_CLUSTER was not specified.",
-    );
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
@@ -416,10 +399,6 @@ async function main() {
   const modelNameRule: Record<string, string> = {
     gt: modelNameGt,
     absMel: modelNameAbsMel,
-    // absCatMelHubertEncoder: modelNameAbsCatMelHubertEncoder,
-    // absCatMelHubertCluster: modelNameAbsCatMelHubertCluster,
-    // absCatMelHubertEncoderHubertCluster:
-    //   modelNameAbsCatMelHubertEncoderHubertCluster,
   };
 
   const { modelNameList, sampleNameList } = getModelNameAndSampleNameList(
