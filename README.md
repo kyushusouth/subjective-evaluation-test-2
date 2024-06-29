@@ -15,11 +15,11 @@
    - `package.json` の `prisma` セクションにある `seed` を以下のように設定します:
      ```json
      "prisma": {
-       "seed": "ts-node prisma/seed.ts"
+       "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
      }
      ```
 
-4. マイグレーションの実行
+5. マイグレーションの実行
    - `npm run migrate-dev` コマンドを実行して、開発環境のデータベースにマイグレーションを適用します。
 
 ## 本番環境(prod)設定
@@ -33,7 +33,7 @@
    - `package.json` の `prisma` セクションにある `seed` を以下のように設定します:
      ```json
      "prisma": {
-       "seed": "ts-node prisma/seedProd.ts"
+       "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProd.ts"
      }
      ```
 
