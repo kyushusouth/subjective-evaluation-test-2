@@ -14,7 +14,7 @@
     "init": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' admin_utils/init.ts"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProd.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
