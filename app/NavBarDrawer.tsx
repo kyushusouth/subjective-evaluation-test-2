@@ -97,7 +97,7 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
                 d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
               />
             </svg>
-            <span className="sr-only">Close menu</span>
+            <span className="sr-only">Close Menu</span>
           </button>
         </div>
         <div className="py-4 overflow-y-auto flex flex-col justify-center items-start divide-y divide-gray-100">
@@ -139,40 +139,88 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
             </li>
             <li>
               <Link
-                href="/eval_practice"
+                href="/intnat_practice"
                 className={clsx(
                   "block px-4 py-2 text-black hover:text-blue-700 hover:bg-gray-100",
                   {
                     "text-blue-700 bg-gray-100":
-                      currentPathname.startsWith("/eval_practice"),
+                      currentPathname.startsWith("/intnat_practice"),
                   },
                 )}
               >
-                練習試行
+                練習試行（明瞭性・自然性）
               </Link>
             </li>
             <li>
               <Link
-                href="/eval_1"
+                href="/intnat_main"
                 className={clsx(
                   "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
                   {
                     "text-blue-700 bg-gray-100":
-                      currentPathname.startsWith("/eval_1"),
+                      currentPathname.startsWith("/intnat_main"),
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      !respondent.is_finished_eval_1 &&
-                      respondent.is_finished_practice,
+                      !respondent.is_finished_intnat_main &&
+                      respondent.is_finished_intnat_practice,
                   },
                   {
                     "text-gray-400 pointer-events-none":
-                      respondent.is_finished_eval_1 ||
-                      !respondent.is_finished_practice,
+                      respondent.is_finished_intnat_main ||
+                      !respondent.is_finished_intnat_practice,
                   },
                 )}
               >
-                本番試行
+                本番試行（明瞭性・自然性）
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/sim_practice"
+                className={clsx(
+                  "block px-4 py-2 text-black hover:text-blue-700 hover:bg-gray-100",
+                  {
+                    "text-blue-700 bg-gray-100":
+                      currentPathname.startsWith("/sim_practice"),
+                  },
+                  {
+                    "text-black hover:text-blue-700 hover:bg-gray-100":
+                      respondent.is_finished_intnat_main,
+                  },
+                  {
+                    "text-gray-400 pointer-events-none":
+                      !respondent.is_finished_intnat_main,
+                  },
+                )}
+              >
+                練習試行（類似性）
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/sim_main"
+                className={clsx(
+                  "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
+                  {
+                    "text-blue-700 bg-gray-100":
+                      currentPathname.startsWith("/sim_main"),
+                  },
+                  {
+                    "text-black hover:text-blue-700 hover:bg-gray-100":
+                      respondent.is_finished_intnat_main &&
+                      !respondent.is_finished_sim_main &&
+                      respondent.is_finished_sim_practice,
+                  },
+                  {
+                    "text-gray-400 pointer-events-none":
+                      !respondent.is_finished_intnat_main ||
+                      respondent.is_finished_sim_main ||
+                      !respondent.is_finished_sim_practice,
+                  },
+                )}
+              >
+                本番試行（類似性）
               </Link>
             </li>
           </ul>

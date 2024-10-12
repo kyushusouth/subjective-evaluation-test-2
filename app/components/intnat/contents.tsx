@@ -9,29 +9,29 @@ import {
   IntelligibilityItem,
   Respondents,
 } from "@prisma/client";
-import Form from "@/app/eval/form";
-import Confirm from "@/app/eval/confirm";
-import createSchema from "@/app/eval/schema";
+import Form from "@/app/components/intnat/form";
+import Confirm from "@/app/components/intnat/confirm";
+import createSchema from "@/app/components/intnat/schema";
 import * as Yup from "yup";
 
-export default function Content({
+export default function Contents({
   sampleMetaDataList,
-  domainName,
-  bucketName,
   naturalnessItemList,
   intelligibilityItemList,
   respondent,
   numSamplePerPage,
-  sampleMetaDataDummyExample,
+  dummySampleUrl,
+  domainName,
+  bucketName,
 }: {
   sampleMetaDataList: SampleMetaData[];
-  domainName: string;
-  bucketName: string;
   naturalnessItemList: NaturalnessItem[];
   intelligibilityItemList: IntelligibilityItem[];
   respondent: Respondents | undefined;
   numSamplePerPage: number;
-  sampleMetaDataDummyExample: SampleMetaData;
+  dummySampleUrl: string;
+  domainName: string;
+  bucketName: string;
 }) {
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
@@ -99,13 +99,13 @@ export default function Content({
               numSamplePerPage * (pageNumber - 1),
               numSamplePerPage * pageNumber,
             )}
-            domainName={domainName}
-            bucketName={bucketName}
             naturalnessItemList={naturalnessItemList}
             intelligibilityItemList={intelligibilityItemList}
             pageNumber={pageNumber}
             lastPageNumber={lastPageNumber}
-            sampleMetaDataDummyExample={sampleMetaDataDummyExample}
+            dummySampleUrl={dummySampleUrl}
+            domainName={domainName}
+            bucketName={bucketName}
           />
         )}
       </form>

@@ -9,18 +9,23 @@ generator client {
 }
 
 model Respondents {
-  id                   Int       @id @default(autoincrement())
-  auth_id              String    @unique
-  created_at           DateTime  @default(now())
-  age                  Int       @default(-1)
-  sex                  String    @default("無回答")
-  audio_device         String    @default("無回答")
-  is_finished_info     Boolean   @default(false)
-  is_finished_practice Boolean   @default(false)
-  is_finished_eval_1   Boolean   @default(false)
-  is_invalid           Boolean   @default(false)
-  file_path_list       String[]  @default([])
-  Answers              Answers[]
+  id                                Int             @id @default(autoincrement())
+  auth_id                           String          @unique
+  created_at                        DateTime        @default(now())
+  age                               Int             @default(-1)
+  sex                               String          @default("無回答")
+  audio_device                      String          @default("無回答")
+  is_finished_info                  Boolean         @default(false)
+  is_finished_intnat_practice Boolean         @default(false)
+  is_finished_intnat_main     Boolean         @default(false)
+  is_finished_sim_practice     Boolean         @default(false)
+  is_finished_sim_main         Boolean         @default(false)
+  is_invalid                        Boolean         @default(false)
+  file_path_list_eval_int_nat       String[]        @default([])
+  file_path_list_eval_sim_synth     String[]        @default([])
+  file_path_list_eval_sim_gt        String[]        @default([])
+  AnswersIntNat                     AnswersIntNat[]
+  AnswersSim                        AnswersSim[]
 }
 
 model SexItem {
@@ -40,32 +45,43 @@ model SampleMetaData {
   model_id                                Int
   speaker_name                            String
   sample_name                             String
-  sample_group                            Int
-  sample_page_name                        String
+  sample_group_int_nat                    Int
+  sample_group_sim                        Int
+  exp_type                                String
   kind                                    String
   is_dummy                                Boolean
   naturalness_dummy_correct_answer        NaturalnessItem     @relation(fields: [naturalness_dummy_correct_answer_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   naturalness_dummy_correct_answer_id     Int
   intelligibility_dummy_correct_answer    IntelligibilityItem @relation(fields: [intelligibility_dummy_correct_answer_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   intelligibility_dummy_correct_answer_id Int
-  Answers                                 Answers[]
+  similarity_dummy_correct_answer         SimilarityItem      @relation(fields: [similarity_dummy_correct_answer_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  similarity_dummy_correct_answer_id      Int
+  AnswersIntNat                           AnswersIntNat[]
+  AnswersSim                              AnswersSim[]
 }
 
 model NaturalnessItem {
   id             Int              @id @default(autoincrement())
   item           String           @unique
-  Answers        Answers[]
+  AnswersIntNat  AnswersIntNat[]
   SampleMetaData SampleMetaData[]
 }
 
 model IntelligibilityItem {
   id             Int              @id @default(autoincrement())
   item           String           @unique
-  Answers        Answers[]
+  AnswersIntNat  AnswersIntNat[]
   SampleMetaData SampleMetaData[]
 }
 
-model Answers {
+model SimilarityItem {
+  id             Int              @id @default(autoincrement())
+  item           String           @unique
+  AnswersSim     AnswersSim[]
+  SampleMetaData SampleMetaData[]
+}
+
+model AnswersIntNat {
   id                  Int                 @id @default(autoincrement())
   created_at          DateTime            @default(now())
   respondent          Respondents         @relation(fields: [respondent_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
@@ -76,4 +92,15 @@ model Answers {
   naturalness_id      Int
   intelligibility     IntelligibilityItem @relation(fields: [intelligibility_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   intelligibility_id  Int
+}
+
+model AnswersSim {
+  id                  Int            @id @default(autoincrement())
+  created_at          DateTime       @default(now())
+  respondent          Respondents    @relation(fields: [respondent_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  respondent_id       Int
+  sample_meta_data    SampleMetaData @relation(fields: [sample_meta_data_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  sample_meta_data_id Int
+  similarity          SimilarityItem @relation(fields: [similarity_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  similarity_id       Int
 }

@@ -4,7 +4,7 @@
 import { useFormContext } from "react-hook-form";
 import clsx from "clsx";
 import { SampleMetaData } from "@prisma/client";
-import createSchema from "@/app/eval/schema";
+import createSchema from "@/app/components/intnat/schema";
 import * as Yup from "yup";
 
 export default function Confirm({

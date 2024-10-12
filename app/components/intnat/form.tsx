@@ -12,31 +12,36 @@ import {
   NaturalnessItem,
   IntelligibilityItem,
 } from "@prisma/client";
-import createSchema from "@/app/eval/schema";
+import createSchema from "@/app/components/intnat/schema";
+import {
+  IntelligibilityExplanation,
+  NaturalnessExplanation,
+  DummySampleExplanation,
+} from "@/app/components/intnat/instructions";
 import * as Yup from "yup";
 
 export default function Form({
   onNext,
   onPrev,
   sampleMetaDataList,
-  domainName,
-  bucketName,
   naturalnessItemList,
   intelligibilityItemList,
   pageNumber,
   lastPageNumber,
-  sampleMetaDataDummyExample,
+  dummySampleUrl,
+  domainName,
+  bucketName,
 }: {
   onNext: () => void;
   onPrev: () => void;
   sampleMetaDataList: SampleMetaData[];
-  domainName: string;
-  bucketName: string;
   naturalnessItemList: NaturalnessItem[];
   intelligibilityItemList: IntelligibilityItem[];
   pageNumber: number;
   lastPageNumber: number;
-  sampleMetaDataDummyExample: SampleMetaData;
+  dummySampleUrl: string;
+  domainName: string;
+  bucketName: string;
 }) {
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
@@ -114,15 +119,7 @@ export default function Form({
           aria-labelledby="accordion-open-heading-1"
         >
           <div className="p-5 space-y-4 text-base border border-b-0 border-gray-200 text-gray-500">
-            <p className="leading-relaxed">
-              一つ目の評価項目である明瞭性は、
-              <span className="font-bold">
-                発話内容自体がどれくらい聞き取りやすかったか
-              </span>
-              を指します。
-              <br />
-              この評価は自然性とは異なり、発話内容の理解のしやすさに焦点を当てています。
-            </p>
+            <IntelligibilityExplanation />
           </div>
         </div>
 
@@ -185,19 +182,7 @@ export default function Form({
           aria-labelledby="accordion-open-heading-2"
         >
           <div className="p-5 space-y-4 text-base border border-b-0 border-gray-200 text-gray-500">
-            <p className="leading-relaxed">
-              二つ目の評価項目である自然性は、
-              <span className="font-bold">
-                発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
-              </span>
-              を指します。
-              <br />
-              例えば、音質自体やイントネーションの自然さなどが評価の観点として挙げられます。
-              <br />
-              イントネーションなど発話内容に関連する要素も含まれますが、ここではどれくらい自然な音声であるかを評価してください。
-              <br />
-              発話内容の聞き取りやすさではなく、音声全体の自然さが評価の対象です。この点が明瞭性の評価と異なる部分です。
-            </p>
+            <NaturalnessExplanation />
           </div>
         </div>
 
@@ -260,41 +245,7 @@ export default function Form({
           aria-labelledby="accordion-open-heading-3"
         >
           <div className="p-5 space-y-4 text-base border border-t-0 border-gray-200 text-gray-500">
-            <p className="leading-relaxed">
-              音声サンプル内には、ダミー音声が含まれています。ダミー音声では、以下のような音声が再生されます。
-              <br />
-              <br />
-              <span className="font-bold">
-                「これはダミー音声です。明瞭性は〇〇を、自然性は〇〇を選択してください。」
-              </span>
-              <br />
-              <br />
-              再生した音声がダミー音声であった場合、必ずこの音声で指定された評価値を選択してください。これは、実験において適当な回答を防止するためのものです。
-              <br />
-              <br />
-              例として、下記の音声では、
-              <span className="font-bold">
-                「これはダミー音声です。明瞭性は「2: 悪い」を、自然性は「1:
-                非常に悪い」を選択してください。」
-              </span>
-              と指定しています。
-              <audio
-                src={`${domainName}/${bucketName}/${sampleMetaDataDummyExample?.file_path}`}
-                controls
-                controlsList="nodownload"
-                className="my-4 mx-auto"
-              />
-              この場合、明瞭性は「2:
-              悪い」、自然性は「1:非常に悪い」を選択します。音声自体の明瞭性や自然性を評価するわけではないため、ご注意ください。
-              <br />
-              <br />
-              特に、
-              <span className="font-bold">
-                本番試行においてダミー音声で指定された評価値を誤って選んだ場合は、全ての回答が無効となります。また、その場合は報酬もお支払いできません（練習試行の結果は無関係です）。
-              </span>
-              <br />
-              誠に申し訳ありませんが、ご了承いただきますようよろしくお願い致します。
-            </p>
+            <DummySampleExplanation dummySampleUrl={dummySampleUrl} />
           </div>
         </div>
       </div>

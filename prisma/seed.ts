@@ -140,6 +140,11 @@ function assignSampleGroups(
   sampleGroupMap: Record<string, number>;
   samplePageNameMap: Record<string, string>;
 } {
+  // sampleNameListのtestとvalをそれぞれ入れる
+  // sampleGroupMapはtestとvalそれぞれに作る
+  // samplePageNameMapは一つで、testはeval_1、valはeval_practiceとするだけで良い。
+  // samplePageNameMapを作ることなく、testデータを入力とすれば本番試行のデータ、valデータを入力とすれば練習試行のデータを取得できるように作れるといいのかも
+
   const sampleNameListShuffled = shuffleArray(sampleNameList);
   const sampleGroupMap: Record<string, number> = {};
   const samplePageNameMap: Record<string, string> = {};
@@ -206,7 +211,7 @@ function getModelNameKindPairs(
     // Skip if the kind and modelName do not match the rules
     if (
       (kind === "gt" && modelName !== modelNameRule.gt) ||
-      (kind === "abs" && modelName !== modelNameRule.absMel)
+      (kind === "abs_mel_speech_ssl" && modelName !== modelNameRule.absMel)
     ) {
       return;
     }
@@ -281,7 +286,7 @@ function generateSampleMetaData(
     // Skip if the model name and kind do not match the rules
     if (
       (kind === "gt" && modelName !== modelNameRule.gt) ||
-      (kind === "abs" && modelName !== modelNameRule.absMel)
+      (kind === "abs_mel_speech_ssl" && modelName !== modelNameRule.absMel)
     ) {
       return; // Continue to the next file path
     }
@@ -316,7 +321,8 @@ function generateSampleMetaData(
 }
 
 async function main() {
-  const localWavDir = process.env.LOCAL_WAV_DIR;
+  const localWavDirTest = process.env.LOCAL_WAV_DIR_TEST;
+  const localWavDirVal = process.env.LOCAL_WAV_DIR_VAL;
   const localWavDirDummy = process.env.LOCAL_WAV_DIR_DUMMY;
   const localWavDirRandomized = process.env.LOCAL_WAV_DIR_RANDOMIZED;
   const bucketName = process.env.GCS_BUCKET_NAME;
@@ -326,8 +332,11 @@ async function main() {
   const modelNameGt = process.env.MODEL_NAME_GT;
   const modelNameAbsMel = process.env.MODEL_NAME_ABS_MEL;
 
-  if (localWavDir === undefined) {
-    throw new Error("LOCAL_WAV_DIR was not specified.");
+  if (localWavDirTest === undefined) {
+    throw new Error("LOCAL_WAV_DIR_TEST was not specified.");
+  }
+  if (localWavDirVal === undefined) {
+    throw new Error("LOCAL_WAV_DIR_VAL was not specified.");
   }
   if (localWavDirDummy === undefined) {
     throw new Error("LOCAL_WAV_DIR_DUMMY was not specified.");
@@ -394,13 +403,17 @@ async function main() {
     await storage.bucket(bucketName).file(file.name).delete();
   }
 
-  const filePathList = getWavFilesInDirectory(localWavDir);
+  const filePathListTest = getWavFilesInDirectory(localWavDirTest);
+  const filePathListVal = getWavFilesInDirectory(localWavDirVal);
+
+  // これ以降でテストデータを用いた本番試行用のコードと、検証データを用いた練習試行用のコードを分けられるかも
 
   const modelNameRule: Record<string, string> = {
     gt: modelNameGt,
     absMel: modelNameAbsMel,
   };
 
+  // samplNameListをtestとvalで別々に作る
   const { modelNameList, sampleNameList } = getModelNameAndSampleNameList(
     filePathList,
     modelNameRule,
@@ -411,6 +424,7 @@ async function main() {
     sampleNameList,
   );
 
+  // testとvalを分けるなら、samplePageNameMapがいらないかも
   const { sampleGroupMap, samplePageNameMap } = assignSampleGroups(
     sampleNameList,
     sampleGroupSizeList,
@@ -429,6 +443,8 @@ async function main() {
     modelNameKindPairlist,
   );
 
+  // ここまではわけても問題なさそう
+
   let df = new dfd.DataFrame(sampleMetaDataList);
 
   df.addColumn("n_selected", Array(sampleMetaDataList.length).fill(0), {
@@ -437,7 +453,7 @@ async function main() {
 
   const nSpeaker = df["speaker_name"].nUnique();
   const nModel = df["model_id"].nUnique();
-  const nAnsPerSample = 3;
+  const nAnsPerSample = 5;
   const nTrial = nSpeaker * nModel * nAnsPerSample;
   const passwordLength = 6;
 
@@ -510,6 +526,7 @@ async function main() {
     df["n_selected"] = df["n_selected"].add(df["is_selected"]);
     df.drop({ columns: ["is_selected"], inplace: true });
 
+    // ここからのユーザーの認証情報の処理は、本番試行と練習試行で統一する必要があるのでどちらかで一回だけ。
     const email = `user${trial}@test.com`;
     const password = generateRandomString(passwordLength);
 
@@ -528,6 +545,7 @@ async function main() {
       email: email,
       password: password,
     });
+    // ここまで
 
     respondentFilePathList.push({
       id: trial + 1,
@@ -549,6 +567,12 @@ async function main() {
       }`,
     );
   }
+
+  // ここまでの処理をテストデータと検証データで分け、テストデータで本番試行データ、検証データで練習試行データの割り振りを決定。
+  // ユーザーの認証情報は、本番試行においてのみ作成する。そのための条件分岐が必要。
+  // 関数として実装し、上記のdataframeを返すイメージ。
+  // 現状のバックエンドに合わせるため、本番試行用dataframeと練習試行用dataframeを最後に統合。
+  // 話者類似度テスト用のサンプル割り振りを実装する必要あり。明瞭性・自然性テストを踏襲しながら、合成音声あるいは分析合成と原音声のペアを取得するように実装する。
 
   const dfAuth = new dfd.DataFrame(authList);
   dfd.toCSV(dfAuth, {

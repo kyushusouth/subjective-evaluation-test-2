@@ -44,36 +44,76 @@ export default async function Index() {
       <hr className="border-t border-gray-300" />
 
       <section className="space-y-4 text-base">
-        <h2 className="text-lg">練習試行</h2>
+        <h2 className="text-lg">練習試行（明瞭性・自然性）</h2>
         <p className="leading-relaxed">
-          練習試行は、本番試行の前に行っていただく練習のための実験となります。
+          練習試行（明瞭性・自然性）は、本番試行（明瞭性・自然性）の前に行っていただく練習のための実験となります。
           <br />
           メニューから、
-          <span className="font-bold text-blue-700">練習試行</span>
+          <span className="font-bold text-blue-700">
+            練習試行（明瞭性・自然性）
+          </span>
           をクリックいただくことで回答ページにアクセス頂けます。
           <br />
-          練習試行は何度行っていただいても構いませんので、こちらを通して実験内容の把握をお願い致します。
+          こちらは何度行っていただいても構いませんので、こちらを通して実験内容の把握をお願い致します。
         </p>
       </section>
 
       <hr className="border-t border-gray-300" />
 
       <section className="space-y-4 text-base">
-        <h2 className="text-lg">本番試行</h2>
+        <h2 className="text-lg">本番試行（明瞭性・自然性）</h2>
         <p className="leading-relaxed">
-          本番試行は、練習試行の後に行っていただく本番の実験になります。
+          本番試行（明瞭性・自然性）は、練習試行（明瞭性・自然性）の後に行っていただく本番の実験になります。
           <br />
           メニューから、
-          <span className="font-bold text-blue-700">本番試行</span>
+          <span className="font-bold text-blue-700">
+            本番試行（明瞭性・自然性）
+          </span>
           をクリックいただくことで回答ページにアクセス頂けます。
           <br />
-          練習試行を一度も行っていない場合、本番試行を選択できなくなっていると思いますが、そのような仕様のため問題ありません。
-          <br />
-          練習試行を一度完了しますと、選択可能になります。
+          練習試行（明瞭性・自然性）を一度も行っていない場合は選択できなくなっていると思いますが、そのような仕様のため問題ありません。練習試行（明瞭性・自然性）を一度完了しますと、選択可能になります。
           <br />
           <span className="font-bold">
             一度提出しますと、回答の修正は不可能となりますのでご注意ください。
           </span>
+        </p>
+      </section>
+
+      <hr className="border-t border-gray-300" />
+
+      <section className="space-y-4 text-base">
+        <h2 className="text-lg">練習試行（類似性）</h2>
+        <p className="leading-relaxed">
+          練習試行（類似性）は、本番試行（類似性）の前に行っていただく練習のための実験となります。
+          <br />
+          メニューから、
+          <span className="font-bold text-blue-700">練習試行（類似性）</span>
+          をクリックいただくことで回答ページにアクセス頂けます。
+          <br />
+          こちらは何度行っていただいても構いませんので、こちらを通して実験内容の把握をお願い致します。
+          <br />
+          本番試行（明瞭性・自然性）の回答を終えなければ、本ページにはアクセスできないようになっておりますので、その順で実施いただきますようよろしくお願い致します。
+        </p>
+      </section>
+
+      <hr className="border-t border-gray-300" />
+
+      <section className="space-y-4 text-base">
+        <h2 className="text-lg">本番試行（類似性）</h2>
+        <p className="leading-relaxed">
+          本番試行（類似性）は、練習試行（類似性）の後に行っていただく本番の実験になります。
+          <br />
+          メニューから、
+          <span className="font-bold text-blue-700">本番試行（類似性）</span>
+          をクリックいただくことで回答ページにアクセス頂けます。
+          <br />
+          練習試行（類似性）を一度も行っていない場合は選択できなくなっていると思いますが、そのような仕様のため問題ありません。練習試行（類似性）を一度完了しますと、選択可能になります。
+          <br />
+          <span className="font-bold">
+            一度提出しますと、回答の修正は不可能となりますのでご注意ください。
+          </span>
+          <br />
+          本番試行（明瞭性・自然性）の回答を終えなければ、本ページにはアクセスできないようになっておりますので、その順で実施いただきますようよろしくお願い致します。
         </p>
       </section>
 
