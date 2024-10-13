@@ -4,7 +4,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import fs from "fs";
 import { parse } from "csv-parse/sync";
-import { expect, Page, test } from "@playwright/test";
+import { expect, Locator, Page, test } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
 
 function generateRandomInteger(min: number, max: number) {
@@ -31,7 +31,7 @@ async function reset(respondentId: number) {
 	});
 }
 
-async function checkAudioPlayable(audio: HTMLAudioElement): Promise<boolean> {
+async function isAudioPlayable(audio: HTMLAudioElement): Promise<boolean> {
 	try {
 		await audio.play();
 		audio.pause();
@@ -39,6 +39,16 @@ async function checkAudioPlayable(audio: HTMLAudioElement): Promise<boolean> {
 	} catch (e) {
 		return false;
 	}
+}
+
+async function checkIsAudioPlayable(
+	audio: Locator,
+) {
+	expect(audio).not.toBeNull();
+	const locatorIsPlayable = await audio.evaluate(
+		isAudioPlayable,
+	);
+	expect(locatorIsPlayable).toBe(true);
 }
 
 async function reliableReload(
@@ -82,30 +92,74 @@ async function reliableGoto(
 	}
 }
 
+async function navBarDrawerCurrentPage(
+	page: Page,
+	linkName: string,
+) {
+	await expect(page.getByRole("link", { name: linkName, exact: true }))
+		.toHaveClass(
+			/text-blue-700 bg-gray-100/,
+		);
+}
+
+async function navBarDrawerIsSelectable(
+	page: Page,
+	linkName: string,
+) {
+	await expect(
+		page.getByRole("link", { name: linkName, exact: true }),
+	).not.toHaveClass(/pointer-events-none/);
+	await expect(
+		page.getByRole("link", { name: linkName, exact: true }),
+	).toHaveClass(/text-black hover:text-blue-700 hover:bg-gray-100/);
+}
+
+async function navBarDrawerIsNotSelectable(
+	page: Page,
+	linkName: string,
+) {
+	await expect(
+		page.getByRole("link", { name: linkName, exact: true }),
+	).toHaveClass(/text-gray-400 pointer-events-none/);
+}
+
+function getCombinations<T>(elements: T[]): T[][] {
+	const result: T[][] = [[]];
+	for (const element of elements) {
+		const currentLength = result.length;
+		for (let i = 0; i < currentLength; i += 1) {
+			const combination = result[i].concat(element);
+			result.push(combination);
+		}
+	}
+	return result;
+}
+
 async function checkAccordion(
 	page: Page,
-	checkList: string[][],
+	checkListAll: string[],
 ) {
-	for (const itemList of checkList) {
-		for (const item of itemList) {
-			await page.getByRole("button", { name: item }).click();
-			await expect(page.getByLabel(item).locator("div"))
-				.toBeVisible();
-			if (item === "ダミー音声について") {
-				const dummySampleIntNatAccordion = await page.getByLabel(
-					"ダミー音声について",
-				).locator("audio");
-				expect(dummySampleIntNatAccordion).not.toBeNull();
-				const dummySampleIntNatAccordionIsPlayable =
-					await dummySampleIntNatAccordion!
-						.evaluate(
-							checkAudioPlayable,
-						);
-				expect(dummySampleIntNatAccordionIsPlayable).toBe(true);
+	const checkListCombinations = getCombinations(checkListAll);
+	for (const checkList of checkListCombinations) {
+		if (checkList.length === 0) {
+			for (const item of checkListAll) {
+				await expect(page.getByLabel(item).locator("div")).not.toBeVisible();
 			}
-			await page.getByRole("button", { name: item }).click();
-			await expect(page.getByLabel(item).locator("div"))
-				.not.toBeVisible();
+		} else {
+			for (const item of checkList) {
+				await page.getByRole("button", { name: item }).click();
+				await expect(page.getByLabel(item).locator("div"))
+					.toBeVisible();
+				if (item === "ダミー音声について") {
+					const dummySampleIntNatAccordion = await page.getByLabel(
+						"ダミー音声について",
+					).locator("audio");
+					await checkIsAudioPlayable(dummySampleIntNatAccordion);
+				}
+				await page.getByRole("button", { name: item }).click();
+				await expect(page.getByLabel(item).locator("div"))
+					.not.toBeVisible();
+			}
 		}
 	}
 }
@@ -126,6 +180,126 @@ async function checkNextPrevButtons(
 	await expect(
 		page.getByRole("button", { name: "進む" }),
 	).toBeDisabled();
+}
+
+async function checkFormItem(
+	formItemList: Locator,
+	sampleId: number,
+	itemList: string[],
+	itemName: string,
+) {
+	const formItem = formItemList.nth(sampleId);
+	const checkIndex = generateRandomInteger(
+		0,
+		itemList.length - 1,
+	);
+	await formItem
+		.locator(`input[name^="${itemName}_"]`)
+		.nth(checkIndex)
+		.check();
+}
+
+async function formPageScrollAndGoNext(
+	page: Page,
+) {
+	await page.evaluate(() => {
+		window.scrollTo({
+			top: document.body.scrollHeight,
+			behavior: "smooth",
+		});
+	});
+	await expect(
+		page.getByRole("button", { name: "進む" }),
+	).toBeEnabled();
+	await page.getByRole("button", { name: "進む" })
+		.click();
+}
+
+async function formCheckSubmit(
+	page: Page,
+) {
+	await expect(page.getByRole("button", { name: "戻る" }))
+		.toBeEnabled();
+	await expect(
+		page.getByRole("button", { name: "提出する" }),
+	).toBeEnabled();
+	await page.getByRole("button", { name: "提出する" })
+		.click();
+	await page.waitForURL("/thanks");
+	await page.waitForURL("/");
+}
+
+async function checkForm(
+	page: Page,
+	testConfig: {
+		testName: string;
+		linkName: string;
+		url: string;
+		numTotalPages: number;
+		numSampleLastPage: number;
+	},
+	numSamplesPerPage: number,
+	accordionList: string[],
+	numAudioSamplesPerFormItem: number,
+	answerItemsList: { [key: string]: string[] },
+) {
+	await page
+		.getByRole("button", {
+			name: "実験を開始する",
+		})
+		.click();
+	await page.waitForURL(`${testConfig.url}/exp`);
+	await navBarDrawerCurrentPage(page, testConfig.linkName);
+
+	for (
+		let pageId = 0;
+		pageId < testConfig.numTotalPages;
+		pageId += 1
+	) {
+		await checkAccordion(page, accordionList);
+		await checkNextPrevButtons(page, pageId);
+
+		const formItemList = page.getByTestId("formItem");
+		for (
+			let sampleId = 0;
+			sampleId < numSamplesPerPage;
+			sampleId += 1
+		) {
+			if (
+				pageId === testConfig.numTotalPages - 1 &&
+				testConfig.numSampleLastPage !== 0 &&
+				sampleId > testConfig.numSampleLastPage - 1
+			) {
+				break;
+			}
+
+			for (
+				let audioId = 0;
+				audioId < numAudioSamplesPerFormItem;
+				audioId += 1
+			) {
+				const sampleIntNat = await page.locator(
+					`li:nth-child(${sampleId + 1}) > audio:nth-child(${audioId + 1})`,
+				);
+				await checkIsAudioPlayable(sampleIntNat);
+			}
+
+			for (
+				const [answerName, answerItems] of Object.entries(answerItemsList)
+			) {
+				await checkFormItem(
+					formItemList,
+					sampleId,
+					answerItems,
+					answerName,
+				);
+			}
+		}
+
+		await formPageScrollAndGoNext(page);
+	}
+
+	await formCheckSubmit(page);
 }
 
 const authLocalSavePath = process.env.LOCAL_AUTH_SAVE_PATH;
@@ -235,10 +409,8 @@ for (const record of records.slice(1, 2)) {
 				"type",
 				"password",
 			);
-
 			await page.getByLabel("メールアドレス").fill(email);
 			await page.getByLabel("パスワード").fill(password);
-
 			await page
 				.locator("label")
 				.filter({ hasText: "パスワード" })
@@ -248,7 +420,6 @@ for (const record of records.slice(1, 2)) {
 				"type",
 				"text",
 			);
-
 			await page
 				.locator("label")
 				.filter({ hasText: "パスワード" })
@@ -258,7 +429,6 @@ for (const record of records.slice(1, 2)) {
 				"type",
 				"password",
 			);
-
 			await page.getByRole("button", { name: "ログイン" }).click();
 			await page.waitForURL("/");
 			await expect(
@@ -270,39 +440,23 @@ for (const record of records.slice(1, 2)) {
 		});
 
 		test("success after failed", async ({ page }) => {
-			await page.getByLabel("メールアドレス").fill(wrongEmail);
-			await page.getByLabel("パスワード").fill(wrongPassword);
-			await page.getByRole("button", { name: "ログイン" }).click();
-			await page.waitForURL("/login?message=Failed");
-			await expect(page.getByText("認証に失敗しました。")).toBeVisible();
-			await expect(
-				page.getByText(
-					"正しいメールアドレスとパスワードの入力をお願い致します。",
-				),
-			).toBeVisible();
-
-			await page.getByLabel("メールアドレス").fill(email);
-			await page.getByLabel("パスワード").fill(wrongPassword);
-			await page.getByRole("button", { name: "ログイン" }).click();
-			await page.waitForURL("/login?message=Failed");
-			await expect(page.getByText("認証に失敗しました。")).toBeVisible();
-			await expect(
-				page.getByText(
-					"正しいメールアドレスとパスワードの入力をお願い致します。",
-				),
-			).toBeVisible();
-
-			await page.getByLabel("メールアドレス").fill(wrongEmail);
-			await page.getByLabel("パスワード").fill(password);
-			await page.getByRole("button", { name: "ログイン" }).click();
-			await page.waitForURL("/login?message=Failed");
-			await expect(page.getByText("認証に失敗しました。")).toBeVisible();
-			await expect(
-				page.getByText(
-					"正しいメールアドレスとパスワードの入力をお願い致します。",
-				),
-			).toBeVisible();
-
+			const wrongEmailPasswordList = [
+				[email, wrongPassword],
+				[wrongEmail, password],
+				[wrongEmail, wrongPassword],
+			];
+			for (const [m, p] of wrongEmailPasswordList) {
+				await page.getByLabel("メールアドレス").fill(m);
+				await page.getByLabel("パスワード").fill(p);
+				await page.getByRole("button", { name: "ログイン" }).click();
+				await page.waitForURL("/login?message=Failed");
+				await expect(page.getByText("認証に失敗しました。")).toBeVisible();
+				await expect(
+					page.getByText(
+						"正しいメールアドレスとパスワードの入力をお願い致します。",
+					),
+				).toBeVisible();
+			}
 			await page.getByLabel("メールアドレス").fill(email);
 			await page.getByLabel("パスワード").fill(password);
 			await page.getByRole("button", { name: "ログイン" }).click();
@@ -333,51 +487,12 @@ for (const record of records.slice(1, 2)) {
 		});
 
 		test("check NavBarDrawer", async ({ page }) => {
-			await expect(page.getByRole("link", { name: "HOME", exact: true }))
-				.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "アンケート", exact: true }),
-			).not.toHaveClass(/pointer-events-none/);
-			await expect(
-				page.getByRole("link", { name: "アンケート", exact: true }),
-			).toHaveClass(/text-black hover:text-blue-700 hover:bg-gray-100/);
-
-			await expect(
-				page.getByRole("link", {
-					name: "練習試行（明瞭性・自然性）",
-					exact: true,
-				}),
-			)
-				.toHaveClass(
-					/text-black hover:text-blue-700 hover:bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", {
-					name: "本番試行（明瞭性・自然性）",
-					exact: true,
-				}),
-			)
-				.toHaveClass(
-					/text-gray-400 pointer-events-none/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "練習試行（類似性）", exact: true }),
-			)
-				.toHaveClass(
-					/text-gray-400 pointer-events-none/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "本番試行（類似性）", exact: true }),
-			)
-				.toHaveClass(
-					/text-gray-400 pointer-events-none/,
-				);
+			await navBarDrawerCurrentPage(page, "HOME");
+			await navBarDrawerIsSelectable(page, "アンケート");
+			await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
+			await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性・自然性）");
+			await navBarDrawerIsNotSelectable(page, "練習試行（類似性）");
+			await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
 		});
 
 		test("info", async ({ page }) => {
@@ -385,61 +500,14 @@ for (const record of records.slice(1, 2)) {
 			await page.getByRole("link", { name: "アンケート" }).click();
 			await page.waitForURL("/info");
 
-			await expect(page.getByRole("link", { name: "HOME", exact: true }))
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
+			await navBarDrawerIsSelectable(page, "HOME");
+			await navBarDrawerCurrentPage(page, "アンケート");
 
-			await expect(
-				page.getByRole("link", { name: "アンケート", exact: true }),
-			).toHaveClass(/text-blue-700 bg-gray-100/);
-
-			await expect(
-				page.getByRole("link", {
-					name: "練習試行（明瞭性・自然性）",
-					exact: true,
-				}),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", {
-					name: "本番試行（明瞭性・自然性）",
-					exact: true,
-				}),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "練習試行（類似性）", exact: true }),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "本番試行（類似性）", exact: true }),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(page.getByRole("button", { name: "提出する" }))
-				.toBeDisabled();
-
-			const infoCheckList = [
-				["年齢"],
-				["性別"],
-				["利用される音響機器"],
-				["年齢", "性別"],
-				["年齢", "利用される音響機器"],
-				["性別", "利用される音響機器"],
-				["年齢", "性別", "利用される音響機器"],
-			];
+			const infoCheckList = getCombinations([
+				"年齢",
+				"性別",
+				"利用される音響機器",
+			]);
 			const infoCheckItemMap: { [key: string]: string } = {
 				"年齢": age,
 				"性別": sex,
@@ -465,52 +533,11 @@ for (const record of records.slice(1, 2)) {
 			await expect(page.getByRole("button", { name: "提出する" }))
 				.toBeEnabled();
 			await page.getByRole("button", { name: "提出する" }).click();
-
 			await page.waitForURL("/thanks");
 			await page.waitForURL("/");
 
-			await expect(page.getByRole("link", { name: "HOME", exact: true }))
-				.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "アンケート", exact: true }),
-			).toHaveClass(/text-gray-400 pointer-events-none/);
-
-			await expect(
-				page.getByRole("link", {
-					name: "練習試行（明瞭性・自然性）",
-					exact: true,
-				}),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", {
-					name: "本番試行（明瞭性・自然性）",
-					exact: true,
-				}),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "練習試行（類似性）", exact: true }),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
-
-			await expect(
-				page.getByRole("link", { name: "本番試行（類似性）", exact: true }),
-			)
-				.not.toHaveClass(
-					/text-blue-700 bg-gray-100/,
-				);
+			await navBarDrawerCurrentPage(page, "HOME");
+			await navBarDrawerIsNotSelectable(page, "アンケート");
 
 			await reliableGoto(page, "info");
 			await page.waitForURL("/");
@@ -551,356 +578,55 @@ for (const record of records.slice(1, 2)) {
 						.click();
 					await page.waitForURL(testConfig.url);
 
-					const dummySampleIntNatFirst = await page.locator("audio");
-					expect(dummySampleIntNatFirst).not.toBeNull();
-					const dummySampleIntNatFirstIsPlayable = await dummySampleIntNatFirst!
-						.evaluate(
-							checkAudioPlayable,
-						);
-					expect(dummySampleIntNatFirstIsPlayable).toBe(true);
-
-					await expect(
-						page.getByRole("link", { name: "HOME", exact: true }),
-					)
-						.not.toHaveClass(
-							/text-blue-700 bg-gray-100/,
-						);
-
-					await expect(
-						page.getByRole("link", {
-							name: "アンケート",
-							exact: true,
-						}),
-					)
-						.not.toHaveClass(
-							/text-blue-700 bg-gray-100/,
-						);
-
-					if (testConfig.testName === "intnat_practice_1") {
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-blue-700 bg-gray-100/,
+					await navBarDrawerIsSelectable(page, "HOME");
+					if (testConfig.linkName === "練習試行（明瞭性・自然性）") {
+						await navBarDrawerCurrentPage(page, "練習試行（明瞭性・自然性）");
+						if (testConfig.testName === "intnat_practice_1") {
+							await navBarDrawerIsNotSelectable(
+								page,
+								"本番試行（明瞭性・自然性）",
 							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
+						} else {
+							await navBarDrawerIsSelectable(
+								page,
+								"本番試行（明瞭性・自然性）",
 							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（類似性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（類似性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
-							);
-					} else if (testConfig.linkName === "intnat_practice_2") {
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-blue-700 bg-gray-100/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						).not
-							.toHaveClass(
-								/pointer-events-none/,
-							);
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-black hover:text-blue-700 hover:bg-gray-100/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（類似性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（類似性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
-							);
-					} else if (testConfig.linkName === "intnat_main") {
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.not.toHaveClass(
-								/text-blue-700 bg-gray-100/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-blue-700 bg-gray-100/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（類似性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（類似性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
-							);
-					}
-
-					await page
-						.getByRole("button", {
-							name: "実験を開始する",
-						})
-						.click();
-					await page.waitForURL(`${testConfig.url}/exp`);
-
-					await expect(
-						page.getByRole("link", {
-							name: testConfig.linkName,
-							exact: true,
-						}),
-					)
-						.toHaveClass(
-							/text-blue-700 bg-gray-100/,
-						);
-
-					const intnatAccordionCheckList: string[][] = [
-						["明瞭性とは"],
-						["自然性とは"],
-						["ダミー音声について"],
-						["明瞭性とは", "自然性とは"],
-						["明瞭性とは", "ダミー音声について"],
-						["自然性とは", "ダミー音声について"],
-						["明瞭性とは", "自然性とは", "ダミー音声について"],
-					];
-					for (
-						let pageId = 0;
-						pageId < testConfig.numTotalPages;
-						pageId += 1
-					) {
-						await expect(page.getByLabel("明瞭性とは").locator("div")).not
-							.toBeVisible();
-						await expect(page.getByLabel("自然性とは").locator("div")).not
-							.toBeVisible();
-						await expect(page.getByLabel("ダミー音声について").locator("div"))
-							.not
-							.toBeVisible();
-						await checkAccordion(page, intnatAccordionCheckList);
-						await checkNextPrevButtons(page, pageId);
-
-						const formItemList = page.getByTestId("formItem");
-						for (
-							let sampleId = 0;
-							sampleId < numSamplesPerPage;
-							sampleId += 1
-						) {
-							if (
-								pageId === testConfig.numTotalPages - 1 &&
-								testConfig.numSampleLastPage !== 0 &&
-								sampleId > testConfig.numSampleLastPage - 1
-							) {
-								break;
-							}
-
-							const sampleIntNat = await page.locator("ul")
-								.filter({
-									hasText: "明瞭性1: 非常に悪い2: 悪い3: 普通4: 良い5",
-								}).locator("audio").nth(sampleId);
-							expect(sampleIntNat).not.toBeNull();
-							const sampleIntNatIsPlayable = await sampleIntNat!.evaluate(
-								checkAudioPlayable,
-							);
-							expect(sampleIntNatIsPlayable).toBe(true);
-
-							const formItem = formItemList.nth(sampleId);
-							const intelligibilityItemIndex = generateRandomInteger(
-								0,
-								intelligibilityItemList.length - 1,
-							);
-							const naturalnessItemIndex = generateRandomInteger(
-								0,
-								naturalnessItemList.length - 1,
-							);
-
-							// ラジオボタン
-							await formItem
-								.locator('input[name^="intelligibility_"]')
-								.nth(intelligibilityItemIndex)
-								.check();
-							await formItem
-								.locator('input[name^="naturalness"]')
-								.nth(naturalnessItemIndex)
-								.check();
-
-							// セレクトボックス
-							// await formItem
-							//   .getByTestId("intelligibility")
-							//   .selectOption(intelligibilityItem);
-							// await formItem
-							//   .getByTestId("naturalness")
-							//   .selectOption(naturalnessItem);
 						}
-
-						await page.evaluate(() => {
-							window.scrollTo({
-								top: document.body.scrollHeight,
-								behavior: "smooth",
-							});
-						});
-						await expect(
-							page.getByRole("button", { name: "進む" }),
-						).toBeEnabled();
-						await page.getByRole("button", { name: "進む" })
-							.click();
+					} else if (testConfig.linkName === "本番試行（明瞭性・自然性）") {
+						await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
+						await navBarDrawerCurrentPage(page, "本番試行（明瞭性・自然性）");
 					}
+					await navBarDrawerIsNotSelectable(page, "練習試行（類似性）");
+					await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
 
-					await expect(page.getByRole("button", { name: "戻る" }))
-						.toBeEnabled();
-					await expect(
-						page.getByRole("button", { name: "提出する" }),
-					).toBeEnabled();
-					await page.getByRole("button", { name: "提出する" })
-						.click();
+					const dummySampleIntNatFirst = await page.locator("audio");
+					await checkIsAudioPlayable(dummySampleIntNatFirst);
 
-					await page.waitForURL("/thanks");
-					await page.waitForURL("/");
+					await checkForm(
+						page,
+						testConfig,
+						numSamplesPerPage,
+						["明瞭性とは", "自然性とは", "ダミー音声について"],
+						1,
+						{
+							"intelligibility": intelligibilityItemList,
+							"naturalness": naturalnessItemList,
+						},
+					);
 
-					await expect(
-						page.getByRole("link", { name: "HOME", exact: true }),
-					)
-						.toHaveClass(
-							/text-blue-700 bg-gray-100/,
-						);
-
-					await expect(
-						page.getByRole("link", {
-							name: "アンケート",
-							exact: true,
-						}),
-					)
-						.not.toHaveClass(
-							/text-blue-700 bg-gray-100/,
-						);
-
-					await expect(
-						page.getByRole("link", {
-							name: "練習試行（明瞭性・自然性）",
-							exact: true,
-						}),
-					)
-						.not.toHaveClass(
-							/text-blue-700 bg-gray-100/,
-						);
-
+					await navBarDrawerCurrentPage(page, "HOME");
+					await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
 					if (testConfig.linkName === "本番試行（明瞭性・自然性）") {
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-gray-400 pointer-events-none/,
-							);
-
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（類似性）",
-								exact: true,
-							}),
-						)
-							.not.toHaveClass(
-								/pointer-events-none/,
-							);
-						await expect(
-							page.getByRole("link", {
-								name: "練習試行（類似性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-black hover:text-blue-700 hover:bg-gray-100/,
-							);
+						await navBarDrawerIsNotSelectable(
+							page,
+							"本番試行（明瞭性・自然性）",
+						);
+						await navBarDrawerIsSelectable(page, "練習試行（類似性）");
 					} else {
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						).not
-							.toHaveClass(
-								/pointer-events-none/,
-							);
-						await expect(
-							page.getByRole("link", {
-								name: "本番試行（明瞭性・自然性）",
-								exact: true,
-							}),
-						)
-							.toHaveClass(
-								/text-black hover:text-blue-700 hover:bg-gray-100/,
-							);
+						await navBarDrawerIsSelectable(page, "本番試行（明瞭性・自然性）");
+						await navBarDrawerIsNotSelectable(page, "練習試行（類似性）");
 					}
+					await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
 				});
 			}
 		});
@@ -940,59 +666,43 @@ for (const record of records.slice(1, 2)) {
 						.click();
 					await page.waitForURL(testConfig.url);
 
-					const dummySampleSimFirst = await page.locator("audio");
-					expect(dummySampleSimFirst).not.toBeNull();
-					const dummySampleSimFirstIsPlayable = await dummySampleSimFirst!
-						.evaluate(
-							checkAudioPlayable,
-						);
-					expect(dummySampleSimFirstIsPlayable).toBe(true);
-
-					await page
-						.getByRole("button", {
-							name: "実験を開始する",
-						})
-						.click();
-					await page.waitForURL(`${testConfig.url}/exp`);
-
-					await expect(
-						page.getByRole("link", {
-							name: testConfig.linkName,
-							exact: true,
-						}),
-					)
-						.toHaveClass(
-							/text-blue-700 bg-gray-100/,
-						);
-
-					const simAccordionCheckList: string[][] = [
-						["類似性とは"],
-						["ダミー音声について"],
-						["類似性とは", "ダミー音声について"],
-					];
-					for (let pageId = 0; pageId < testConfig.numTotalPages; pageId += 1) {
-						await expect(page.getByLabel("類似性とは").locator("div")).not
-							.toBeVisible();
-						await expect(page.getByLabel("ダミー音声について").locator("div"))
-							.not
-							.toBeVisible();
-						await checkAccordion(page, simAccordionCheckList);
-						await checkNextPrevButtons(page, pageId);
-
-						const formItemList = page.getByTestId("formItem");
-						for (
-							let sampleId = 0;
-							sampleId < numSamplesPerPage;
-							sampleId += 1
-						) {
-							if (
-								pageId === testConfig.numTotalPages - 1 &&
-								testConfig.numSampleLastPage !== 0 &&
-								sampleId > testConfig.numSampleLastPage - 1
-							) {
-								break;
-							}
+					await navBarDrawerIsSelectable(page, "HOME");
+					await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
+					await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性・自然性）");
+					if (testConfig.linkName === "練習試行（類似性）") {
+						await navBarDrawerCurrentPage(page, "練習試行（類似性）");
+						if (testConfig.testName === "sim_practice_1") {
+							await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
+						} else {
+							await navBarDrawerIsSelectable(page, "本番試行（類似性）");
 						}
+					} else if (testConfig.linkName === "本番試行（類似性）") {
+						await navBarDrawerIsSelectable(page, "練習試行（類似性）");
+						await navBarDrawerCurrentPage(page, "本番試行（類似性）");
+					}
+
+					const dummySampleSimFirst = await page.locator("audio");
+					await checkIsAudioPlayable(dummySampleSimFirst);
+
+					await checkForm(
+						page,
+						testConfig,
+						numSamplesPerPage,
+						["類似性とは", "ダミー音声について"],
+						2,
+						{
+							"similarity": similarityItemList,
+						},
+					);
+
+					await navBarDrawerCurrentPage(page, "HOME");
+					await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
+					await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性・自然性）");
+					await navBarDrawerIsSelectable(page, "練習試行（類似性）");
+					if (testConfig.linkName === "本番試行（類似性）") {
+						await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
+					} else {
+						await navBarDrawerIsSelectable(page, "本番試行（類似性）");
 					}
 				});
 			}
