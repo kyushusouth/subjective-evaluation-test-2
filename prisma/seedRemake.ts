@@ -9,9 +9,6 @@ import path from "path";
 import { execSync } from "child_process";
 import { v4 as uuidv4 } from "uuid";
 import { Storage } from "@google-cloud/storage";
-import { reportWebVitals } from "next/dist/build/templates/pages";
-import { experimental_taintUniqueValue } from "react";
-import { ErrorHandlerSource } from "next/dist/server/app-render/create-error-handler";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dfd = require("danfojs-node");
@@ -337,6 +334,7 @@ async function makeDataFrameIntNat(
   }[],
   expType: string,
   numAnsPerSample: number,
+  numDummyUsers: number,
 ): Promise<
   {
     respondentFilePathListIntNat: { id: number; file_path_list: string[] }[];
@@ -348,14 +346,15 @@ async function makeDataFrameIntNat(
     inplace: true,
   });
 
-  dfd.toCSV(df, {
-    filePath:
-      "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/int_nat/full.csv",
-  });
+  // dfd.toCSV(df, {
+  //   filePath:
+  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/int_nat/full.csv",
+  // });
 
   const numSpeaker = df["speaker_name"].nUnique();
   const numModel = df["model_id"].nUnique();
   const numTrial = numSpeaker * numModel * numAnsPerSample;
+  const numTrialWithDummyUsers = numTrial + numDummyUsers;
   const passwordLength = 6;
   const respondentFilePathListIntNat: {
     id: number;
@@ -364,7 +363,7 @@ async function makeDataFrameIntNat(
   const authList: { respondent_id: number; email: string; password: string }[] =
     [];
 
-  for (let trial = 0; trial < numTrial; trial += 1) {
+  for (let trial = 0; trial < numTrialWithDummyUsers; trial += 1) {
     const dfCand = df["n_selected"].nUnique() === 1
       ? df.copy()
       : df.loc({ rows: df["n_selected"].lt(df["n_selected"].max()) }).copy();
@@ -430,23 +429,43 @@ async function makeDataFrameIntNat(
     df.drop({ columns: ["is_selected"], inplace: true });
 
     if (expType === "main") {
-      const email = `user${trial}@test.com`;
-      const password = generateRandomString(passwordLength);
-      const { error: createUserError } = await supabase
-        .auth.admin.createUser({
+      if (trial < numTrial) {
+        const email = `user${trial}@test.com`;
+        const password = generateRandomString(passwordLength);
+        const { error: createUserError } = await supabase
+          .auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+          });
+        if (createUserError) {
+          console.error(`createUserError: ${createUserError}`);
+        }
+        authList.push({
+          respondent_id: trial + 1,
           email: email,
           password: password,
-          email_confirm: true,
         });
-      if (createUserError) {
-        console.error(`createUserError: ${createUserError}`);
+        console.log(trial, email, password);
+      } else {
+        const email = `dummy${trial}@test.com`;
+        const password = generateRandomString(passwordLength);
+        const { error: createUserError } = await supabase
+          .auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+          });
+        if (createUserError) {
+          console.error(`createUserError: ${createUserError}`);
+        }
+        authList.push({
+          respondent_id: trial + 1,
+          email: email,
+          password: password,
+        });
+        console.log(trial, email, password);
       }
-      authList.push({
-        respondent_id: trial + 1,
-        email: email,
-        password: password,
-      });
-      console.log(trial, email, password);
     }
 
     respondentFilePathListIntNat.push({
@@ -475,6 +494,7 @@ function makeDataFrameSim(
     similarity_dummy_correct_answer_id: number;
   }[],
   numAnsPerSample: number,
+  numDummyUsers: number,
 ): {
   id: number;
   file_path_synth_list: string[];
@@ -487,18 +507,18 @@ function makeDataFrameSim(
     inplace: true,
   });
 
-  dfd.toCSV(df, {
-    filePath:
-      "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/full.csv",
-  });
-  dfd.toCSV(dfGT, {
-    filePath:
-      "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/gt.csv",
-  });
-  dfd.toCSV(dfSynth, {
-    filePath:
-      "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/synth.csv",
-  });
+  // dfd.toCSV(df, {
+  //   filePath:
+  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/full.csv",
+  // });
+  // dfd.toCSV(dfGT, {
+  //   filePath:
+  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/gt.csv",
+  // });
+  // dfd.toCSV(dfSynth, {
+  //   filePath:
+  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/synth.csv",
+  // });
 
   const numSpeaker = dfSynth["speaker_name"].nUnique();
   const numModel = dfSynth["model_id"].nUnique();
@@ -506,13 +526,14 @@ function makeDataFrameSim(
   // Simは原音声を含まない分numTrialが減るので、増やして揃えることで対応
   const numTrial = numSpeaker * numModel * numAnsPerSample +
     numSpeaker * numAnsPerSample;
+  const numTrialWithDummyUsers = numTrial + numDummyUsers;
   const respondentFilePathList: {
     id: number;
     file_path_synth_list: string[];
     file_path_gt_list: string[];
   }[] = [];
 
-  for (let trial = 0; trial < numTrial; trial += 1) {
+  for (let trial = 0; trial < numTrialWithDummyUsers; trial += 1) {
     const dfCand = dfSynth["n_selected"].nUnique() === 1
       ? dfSynth.copy()
       : dfSynth.loc({
@@ -612,6 +633,8 @@ function makeDataFrameSim(
 async function makeDataFrames(
   filePathList: string[],
   expType: string,
+  numAnsPerSample: number,
+  numDummyUsers: number,
 ): Promise<
   {
     sampleMetaDataList: {
@@ -679,9 +702,14 @@ async function makeDataFrames(
   } = await makeDataFrameIntNat(
     sampleMetaDataList,
     expType,
-    5,
+    numAnsPerSample,
+    numDummyUsers,
   );
-  const respondentFilePathListSim = makeDataFrameSim(sampleMetaDataList, 5);
+  const respondentFilePathListSim = makeDataFrameSim(
+    sampleMetaDataList,
+    numAnsPerSample,
+    numDummyUsers,
+  );
   return {
     sampleMetaDataList,
     srcDestFilePathList,
@@ -723,6 +751,8 @@ async function main() {
 
   const filePathListTest = getWavFilesInDirectory(localWavDirTest!);
   const filePathListVal = getWavFilesInDirectory(localWavDirVal!);
+  const numAnsPerSample = 4;
+  const numDummyUsers = 10;
 
   console.log("makeDataFrames: main");
   const {
@@ -731,7 +761,12 @@ async function main() {
     respondentFilePathListIntNat: respondentFilePathListIntNatTest,
     respondentFilePathListSim: respondentFilePathListSimTest,
     authList,
-  } = await makeDataFrames(filePathListTest, "main");
+  } = await makeDataFrames(
+    filePathListTest,
+    "main",
+    numAnsPerSample,
+    numDummyUsers,
+  );
 
   console.log("makeDataFrames: practice");
   const {
@@ -739,7 +774,12 @@ async function main() {
     srcDestFilePathList: srcDestFilePathListVal,
     respondentFilePathListIntNat: respondentFilePathListIntNatVal,
     respondentFilePathListSim: respondentFilePathListSimVal,
-  } = await makeDataFrames(filePathListVal, "practice");
+  } = await makeDataFrames(
+    filePathListVal,
+    "practice",
+    numAnsPerSample,
+    numDummyUsers,
+  );
 
   const sampleMetaDataList = sampleMetaDataListTest.concat(
     sampleMetaDataListVal,
@@ -757,7 +797,11 @@ async function main() {
     file_path_synth_list: string[];
     file_path_gt_list: string[];
   }[] = [];
-  for (let respondentId = 1; respondentId <= 140; respondentId += 1) {
+  for (
+    let respondentId = 1;
+    respondentId <= respondentFilePathListIntNatTest.length;
+    respondentId += 1
+  ) {
     const respondentFilePathIntNatTest = respondentFilePathListIntNatTest
       .filter((
         value,

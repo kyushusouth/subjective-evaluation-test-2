@@ -10,11 +10,10 @@
     "secretlint": "secretlint --maskSecrets --secretlintignore .gitignore '**/*'",
     "prettier-check": "prettier . --check",
     "prettier-fix": "prettier . --write",
-    "postinstall": "prisma generate",
-    "init": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' admin_utils/init.ts"
+    "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedRemake.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProdRemake.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",

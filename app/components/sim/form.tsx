@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-boolean-value */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/media-has-caption */
@@ -60,7 +61,7 @@ export default function Form({
         [pageNumber]: newRandVal,
       }));
     }
-  }, [pageNumber]);
+  }, [pageNumber, randValobj]);
 
   const currentRandVal = randValobj[pageNumber];
 

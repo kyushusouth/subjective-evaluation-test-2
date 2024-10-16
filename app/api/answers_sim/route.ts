@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable import/prefer-default-export */
 import { createClient } from "@/utils/supabase/server";
-import { prisma } from "@/app/lib/prisma";
+import prisma from "@/app/lib/prisma";
 
 export async function POST(request: Request) {
   const supabase = createClient();

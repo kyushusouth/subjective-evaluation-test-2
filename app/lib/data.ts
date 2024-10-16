@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable @typescript-eslint/dot-notation */
 import { unstable_noStore as noStore } from "next/cache";
-import { prisma } from "@/app/lib/prisma";
+import prisma from "@/app/lib/prisma";
 import { SampleMetaData } from "@prisma/client";
 import { createClient } from "@/utils/supabase/server";
 

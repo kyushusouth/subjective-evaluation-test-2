@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import NavBarDrawer from "@/app/NavBarDrawer";
-import { prisma } from "@/app/lib/prisma";
+import prisma from "@/app/lib/prisma";
 
 export default async function RootTemplate({
   children,

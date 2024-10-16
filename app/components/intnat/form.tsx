@@ -79,6 +79,7 @@ export default function Form({
           ContentsComponent={
             <DummySampleExplanation dummySampleUrl={dummySampleUrl} />
           }
+          // eslint-disable-next-line react/jsx-boolean-value
           isLast={true}
         />
       </div>

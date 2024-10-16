@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/media-has-caption */
 export function ExperimentOverviewSection() {
   return (
     <section className="space-y-4 text-base">

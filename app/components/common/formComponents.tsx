@@ -98,6 +98,7 @@ export function RadioButton({
   answerItem: string;
   sampleId: number;
   itemList: IntelligibilityItem[] | NaturalnessItem[] | SimilarityItem[];
+  // eslint-disable-next-line @typescript-eslint/ban-types
   register: Function;
 }) {
   return (
@@ -107,10 +108,12 @@ export function RadioButton({
       </label>
       <div className="flex flex-col">
         {itemList.map((item) => (
+          // eslint-disable-next-line jsx-a11y/label-has-associated-control
           <label key={item.id} className="flex items-center">
             <input
               type="radio"
               value={item.id}
+              // eslint-disable-next-line react/jsx-props-no-spreading
               {...register(`${answerItem}_${sampleId}`, {
                 required: true,
               })}
