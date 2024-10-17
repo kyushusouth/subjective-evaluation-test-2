@@ -8,7 +8,9 @@ export function ExperimentOverviewSection() {
       </p>
       <ol className="leading-relaxed list-decimal list-inside">
         <li>二つの音声がペアで提示されるため、それらを聴き比べる。</li>
-        <li>二つの音声がどれくらい似ているか（類似性）を五段階で評価する。</li>
+        <li>
+          二つの音声の声質がどれくらい似ているか（類似性）を五段階で評価する。
+        </li>
       </ol>
       <p className="leading-relaxed">
         評価にあたり、音声は何度聞いていただいても構いません。
@@ -24,13 +26,11 @@ export function SimilarityExplanation() {
     <p className="leading-relaxed">
       類似性は、
       <span className="font-bold">
-        発話内容によらず、二つの音声がどれくらい似ているか
+        発話内容によらず、二つの音声の声質がどれくらい似ているか
       </span>
       を指します。
       <br />
-      評価項目が発話内容に依存しないため、提示される音声のペアで発話内容が同じ場合、異なる場合がランダムに含まれます。
-      <br />
-      評価としては問題ありませんので、混乱しないようご注意ください。
+      発話内容は評価に影響しないため、提示される音声ペアには発話内容が同じ場合も、異なる場合もランダムに含まれます。評価に影響はありませんので、発話内容に惑わされないようご注意ください。
     </p>
   );
 }
@@ -72,7 +72,7 @@ export function DummySampleExplanation({
       <br />
       例として、下記の音声では、
       <span className="font-bold">
-        「これはダミー音声です。類似性は「3: 普通」を選択してください。」
+        「これはダミー音声です。類似性は、「3: 普通」を選択してください。」
       </span>
       と指定しています。
       <audio
@@ -81,8 +81,8 @@ export function DummySampleExplanation({
         controlsList="nodownload"
         className="my-4 mx-auto"
       />
-      この場合、類似性は「3:
-      普通」を選択します。音声自体の類似性を評価するわけではないため、ご注意ください。
+      この場合、類似性は「3:普通」を選択します。音声自体の類似性を評価するわけではないため、ご注意ください。
+      また、実際の類似性評価時には音声がペアで提示されますが、ダミー音声である場合は必ず両方とも全く同じダミー音声が流れます。混乱なされないようご注意ください。
       <br />
       <br />
       特に、

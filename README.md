@@ -13,7 +13,7 @@
 
 ```json
 "prisma": {
- "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+ "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedRemake.ts"
 }
 ```
 
@@ -47,7 +47,7 @@
 
    ```json
    "prisma": {
-     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProd.ts"
+     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProdRemake.ts"
    }
    ```
 

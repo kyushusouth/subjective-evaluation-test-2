@@ -9,23 +9,24 @@ generator client {
 }
 
 model Respondents {
-  id                                Int             @id @default(autoincrement())
-  auth_id                           String          @unique
-  created_at                        DateTime        @default(now())
-  age                               Int             @default(-1)
-  sex                               String          @default("無回答")
-  audio_device                      String          @default("無回答")
-  is_finished_info                  Boolean         @default(false)
-  is_finished_intnat_practice Boolean         @default(false)
-  is_finished_intnat_main     Boolean         @default(false)
-  is_finished_sim_practice     Boolean         @default(false)
-  is_finished_sim_main         Boolean         @default(false)
-  is_invalid                        Boolean         @default(false)
-  file_path_list_eval_int_nat       String[]        @default([])
-  file_path_list_eval_sim_synth     String[]        @default([])
-  file_path_list_eval_sim_gt        String[]        @default([])
-  AnswersIntNat                     AnswersIntNat[]
-  AnswersSim                        AnswersSim[]
+  id                            Int             @id @default(autoincrement())
+  auth_id                       String          @unique
+  is_dummy                      Boolean         @default(false)
+  created_at                    DateTime        @default(now())
+  age                           Int             @default(-1)
+  sex                           String          @default("無回答")
+  audio_device                  String          @default("無回答")
+  is_finished_info              Boolean         @default(false)
+  is_finished_intnat_practice   Boolean         @default(false)
+  is_finished_intnat_main       Boolean         @default(false)
+  is_finished_sim_practice      Boolean         @default(false)
+  is_finished_sim_main          Boolean         @default(false)
+  is_invalid                    Boolean         @default(false)
+  file_path_list_eval_int_nat   String[]        @default([])
+  file_path_list_eval_sim_synth String[]        @default([])
+  file_path_list_eval_sim_gt    String[]        @default([])
+  AnswersIntNat                 AnswersIntNat[]
+  AnswersSim                    AnswersSim[]
 }
 
 model SexItem {

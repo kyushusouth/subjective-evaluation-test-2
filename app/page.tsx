@@ -112,8 +112,6 @@ export default async function Index() {
           <span className="font-bold">
             一度提出しますと、回答の修正は不可能となりますのでご注意ください。
           </span>
-          <br />
-          本番試行（明瞭性・自然性）の回答を終えなければ、本ページにはアクセスできないようになっておりますので、その順で実施いただきますようよろしくお願い致します。
         </p>
       </section>
 

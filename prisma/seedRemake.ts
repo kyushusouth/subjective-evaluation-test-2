@@ -430,7 +430,7 @@ async function makeDataFrameIntNat(
 
     if (expType === "main") {
       if (trial < numTrial) {
-        const email = `user${trial}@test.com`;
+        const email = `user${trial + 1}@test.com`;
         const password = generateRandomString(passwordLength);
         const { error: createUserError } = await supabase
           .auth.admin.createUser({
@@ -446,9 +446,9 @@ async function makeDataFrameIntNat(
           email: email,
           password: password,
         });
-        console.log(trial, email, password);
+        console.log(trial + 1, email, password);
       } else {
-        const email = `dummy${trial}@test.com`;
+        const email = `dummy${trial + 1}@test.com`;
         const password = generateRandomString(passwordLength);
         const { error: createUserError } = await supabase
           .auth.admin.createUser({
@@ -464,7 +464,7 @@ async function makeDataFrameIntNat(
           email: email,
           password: password,
         });
-        console.log(trial, email, password);
+        console.log(trial + 1, email, password);
       }
     }
 
@@ -495,6 +495,7 @@ function makeDataFrameSim(
   }[],
   numAnsPerSample: number,
   numDummyUsers: number,
+  isGTIncluded: boolean,
 ): {
   id: number;
   file_path_synth_list: string[];
@@ -502,8 +503,11 @@ function makeDataFrameSim(
 }[] {
   const df = new dfd.DataFrame(sampleMetaDataList);
   const dfGT = df.loc({ rows: df["kind"].eq("gt") }).copy();
-  let dfSynth = df.loc({ rows: df["kind"].ne("gt") }).copy();
-  dfSynth.addColumn("n_selected", Array(dfSynth.shape[0]).fill(0), {
+  let dfEval = df.copy();
+  if (!isGTIncluded) {
+    dfEval = dfEval.loc({ rows: dfEval["kind"].ne("gt") });
+  }
+  dfEval.addColumn("n_selected", Array(dfEval.shape[0]).fill(0), {
     inplace: true,
   });
 
@@ -515,17 +519,19 @@ function makeDataFrameSim(
   //   filePath:
   //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/gt.csv",
   // });
-  // dfd.toCSV(dfSynth, {
+  // dfd.toCSV(dfEval, {
   //   filePath:
   //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/synth.csv",
   // });
 
-  const numSpeaker = dfSynth["speaker_name"].nUnique();
-  const numModel = dfSynth["model_id"].nUnique();
-  const numSample = dfSynth["sample_name"].nUnique();
-  // Simは原音声を含まない分numTrialが減るので、増やして揃えることで対応
-  const numTrial = numSpeaker * numModel * numAnsPerSample +
-    numSpeaker * numAnsPerSample;
+  const numSpeaker = dfEval["speaker_name"].nUnique();
+  const numModel = dfEval["model_id"].nUnique();
+  const numSample = dfEval["sample_name"].nUnique();
+  let numTrial = numSpeaker * numModel * numAnsPerSample;
+  if (!isGTIncluded) {
+    // 原音声を含まない分numTrialが減るので、増やして揃えることで対応
+    numTrial += numSpeaker * numAnsPerSample;
+  }
   const numTrialWithDummyUsers = numTrial + numDummyUsers;
   const respondentFilePathList: {
     id: number;
@@ -534,10 +540,10 @@ function makeDataFrameSim(
   }[] = [];
 
   for (let trial = 0; trial < numTrialWithDummyUsers; trial += 1) {
-    const dfCand = dfSynth["n_selected"].nUnique() === 1
-      ? dfSynth.copy()
-      : dfSynth.loc({
-        rows: dfSynth["n_selected"].lt(dfSynth["n_selected"].max()),
+    const dfCand = dfEval["n_selected"].nUnique() === 1
+      ? dfEval.copy()
+      : dfEval.loc({
+        rows: dfEval["n_selected"].lt(dfEval["n_selected"].max()),
       }).copy();
 
     dfCand.addColumn(
@@ -598,24 +604,24 @@ function makeDataFrameSim(
     const dfSelectedData = new dfd.DataFrame(selectedData);
     for (const col of dfSelectedData.columns) {
       if (
-        dfSynth.columns.includes(col) &&
-        dfSelectedData[col].dtype !== dfSynth[col].dtype
+        dfEval.columns.includes(col) &&
+        dfSelectedData[col].dtype !== dfEval[col].dtype
       ) {
-        dfSelectedData.asType(col, dfSynth[col].dtype, { inplace: true });
+        dfSelectedData.asType(col, dfEval[col].dtype, { inplace: true });
       }
     }
 
-    dfSynth = dfd
+    dfEval = dfd
       .merge({
-        left: dfSynth,
+        left: dfEval,
         right: dfSelectedData,
         on: ["file_path"],
         how: "left",
       })
       .fillNa([0], { columns: ["is_selected"] });
 
-    dfSynth["n_selected"] = dfSynth["n_selected"].add(dfSynth["is_selected"]);
-    dfSynth.drop({
+    dfEval["n_selected"] = dfEval["n_selected"].add(dfEval["is_selected"]);
+    dfEval.drop({
       columns: ["is_selected", "file_path_gt_pair"],
       inplace: true,
     });
@@ -635,6 +641,7 @@ async function makeDataFrames(
   expType: string,
   numAnsPerSample: number,
   numDummyUsers: number,
+  isGTIncludedSim: boolean,
 ): Promise<
   {
     sampleMetaDataList: {
@@ -682,7 +689,7 @@ async function makeDataFrames(
     sampleGroupSizeListIntNat,
   );
   const sampleGroupSizeListSim = getSampleGroupSizeList(
-    modelNameList.length - 1,
+    isGTIncludedSim ? modelNameList.length : modelNameList.length - 1,
     sampleNameList.length,
   );
   const sampleGroupMapSim = assignSampleGroups(
@@ -709,6 +716,7 @@ async function makeDataFrames(
     sampleMetaDataList,
     numAnsPerSample,
     numDummyUsers,
+    isGTIncludedSim,
   );
   return {
     sampleMetaDataList,
@@ -753,6 +761,7 @@ async function main() {
   const filePathListVal = getWavFilesInDirectory(localWavDirVal!);
   const numAnsPerSample = 4;
   const numDummyUsers = 10;
+  const isGTIncludedSim = true;
 
   console.log("makeDataFrames: main");
   const {
@@ -766,6 +775,7 @@ async function main() {
     "main",
     numAnsPerSample,
     numDummyUsers,
+    isGTIncludedSim,
   );
 
   console.log("makeDataFrames: practice");
@@ -779,6 +789,7 @@ async function main() {
     "practice",
     numAnsPerSample,
     numDummyUsers,
+    isGTIncludedSim,
   );
 
   const sampleMetaDataList = sampleMetaDataListTest.concat(
@@ -788,15 +799,7 @@ async function main() {
     srcDestFilePathListVal,
   );
 
-  const respondentFilePathListIntNat: {
-    id: number;
-    file_path_list: string[];
-  }[] = [];
-  const respondentFilePathListSim: {
-    id: number;
-    file_path_synth_list: string[];
-    file_path_gt_list: string[];
-  }[] = [];
+  console.log("update respondents");
   for (
     let respondentId = 1;
     respondentId <= respondentFilePathListIntNatTest.length;
@@ -837,23 +840,46 @@ async function main() {
       );
     }
 
-    respondentFilePathListIntNat.push({
-      id: respondentId,
-      file_path_list: respondentFilePathIntNatTest[0]?.file_path_list.concat(
+    const respondentFilePathIntNat = respondentFilePathIntNatTest[0]
+      .file_path_list.concat(
         respondentFilePathIntNatVal[0]?.file_path_list,
-      ),
-    });
-    respondentFilePathListSim.push({
-      id: respondentId,
-      file_path_synth_list: respondentFilePathSimTest[0]?.file_path_synth_list
-        .concat(
-          respondentFilePathSimVal[0]?.file_path_synth_list,
-        ),
-      file_path_gt_list: respondentFilePathSimTest[0]?.file_path_gt_list
-        .concat(
-          respondentFilePathSimVal[0]?.file_path_gt_list,
-        ),
-    });
+      );
+    const respondentFilePathSimSynth = respondentFilePathSimTest[0]
+      .file_path_synth_list.concat(
+        respondentFilePathSimVal[0].file_path_synth_list,
+      );
+    const respondentFilePathSimGT = respondentFilePathSimTest[0]
+      .file_path_gt_list.concat(
+        respondentFilePathSimVal[0].file_path_gt_list,
+      );
+    if (
+      respondentId <= respondentFilePathListIntNatTest.length - numDummyUsers
+    ) {
+      console.log(`respondentId: ${respondentId} is not dummy.`);
+      await prisma.respondents.update({
+        where: {
+          id: respondentId,
+        },
+        data: {
+          file_path_list_eval_int_nat: respondentFilePathIntNat,
+          file_path_list_eval_sim_synth: respondentFilePathSimSynth,
+          file_path_list_eval_sim_gt: respondentFilePathSimGT,
+        },
+      });
+    } else {
+      console.log(`respondentId: ${respondentId} is dummy.`);
+      await prisma.respondents.update({
+        where: {
+          id: respondentId,
+        },
+        data: {
+          is_dummy: true,
+          file_path_list_eval_int_nat: respondentFilePathIntNat,
+          file_path_list_eval_sim_synth: respondentFilePathSimSynth,
+          file_path_list_eval_sim_gt: respondentFilePathSimGT,
+        },
+      });
+    }
   }
 
   const dfAuth = new dfd.DataFrame(authList);
@@ -913,30 +939,6 @@ async function main() {
     }
 
     srcDestFilePathList.push([filePath, randomizedFilePath]);
-  }
-
-  console.log("Update respondentFilePathList");
-  for (const respondentFilePathIntNat of respondentFilePathListIntNat) {
-    await prisma.respondents.update({
-      where: {
-        id: respondentFilePathIntNat.id,
-      },
-      data: {
-        file_path_list_eval_int_nat: respondentFilePathIntNat.file_path_list,
-      },
-    });
-  }
-  for (const respondentFilePathSim of respondentFilePathListSim) {
-    await prisma.respondents.update({
-      where: {
-        id: respondentFilePathSim.id,
-      },
-      data: {
-        file_path_list_eval_sim_synth:
-          respondentFilePathSim.file_path_synth_list,
-        file_path_list_eval_sim_gt: respondentFilePathSim.file_path_gt_list,
-      },
-    });
   }
 
   console.log("copyFiles");

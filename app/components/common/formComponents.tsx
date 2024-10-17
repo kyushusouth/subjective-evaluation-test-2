@@ -79,7 +79,15 @@ export function AccordionSection({
         })}
         aria-labelledby={`accordion-open-heading-${sectionNumber}`}
       >
-        <div className="p-5 space-y-4 text-base border border-b-0 border-gray-200 text-gray-500">
+        <div
+          className={clsx(
+            "p-5 space-y-4 text-base border border-gray-200 text-gray-500",
+            {
+              "border-t-0": isLast,
+              "border-b-0": !isLast,
+            },
+          )}
+        >
           {ContentsComponent}
         </div>
       </div>

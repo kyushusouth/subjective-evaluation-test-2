@@ -23,10 +23,12 @@ export function IntelligibilityExplanation() {
   return (
     <p className="leading-relaxed">
       一つ目の評価項目である明瞭性は、
-      <span className="font-bold">発話内容どれくらい聞き取りやすかったか</span>
+      <span className="font-bold">
+        発話内容がどれだけ簡単に聞き取れて、正確に理解できたか
+      </span>
       を指します。
       <br />
-      明瞭性の判断基準としては、聞き取ろうとするのに要した努力の程度や、最終的な発話内容の理解の程度などが挙げられます。
+      明瞭性の評価は、聞き取るために必要な労力が少ないほど、そして発話内容を正確に理解できるほど高くなります。
     </p>
   );
 }
@@ -53,11 +55,11 @@ export function NaturalnessExplanation() {
     <p className="leading-relaxed">
       二つ目の評価項目である自然性は、
       <span className="font-bold">
-        発話内容によらず、その音声がどれくらい人間らしく自然なものに聞こえたか
+        その音声がどれくらい人間らしい自然なものに聞こえたか
       </span>
       を指します。
       <br />
-      自然性の判断基準としては、声質やイントネーションの自然さなどが挙げられます。
+      自然性の評価は、より人間らしく自然に聞こえるほど高くなります。
     </p>
   );
 }
@@ -99,7 +101,7 @@ export function DummySampleExplanation({
       <br />
       例として、下記の音声では、
       <span className="font-bold">
-        「これはダミー音声です。明瞭性は「2: 悪い」を、自然性は「1:
+        「これはダミー音声です。明瞭性は、「3: 普通」を、自然性は、「1:
         非常に悪い」を選択してください。」
       </span>
       と指定しています。
@@ -109,8 +111,8 @@ export function DummySampleExplanation({
         controlsList="nodownload"
         className="my-4 mx-auto"
       />
-      この場合、明瞭性は「2:
-      悪い」、自然性は「1:非常に悪い」を選択します。音声自体の明瞭性や自然性を評価するわけではないため、ご注意ください。
+      この場合、明瞭性は「3: 普通」、自然性は「1:
+      非常に悪い」を選択します。音声自体の明瞭性や自然性を評価するわけではないため、ご注意ください。
       <br />
       <br />
       特に、

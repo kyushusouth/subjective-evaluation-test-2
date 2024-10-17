@@ -2,6 +2,7 @@
 CREATE TABLE "Respondents" (
     "id" SERIAL NOT NULL,
     "auth_id" TEXT NOT NULL,
+    "is_dummy" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "age" INTEGER NOT NULL DEFAULT -1,
     "sex" TEXT NOT NULL DEFAULT '無回答',
