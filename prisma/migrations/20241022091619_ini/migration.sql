@@ -8,14 +8,22 @@ CREATE TABLE "Respondents" (
     "sex" TEXT NOT NULL DEFAULT '無回答',
     "audio_device" TEXT NOT NULL DEFAULT '無回答',
     "is_finished_info" BOOLEAN NOT NULL DEFAULT false,
+    "is_finished_int_practice" BOOLEAN NOT NULL DEFAULT false,
+    "is_finished_int_main" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_intnat_practice" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_intnat_main" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_sim_practice" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_sim_main" BOOLEAN NOT NULL DEFAULT false,
-    "is_invalid" BOOLEAN NOT NULL DEFAULT false,
-    "file_path_list_eval_int_nat" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "file_path_list_eval_sim_synth" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "file_path_list_eval_sim_gt" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "is_invalid_int_practice" BOOLEAN NOT NULL DEFAULT false,
+    "is_invalid_int_main" BOOLEAN NOT NULL DEFAULT false,
+    "is_invalid_intnat_practice" BOOLEAN NOT NULL DEFAULT false,
+    "is_invalid_intnat_main" BOOLEAN NOT NULL DEFAULT false,
+    "is_invalid_sim_practice" BOOLEAN NOT NULL DEFAULT false,
+    "is_invalid_sim_main" BOOLEAN NOT NULL DEFAULT false,
+    "file_path_list_int" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "file_path_list_int_nat" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "file_path_list_sim_eval" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "file_path_list_sim_gt" TEXT[] DEFAULT ARRAY[]::TEXT[],
 
     CONSTRAINT "Respondents_pkey" PRIMARY KEY ("id")
 );
@@ -44,6 +52,7 @@ CREATE TABLE "SampleMetaData" (
     "model_id" INTEGER NOT NULL,
     "speaker_name" TEXT NOT NULL,
     "sample_name" TEXT NOT NULL,
+    "sample_utt" TEXT NOT NULL,
     "sample_group_int_nat" INTEGER NOT NULL,
     "sample_group_sim" INTEGER NOT NULL,
     "exp_type" TEXT NOT NULL,
@@ -93,6 +102,17 @@ CREATE TABLE "AnswersIntNat" (
 );
 
 -- CreateTable
+CREATE TABLE "AnswersInt" (
+    "id" SERIAL NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "respondent_id" INTEGER NOT NULL,
+    "sample_meta_data_id" INTEGER NOT NULL,
+    "intelligibility_id" INTEGER NOT NULL,
+
+    CONSTRAINT "AnswersInt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "AnswersSim" (
     "id" SERIAL NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -138,6 +158,15 @@ ALTER TABLE "AnswersIntNat" ADD CONSTRAINT "AnswersIntNat_naturalness_id_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "AnswersIntNat" ADD CONSTRAINT "AnswersIntNat_intelligibility_id_fkey" FOREIGN KEY ("intelligibility_id") REFERENCES "IntelligibilityItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AnswersInt" ADD CONSTRAINT "AnswersInt_respondent_id_fkey" FOREIGN KEY ("respondent_id") REFERENCES "Respondents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AnswersInt" ADD CONSTRAINT "AnswersInt_sample_meta_data_id_fkey" FOREIGN KEY ("sample_meta_data_id") REFERENCES "SampleMetaData"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AnswersInt" ADD CONSTRAINT "AnswersInt_intelligibility_id_fkey" FOREIGN KEY ("intelligibility_id") REFERENCES "IntelligibilityItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AnswersSim" ADD CONSTRAINT "AnswersSim_respondent_id_fkey" FOREIGN KEY ("respondent_id") REFERENCES "Respondents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

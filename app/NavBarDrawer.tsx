@@ -139,40 +139,40 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
             </li>
             <li>
               <Link
-                href="/intnat_practice"
+                href="/int_practice"
                 className={clsx(
                   "block px-4 py-2 text-black hover:text-blue-700 hover:bg-gray-100",
                   {
                     "text-blue-700 bg-gray-100":
-                      currentPathname.startsWith("/intnat_practice"),
+                      currentPathname.startsWith("/int_practice"),
                   },
                 )}
               >
-                練習試行（明瞭性・自然性）
+                練習試行（明瞭性）
               </Link>
             </li>
             <li>
               <Link
-                href="/intnat_main"
+                href="/int_main"
                 className={clsx(
                   "block px-4 py-2 hover:text-blue-700 hover:bg-gray-100",
                   {
                     "text-blue-700 bg-gray-100":
-                      currentPathname.startsWith("/intnat_main"),
+                      currentPathname.startsWith("/int_main"),
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      !respondent.is_finished_intnat_main &&
-                      respondent.is_finished_intnat_practice,
+                      !respondent.is_finished_int_main &&
+                      respondent.is_finished_int_practice,
                   },
                   {
                     "text-gray-400 pointer-events-none":
-                      respondent.is_finished_intnat_main ||
-                      !respondent.is_finished_intnat_practice,
+                      respondent.is_finished_int_main ||
+                      !respondent.is_finished_int_practice,
                   },
                 )}
               >
-                本番試行（明瞭性・自然性）
+                本番試行（明瞭性）
               </Link>
             </li>
             <li>
@@ -186,11 +186,11 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      respondent.is_finished_intnat_main,
+                      respondent.is_finished_int_main,
                   },
                   {
                     "text-gray-400 pointer-events-none":
-                      !respondent.is_finished_intnat_main,
+                      !respondent.is_finished_int_main,
                   },
                 )}
               >
@@ -208,13 +208,13 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      respondent.is_finished_intnat_main &&
+                      respondent.is_finished_int_main &&
                       !respondent.is_finished_sim_main &&
                       respondent.is_finished_sim_practice,
                   },
                   {
                     "text-gray-400 pointer-events-none":
-                      !respondent.is_finished_intnat_main ||
+                      !respondent.is_finished_int_main ||
                       respondent.is_finished_sim_main ||
                       !respondent.is_finished_sim_practice,
                   },

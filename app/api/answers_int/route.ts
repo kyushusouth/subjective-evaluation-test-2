@@ -28,7 +28,7 @@ export async function POST(request: Request) {
             is_dummy: true,
           },
           {
-            sample_name: "sim",
+            sample_name: "int",
           },
         ],
       },
@@ -39,8 +39,8 @@ export async function POST(request: Request) {
       for (const sampleMetaDataDummy of sampleMetaDataDummyList) {
         if (
           answer.sample_meta_data_id === sampleMetaDataDummy.id &&
-          (answer.similarity_id !==
-            sampleMetaDataDummy.similarity_dummy_correct_answer_id)
+          answer.intelligibility_id !==
+            sampleMetaDataDummy.intelligibility_dummy_correct_answer_id
         ) {
           isInvalid = true;
         }
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.answersSim.createMany({
+      await tx.answersInt.createMany({
         data: answerList,
         skipDuplicates: true,
       });
@@ -59,8 +59,8 @@ export async function POST(request: Request) {
             auth_id: user!.id,
           },
           data: {
-            is_finished_sim_practice: true,
-            is_invalid_sim_practice: isInvalid,
+            is_finished_int_practice: true,
+            is_invalid_int_practice: isInvalid,
           },
         });
       } else if (expType === "main") {
@@ -69,8 +69,8 @@ export async function POST(request: Request) {
             auth_id: user!.id,
           },
           data: {
-            is_finished_sim_main: true,
-            is_invalid_sim_main: isInvalid,
+            is_finished_int_main: true,
+            is_invalid_int_main: isInvalid,
           },
         });
       }

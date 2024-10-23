@@ -20,7 +20,7 @@ export default async function Page() {
     return null;
   }
 
-  const dummySampleUrl = await fetchDummySampleUrlIntNat();
+  const dummySampleUrl = await fetchDummySampleUrlIntNat("intnat");
 
   return (
     <div className="my-10 flex flex-col gap-10">

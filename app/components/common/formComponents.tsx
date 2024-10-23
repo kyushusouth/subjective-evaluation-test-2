@@ -1,5 +1,8 @@
 import clsx from "clsx";
 import { useState } from "react";
+import { useFormContext } from "react-hook-form";
+import createSchema from "@/app/components/int/schema";
+import * as Yup from "yup";
 import {
   IntelligibilityItem,
   NaturalnessItem,
@@ -100,15 +103,17 @@ export function RadioButton({
   answerItem,
   sampleId,
   itemList,
-  register,
 }: {
   label: string;
   answerItem: string;
   sampleId: number;
   itemList: IntelligibilityItem[] | NaturalnessItem[] | SimilarityItem[];
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  register: Function;
 }) {
+  const Schema = createSchema(1);
+  type SchemaType = Yup.InferType<typeof Schema>;
+
+  const { register } = useFormContext<SchemaType>();
+
   return (
     <div className="w-full">
       <label htmlFor={`${answerItem}_${sampleId}`} className="w-full block">

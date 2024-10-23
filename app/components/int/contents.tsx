@@ -1,22 +1,23 @@
+/* eslint-disable object-shorthand */
+/* eslint-disable no-restricted-syntax */
+
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import {
   SampleMetaData,
-  NaturalnessItem,
   IntelligibilityItem,
   Respondents,
 } from "@prisma/client";
-import Form from "@/app/components/intnat/form";
-import Confirm from "@/app/components/intnat/confirm";
-import createSchema from "@/app/components/intnat/schema";
+import Form from "@/app/components/int/form";
+import Confirm from "@/app/components/int/confirm";
+import createSchema from "@/app/components/int/schema";
 import * as Yup from "yup";
 
 export default function Contents({
   sampleMetaDataList,
-  naturalnessItemList,
   intelligibilityItemList,
   respondent,
   numSamplePerPage,
@@ -25,7 +26,6 @@ export default function Contents({
   bucketName,
 }: {
   sampleMetaDataList: SampleMetaData[];
-  naturalnessItemList: NaturalnessItem[];
   intelligibilityItemList: IntelligibilityItem[];
   respondent: Respondents | undefined;
   numSamplePerPage: number;
@@ -36,15 +36,61 @@ export default function Contents({
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
 
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [shouldSave, setShouldSave] = useState(true);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [uttVisibles, setUttVisibles] = useState<{ [key: number]: boolean }>(
+    {},
+  );
   const methods = useForm<SchemaType>({
     mode: "onSubmit",
   });
-  const { handleSubmit } = methods;
+  const { handleSubmit, watch, reset } = methods;
+  const formValues = watch();
   const router = useRouter();
-  const [pageNumber, setPageNumber] = useState<number>(1);
   const lastPageNumber = Math.ceil(
     sampleMetaDataList.length / numSamplePerPage,
   );
+
+  useEffect(() => {
+    const uttVisiblesDefaultValue: { [key: number]: boolean } = {};
+    for (const sampleMetaData of sampleMetaDataList) {
+      uttVisiblesDefaultValue[sampleMetaData.id] = false;
+    }
+
+    const savedData = localStorage.getItem(
+      "subjectiveEvaluationTestIntelligibilityFormValues",
+    );
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      reset(parsedData);
+
+      for (const [sampleId, answer] of Object.entries(parsedData)) {
+        if (answer) {
+          uttVisiblesDefaultValue[Number(sampleId.split("_")[1])] = true;
+        }
+      }
+    }
+
+    setUttVisibles(uttVisiblesDefaultValue);
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded && shouldSave) {
+      localStorage.setItem(
+        "subjectiveEvaluationTestIntelligibilityFormValues",
+        JSON.stringify(formValues),
+      );
+    }
+  }, [formValues, isLoaded, shouldSave]);
+
+  const handleUttVisibles = (sampleId: number) => {
+    setUttVisibles({
+      ...uttVisibles,
+      [sampleId]: true,
+    });
+  };
 
   const onNext = () => {
     setPageNumber((state) => state + 1);
@@ -58,27 +104,28 @@ export default function Contents({
 
   const onSubmit = async (data: SchemaType) => {
     const dataList = [];
-    // eslint-disable-next-line no-restricted-syntax
     for (const sampleMetaData of sampleMetaDataList) {
       const sampleId = Number(sampleMetaData.id);
-      const naturalness = Number(data[`naturalness_${sampleId}`]);
       const intelligibility = Number(data[`intelligibility_${sampleId}`]);
       dataList.push({
         respondent_id: respondent?.id,
         sample_meta_data_id: sampleId,
-        naturalness_id: naturalness,
         intelligibility_id: intelligibility,
       });
     }
-    const response = await fetch("/api/answers_intnat", {
+
+    const response = await fetch("/api/answers_int", {
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(dataList),
       method: "POST",
     });
+
     const result = await response.json();
     if (result.success) {
+      setShouldSave(false);
+      localStorage.clear();
       router.push("/thanks");
     } else {
       router.push("/error");
@@ -93,13 +140,14 @@ export default function Contents({
           <Confirm onPrev={onPrev} sampleMetaDataList={sampleMetaDataList} />
         ) : (
           <Form
+            uttVisibles={uttVisibles}
+            handleUttVisibles={handleUttVisibles}
             onNext={onNext}
             onPrev={onPrev}
             sampleMetaDataList={sampleMetaDataList.slice(
               numSamplePerPage * (pageNumber - 1),
               numSamplePerPage * pageNumber,
             )}
-            naturalnessItemList={naturalnessItemList}
             intelligibilityItemList={intelligibilityItemList}
             pageNumber={pageNumber}
             lastPageNumber={lastPageNumber}

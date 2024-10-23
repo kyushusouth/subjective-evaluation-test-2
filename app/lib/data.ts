@@ -43,7 +43,7 @@ export async function fetchSampleMetaDataListShuffledSim(
             exp_type: expType,
           },
           {
-            file_path: { in: respondent.file_path_list_eval_sim_synth },
+            file_path: { in: respondent.file_path_list_sim_eval },
           },
         ],
       },
@@ -57,7 +57,7 @@ export async function fetchSampleMetaDataListShuffledSim(
             exp_type: expType,
           },
           {
-            file_path: { in: respondent.file_path_list_eval_sim_gt },
+            file_path: { in: respondent.file_path_list_sim_gt },
           },
         ],
       },
@@ -90,11 +90,11 @@ export async function fetchSampleMetaDataListShuffledSim(
 
     for (
       let i = 0;
-      i < respondent.file_path_list_eval_sim_synth.length;
+      i < respondent.file_path_list_sim_eval.length;
       i += 1
     ) {
-      const filePathGTRequired = respondent.file_path_list_eval_sim_gt[i];
-      const filePathSynthRequired = respondent.file_path_list_eval_sim_synth[i];
+      const filePathGTRequired = respondent.file_path_list_sim_gt[i];
+      const filePathSynthRequired = respondent.file_path_list_sim_eval[i];
 
       const sampleMetaDataGT = sampleMetaDataListGT.find((value) =>
         value.file_path === filePathGTRequired
@@ -122,6 +122,7 @@ export async function fetchSampleMetaDataListShuffledSim(
 export async function fetchSampleMetaDataListShuffledIntNat(
   numTake: number | undefined,
   expType: string,
+  sampleName: string,
 ) {
   noStore();
   try {
@@ -150,7 +151,7 @@ export async function fetchSampleMetaDataListShuffledIntNat(
           {
             OR: [
               {
-                file_path: { in: respondent.file_path_list_eval_int_nat },
+                file_path: { in: respondent.file_path_list_int_nat },
               },
               {
                 AND: [
@@ -158,7 +159,7 @@ export async function fetchSampleMetaDataListShuffledIntNat(
                     is_dummy: true,
                   },
                   {
-                    sample_name: "intnat",
+                    sample_name: sampleName,
                   },
                 ],
               },
@@ -209,14 +210,20 @@ export async function fetchDummySampleUrlSim() {
   }
 }
 
-export async function fetchDummySampleUrlIntNat() {
+export async function fetchDummySampleUrlIntNat(
+  sampleName: string,
+) {
   noStore();
   try {
     const domainName = process.env.GCS_DOMAIN_NAME;
     const bucketName = process.env.GCS_BUCKET_NAME;
 
     const sampleMetaDataListShuffled =
-      await fetchSampleMetaDataListShuffledIntNat(undefined, "practice");
+      await fetchSampleMetaDataListShuffledIntNat(
+        undefined,
+        "practice",
+        sampleName,
+      );
 
     const sampleMetaDataDummyExample = sampleMetaDataListShuffled.filter(
       (sampleMetaData) => sampleMetaData.is_dummy,

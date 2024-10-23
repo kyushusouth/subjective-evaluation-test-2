@@ -4,18 +4,15 @@
 
 "use client";
 
+import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import {
-  SampleMetaData,
-  NaturalnessItem,
-  IntelligibilityItem,
-} from "@prisma/client";
-import createSchema from "@/app/components/intnat/schema";
+import { SampleMetaData, IntelligibilityItem } from "@prisma/client";
+import clsx from "clsx";
+import createSchema from "@/app/components/int/schema";
 import {
   IntelligibilityExplanation,
-  NaturalnessExplanation,
   DummySampleExplanation,
-} from "@/app/components/intnat/instructions";
+} from "@/app/components/int/instructions";
 import {
   AccordionSection,
   RadioButton,
@@ -25,10 +22,11 @@ import {
 import * as Yup from "yup";
 
 export default function Form({
+  uttVisibles,
+  handleUttVisibles,
   onNext,
   onPrev,
   sampleMetaDataList,
-  naturalnessItemList,
   intelligibilityItemList,
   pageNumber,
   lastPageNumber,
@@ -36,10 +34,11 @@ export default function Form({
   domainName,
   bucketName,
 }: {
+  uttVisibles: { [key: number]: boolean };
+  handleUttVisibles: (sampleId: number) => void;
   onNext: () => void;
   onPrev: () => void;
   sampleMetaDataList: SampleMetaData[];
-  naturalnessItemList: NaturalnessItem[];
   intelligibilityItemList: IntelligibilityItem[];
   pageNumber: number;
   lastPageNumber: number;
@@ -50,11 +49,9 @@ export default function Form({
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
 
-  const methods = useFormContext<SchemaType>();
   const {
-    register,
     formState: { isValid },
-  } = methods;
+  } = useFormContext<SchemaType>();
 
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
@@ -67,12 +64,6 @@ export default function Form({
         />
         <AccordionSection
           sectionNumber={2}
-          sectionTitle="自然性とは"
-          ContentsComponent={<NaturalnessExplanation />}
-          isLast={false}
-        />
-        <AccordionSection
-          sectionNumber={3}
           sectionTitle="ダミー音声について"
           ContentsComponent={
             <DummySampleExplanation dummySampleUrl={dummySampleUrl} />
@@ -87,32 +78,46 @@ export default function Form({
           {sampleMetaDataList.map((data) => {
             const sampleId = data.id;
             const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
+            const sampleUtt = data.sample_utt;
+            console.log(
+              `sampleId: ${sampleId}, uttVisible: ${uttVisibles[sampleId]}`,
+            );
             return (
               <li
                 data-test-id="formItem"
                 key={sampleId}
-                className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
+                className="w-72 flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
               >
                 <audio
                   src={sampleUrl}
-                  controls
+                  controls={!uttVisibles[sampleId]}
                   controlsList="nodownload"
                   className="w-full"
                 />
+                <div>
+                  <button
+                    type="button"
+                    className={clsx("leading-relaxed", {
+                      hidden: uttVisibles[sampleId],
+                    })}
+                    onClick={() => handleUttVisibles(sampleId)}
+                  >
+                    発話内容を表示
+                  </button>
+                </div>
+                <p
+                  className={clsx("leading-relaxed", {
+                    hidden: !uttVisibles[sampleId],
+                  })}
+                >
+                  {sampleUtt}
+                </p>
                 <div className="flex flex-row justify-between items-center gap-x-16">
                   <RadioButton
                     label="明瞭性"
                     answerItem="intelligibility"
                     sampleId={sampleId}
                     itemList={intelligibilityItemList}
-                    register={register}
-                  />
-                  <RadioButton
-                    label="自然性"
-                    answerItem="naturalness"
-                    sampleId={sampleId}
-                    itemList={naturalnessItemList}
-                    register={register}
                   />
                 </div>
               </li>

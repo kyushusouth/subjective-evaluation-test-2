@@ -62,6 +62,7 @@ export async function POST(request: Request) {
           },
           data: {
             is_finished_intnat_practice: true,
+            is_invalid_intnat_practice: isInvalid,
           },
         });
       } else if (expType === "main") {
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
           },
           data: {
             is_finished_intnat_main: true,
-            is_invalid: isInvalid,
+            is_invalid_intnat_main: isInvalid,
           },
         });
       }

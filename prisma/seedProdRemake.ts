@@ -109,23 +109,15 @@ async function main() {
       process.exit(1);
     }
 
-    console.log(
-      respondentData[0].file_path_list_eval_int_nat.length,
-      respondentData[0].file_path_list_eval_sim_synth.length,
-      respondentData[0].file_path_list_eval_sim_gt.length,
-    );
-
     await prisma.respondents.update({
       where: {
         id: respondentId,
       },
       data: {
-        file_path_list_eval_int_nat:
-          respondentData[0].file_path_list_eval_int_nat,
-        file_path_list_eval_sim_synth:
-          respondentData[0].file_path_list_eval_sim_synth,
-        file_path_list_eval_sim_gt:
-          respondentData[0].file_path_list_eval_sim_gt,
+        is_dummy: respondentData[0].is_dummy,
+        file_path_list_int_nat: respondentData[0].file_path_list_int_nat,
+        file_path_list_sim_eval: respondentData[0].file_path_list_sim_eval,
+        file_path_list_sim_gt: respondentData[0].file_path_list_sim_gt,
       },
     });
   }

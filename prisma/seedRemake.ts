@@ -8,7 +8,6 @@ import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import { v4 as uuidv4 } from "uuid";
-import { Storage } from "@google-cloud/storage";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dfd = require("danfojs-node");
@@ -17,6 +16,7 @@ const localWavDirTest = process.env.LOCAL_WAV_DIR_TEST;
 const localWavDirVal = process.env.LOCAL_WAV_DIR_VAL;
 const localWavDirDummy = process.env.LOCAL_WAV_DIR_DUMMY;
 const localWavDirRandomized = process.env.LOCAL_WAV_DIR_RANDOMIZED;
+const localUttPath = process.env.LOCAL_UTT_PATH;
 const bucketName = process.env.GCS_BUCKET_NAME;
 const supabaseUrl = process.env.SUPABASE_URL_DEV;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY_DEV;
@@ -35,6 +35,9 @@ if (localWavDirDummy === undefined) {
 }
 if (localWavDirRandomized === undefined) {
   throw new Error("LOCAL_WAV_DIR_RANDAMIZED was not specified.");
+}
+if (localUttPath === undefined) {
+  throw new Error("LOCAL_UTT_PATH was not specified.");
 }
 if (bucketName === undefined) {
   throw new Error("GCS_BUCKET_NAME was not specified.");
@@ -62,7 +65,6 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
   },
 });
 const prisma = new PrismaClient();
-const storage = new Storage();
 
 function generateRandomString(length: number): string {
   const characters =
@@ -213,53 +215,46 @@ function getModelNameKindPairs(
     }
   });
 
-  if (
-    containsArray(modelNameKindPairs, [modelNameAbs!, "abs_mel_speech_ssl"])
-  ) {
-    throw new Error(`modelNameAbs(${modelNameAbs}) has already included.`);
-  }
-  if (
-    containsArray(modelNameKindPairs, [modelNameGT!, "gt"])
-  ) {
-    throw new Error(`modelNameGT(${modelNameGT}) has already included.`);
-  }
-
   modelNameKindPairs.push([modelNameAbs!, "abs_mel_speech_ssl"]);
   modelNameKindPairs.push([modelNameGT!, "gt"]);
 
   return modelNameKindPairs;
 }
 
-function generateSampleMetaData(
+async function generateSampleMetaData(
   filePathList: string[],
   sampleGroupMapIntNat: Record<string, number>,
   sampleGroupMapSim: Record<string, number>,
   expType: string,
   modelNameKindPairlist: string[][],
-): {
-  sampleMetaDataList: {
-    file_path: string;
-    model_name: string;
-    model_id: number;
-    speaker_name: string;
-    sample_name: string;
-    sample_group_int_nat: number;
-    sample_group_sim: number;
-    exp_type: string;
-    kind: string;
-    is_dummy: boolean;
-    naturalness_dummy_correct_answer_id: number;
-    intelligibility_dummy_correct_answer_id: number;
-    similarity_dummy_correct_answer_id: number;
-  }[];
-  srcDestFilePathList: string[][];
-} {
+): Promise<
+  {
+    sampleMetaDataList: {
+      file_path: string;
+      model_name: string;
+      model_id: number;
+      speaker_name: string;
+      sample_name: string;
+      sample_utt: string;
+      sample_group_int_nat: number;
+      sample_group_sim: number;
+      exp_type: string;
+      kind: string;
+      is_dummy: boolean;
+      naturalness_dummy_correct_answer_id: number;
+      intelligibility_dummy_correct_answer_id: number;
+      similarity_dummy_correct_answer_id: number;
+    }[];
+    srcDestFilePathList: string[][];
+  }
+> {
   const sampleMetaDataList: {
     file_path: string;
     model_name: string;
     model_id: number;
     speaker_name: string;
     sample_name: string;
+    sample_utt: string;
     sample_group_int_nat: number;
     sample_group_sim: number;
     exp_type: string;
@@ -271,6 +266,7 @@ function generateSampleMetaData(
   }[] = [];
 
   const srcDestFilePathList: string[][] = [];
+  const dfUtt = await dfd.readCSV(localUttPath);
 
   filePathList.forEach((filePath) => {
     const filePathParts = filePath.split("/");
@@ -283,6 +279,12 @@ function generateSampleMetaData(
       }
       return;
     }
+    const sampleUttNum = sampleName.split("_")[1];
+    const dfUttRow = dfUtt.loc({ rows: dfUtt["utt_num"].eq(sampleUttNum) });
+    if (dfUttRow.shape[0] !== 1) {
+      throw new Error(`The shape of dfUttRow: ${dfUttRow.shape}`);
+    }
+    const sampleUtt = dfUttRow["text"].values[0];
     const sampleGroupIntNat = sampleGroupMapIntNat[sampleName];
     const sampleGroupSim = sampleGroupMapSim[sampleName];
     const kind = filePathParts[filePathParts.length - 1].split(".")[0];
@@ -302,6 +304,7 @@ function generateSampleMetaData(
       model_id: modelId,
       speaker_name: speakerName,
       sample_name: sampleName,
+      sample_utt: sampleUtt,
       sample_group_int_nat: sampleGroupIntNat,
       sample_group_sim: sampleGroupSim,
       exp_type: expType,
@@ -323,6 +326,7 @@ async function makeDataFrameIntNat(
     model_id: number;
     speaker_name: string;
     sample_name: string;
+    sample_utt: string;
     sample_group_int_nat: number;
     sample_group_sim: number;
     exp_type: string;
@@ -345,11 +349,6 @@ async function makeDataFrameIntNat(
   df.addColumn("n_selected", Array(sampleMetaDataList.length).fill(0), {
     inplace: true,
   });
-
-  // dfd.toCSV(df, {
-  //   filePath:
-  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/int_nat/full.csv",
-  // });
 
   const numSpeaker = df["speaker_name"].nUnique();
   const numModel = df["model_id"].nUnique();
@@ -401,7 +400,6 @@ async function makeDataFrameIntNat(
       dfCandSampled = dfCandSampled.iloc({
         rows: [Math.floor(Math.random() * dfCandSampled.shape[0])],
       });
-
       selectedData.file_path.push(dfCandSampled["file_path"].values[0]);
       selectedData.is_selected.push(1);
     }
@@ -428,9 +426,11 @@ async function makeDataFrameIntNat(
     df["n_selected"] = df["n_selected"].add(df["is_selected"]);
     df.drop({ columns: ["is_selected"], inplace: true });
 
+    const respondentId = trial + 1;
+
     if (expType === "main") {
       if (trial < numTrial) {
-        const email = `user${trial + 1}@test.com`;
+        const email = `user${respondentId}@test.com`;
         const password = generateRandomString(passwordLength);
         const { error: createUserError } = await supabase
           .auth.admin.createUser({
@@ -442,13 +442,13 @@ async function makeDataFrameIntNat(
           console.error(`createUserError: ${createUserError}`);
         }
         authList.push({
-          respondent_id: trial + 1,
+          respondent_id: respondentId,
           email: email,
           password: password,
         });
-        console.log(trial + 1, email, password);
+        console.log(respondentId, email, password);
       } else {
-        const email = `dummy${trial + 1}@test.com`;
+        const email = `dummy${respondentId}@test.com`;
         const password = generateRandomString(passwordLength);
         const { error: createUserError } = await supabase
           .auth.admin.createUser({
@@ -460,16 +460,16 @@ async function makeDataFrameIntNat(
           console.error(`createUserError: ${createUserError}`);
         }
         authList.push({
-          respondent_id: trial + 1,
+          respondent_id: respondentId,
           email: email,
           password: password,
         });
-        console.log(trial + 1, email, password);
+        console.log(respondentId, email, password);
       }
     }
 
     respondentFilePathListIntNat.push({
-      id: trial + 1,
+      id: respondentId,
       file_path_list: selectedData.file_path,
     });
   }
@@ -484,6 +484,7 @@ function makeDataFrameSim(
     model_id: number;
     speaker_name: string;
     sample_name: string;
+    sample_utt: string;
     sample_group_int_nat: number;
     sample_group_sim: number;
     exp_type: string;
@@ -498,7 +499,7 @@ function makeDataFrameSim(
   isGTIncluded: boolean,
 ): {
   id: number;
-  file_path_synth_list: string[];
+  file_path_eval_list: string[];
   file_path_gt_list: string[];
 }[] {
   const df = new dfd.DataFrame(sampleMetaDataList);
@@ -511,19 +512,6 @@ function makeDataFrameSim(
     inplace: true,
   });
 
-  // dfd.toCSV(df, {
-  //   filePath:
-  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/full.csv",
-  // });
-  // dfd.toCSV(dfGT, {
-  //   filePath:
-  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/gt.csv",
-  // });
-  // dfd.toCSV(dfEval, {
-  //   filePath:
-  //     "/Users/minami/dev/nextjs/subjective-evaluation-test-2/check/sim/synth.csv",
-  // });
-
   const numSpeaker = dfEval["speaker_name"].nUnique();
   const numModel = dfEval["model_id"].nUnique();
   const numSample = dfEval["sample_name"].nUnique();
@@ -535,7 +523,7 @@ function makeDataFrameSim(
   const numTrialWithDummyUsers = numTrial + numDummyUsers;
   const respondentFilePathList: {
     id: number;
-    file_path_synth_list: string[];
+    file_path_eval_list: string[];
     file_path_gt_list: string[];
   }[] = [];
 
@@ -554,11 +542,11 @@ function makeDataFrameSim(
 
     const selectedData: {
       file_path: string[];
-      file_path_gt_pair: string[];
+      file_path_gt: string[];
       is_selected: number[];
     } = {
       file_path: [],
-      file_path_gt_pair: [],
+      file_path_gt: [],
       is_selected: [],
     };
 
@@ -597,7 +585,7 @@ function makeDataFrameSim(
       });
 
       selectedData.file_path.push(dfCandSampled["file_path"].values[0]);
-      selectedData.file_path_gt_pair.push(dfGTSampled["file_path"].values[0]);
+      selectedData.file_path_gt.push(dfGTSampled["file_path"].values[0]);
       selectedData.is_selected.push(1);
     }
 
@@ -622,14 +610,16 @@ function makeDataFrameSim(
 
     dfEval["n_selected"] = dfEval["n_selected"].add(dfEval["is_selected"]);
     dfEval.drop({
-      columns: ["is_selected", "file_path_gt_pair"],
+      columns: ["is_selected", "file_path_gt"],
       inplace: true,
     });
 
+    const respondentId = trial + 1;
+
     respondentFilePathList.push({
-      id: trial + 1,
-      file_path_synth_list: selectedData.file_path,
-      file_path_gt_list: selectedData.file_path_gt_pair,
+      id: respondentId,
+      file_path_eval_list: selectedData.file_path,
+      file_path_gt_list: selectedData.file_path_gt,
     });
   }
 
@@ -650,6 +640,7 @@ async function makeDataFrames(
       model_id: number;
       speaker_name: string;
       sample_name: string;
+      sample_utt: string;
       sample_group_int_nat: number;
       sample_group_sim: number;
       exp_type: string;
@@ -663,7 +654,7 @@ async function makeDataFrames(
     respondentFilePathListIntNat: { id: number; file_path_list: string[] }[];
     respondentFilePathListSim: {
       id: number;
-      file_path_synth_list: string[];
+      file_path_eval_list: string[];
       file_path_gt_list: string[];
     }[];
     authList: { respondent_id: number; email: string; password: string }[];
@@ -696,13 +687,14 @@ async function makeDataFrames(
     sampleNameList,
     sampleGroupSizeListSim,
   );
-  const { sampleMetaDataList, srcDestFilePathList } = generateSampleMetaData(
-    filePathList,
-    sampleGroupMapIntNat,
-    sampleGroupMapSim,
-    expType,
-    modelNameKindPairList,
-  );
+  const { sampleMetaDataList, srcDestFilePathList } =
+    await generateSampleMetaData(
+      filePathList,
+      sampleGroupMapIntNat,
+      sampleGroupMapSim,
+      expType,
+      modelNameKindPairList,
+    );
   const {
     respondentFilePathListIntNat,
     authList,
@@ -759,16 +751,17 @@ async function main() {
 
   const filePathListTest = getWavFilesInDirectory(localWavDirTest!);
   const filePathListVal = getWavFilesInDirectory(localWavDirVal!);
-  const numAnsPerSample = 4;
+  const numAnsPerSample = 6;
   const numDummyUsers = 10;
   const isGTIncludedSim = true;
 
+  // sample_meta_dataに文章だけつければ解決する気がする
   console.log("makeDataFrames: main");
   const {
-    sampleMetaDataList: sampleMetaDataListTest,
-    srcDestFilePathList: srcDestFilePathListTest,
-    respondentFilePathListIntNat: respondentFilePathListIntNatTest,
-    respondentFilePathListSim: respondentFilePathListSimTest,
+    sampleMetaDataList: sampleMetaDataListMain,
+    srcDestFilePathList: srcDestFilePathListMain,
+    respondentFilePathListIntNat: respondentFilePathListIntNatMain,
+    respondentFilePathListSim: respondentFilePathListSimMain,
     authList,
   } = await makeDataFrames(
     filePathListTest,
@@ -780,10 +773,10 @@ async function main() {
 
   console.log("makeDataFrames: practice");
   const {
-    sampleMetaDataList: sampleMetaDataListVal,
-    srcDestFilePathList: srcDestFilePathListVal,
-    respondentFilePathListIntNat: respondentFilePathListIntNatVal,
-    respondentFilePathListSim: respondentFilePathListSimVal,
+    sampleMetaDataList: sampleMetaDataListPractice,
+    srcDestFilePathList: srcDestFilePathListPractice,
+    respondentFilePathListIntNat: respondentFilePathListIntNatPractice,
+    respondentFilePathListSim: respondentFilePathListSimPractice,
   } = await makeDataFrames(
     filePathListVal,
     "practice",
@@ -792,68 +785,71 @@ async function main() {
     isGTIncludedSim,
   );
 
-  const sampleMetaDataList = sampleMetaDataListTest.concat(
-    sampleMetaDataListVal,
+  const sampleMetaDataList = sampleMetaDataListMain.concat(
+    sampleMetaDataListPractice,
   );
-  const srcDestFilePathList = srcDestFilePathListTest.concat(
-    srcDestFilePathListVal,
+  const srcDestFilePathList = srcDestFilePathListMain.concat(
+    srcDestFilePathListPractice,
   );
 
   console.log("update respondents");
   for (
     let respondentId = 1;
-    respondentId <= respondentFilePathListIntNatTest.length;
+    respondentId <= respondentFilePathListIntNatMain.length;
     respondentId += 1
   ) {
-    const respondentFilePathIntNatTest = respondentFilePathListIntNatTest
+    const respondentFilePathIntNatMain = respondentFilePathListIntNatMain
       .filter((
         value,
       ) => value.id === respondentId);
-    const respondentFilePathIntNatVal = respondentFilePathListIntNatVal.filter((
+    const respondentFilePathIntNatPractice =
+      respondentFilePathListIntNatPractice
+        .filter((
+          value,
+        ) => value.id === respondentId);
+    const respondentFilePathSimMain = respondentFilePathListSimMain.filter((
       value,
     ) => value.id === respondentId);
-    const respondentFilePathSimTest = respondentFilePathListSimTest.filter((
-      value,
-    ) => value.id === respondentId);
-    const respondentFilePathSimVal = respondentFilePathListSimVal.filter((
-      value,
-    ) => value.id === respondentId);
+    const respondentFilePathSimPractice = respondentFilePathListSimPractice
+      .filter((
+        value,
+      ) => value.id === respondentId);
 
-    if (respondentFilePathIntNatTest.length !== 1) {
+    if (respondentFilePathIntNatMain.length !== 1) {
       throw new Error(
-        `respondentFilePathIntNatTest.length = ${respondentFilePathIntNatTest.length}`,
+        `respondentFilePathIntNatMain.length = ${respondentFilePathIntNatMain.length}`,
       );
     }
-    if (respondentFilePathIntNatVal.length !== 1) {
+    if (respondentFilePathIntNatPractice.length !== 1) {
       throw new Error(
-        `respondentFilePathIntNatVal.length = ${respondentFilePathIntNatVal.length}`,
+        `respondentFilePathIntNatPractice.length = ${respondentFilePathIntNatPractice.length}`,
       );
     }
-    if (respondentFilePathSimTest.length !== 1) {
+    if (respondentFilePathSimMain.length !== 1) {
       throw new Error(
-        `respondentFilePathSimTest.length = ${respondentFilePathSimTest.length}`,
+        `respondentFilePathSimMain.length = ${respondentFilePathSimMain.length}`,
       );
     }
-    if (respondentFilePathSimVal.length !== 1) {
+    if (respondentFilePathSimPractice.length !== 1) {
       throw new Error(
-        `respondentFilePathSimVal.length = ${respondentFilePathSimVal.length}`,
+        `respondentFilePathSimPractice.length = ${respondentFilePathSimPractice.length}`,
       );
     }
 
-    const respondentFilePathIntNat = respondentFilePathIntNatTest[0]
+    const respondentFilePathIntNat = respondentFilePathIntNatMain[0]
       .file_path_list.concat(
-        respondentFilePathIntNatVal[0]?.file_path_list,
+        respondentFilePathIntNatPractice[0].file_path_list,
       );
-    const respondentFilePathSimSynth = respondentFilePathSimTest[0]
-      .file_path_synth_list.concat(
-        respondentFilePathSimVal[0].file_path_synth_list,
+    const respondentFilePathSimEval = respondentFilePathSimMain[0]
+      .file_path_eval_list.concat(
+        respondentFilePathSimPractice[0].file_path_eval_list,
       );
-    const respondentFilePathSimGT = respondentFilePathSimTest[0]
+    const respondentFilePathSimGT = respondentFilePathSimMain[0]
       .file_path_gt_list.concat(
-        respondentFilePathSimVal[0].file_path_gt_list,
+        respondentFilePathSimPractice[0].file_path_gt_list,
       );
     if (
-      respondentId <= respondentFilePathListIntNatTest.length - numDummyUsers
+      respondentId <= respondentFilePathListIntNatMain.length - numDummyUsers
     ) {
       console.log(`respondentId: ${respondentId} is not dummy.`);
       await prisma.respondents.update({
@@ -861,9 +857,10 @@ async function main() {
           id: respondentId,
         },
         data: {
-          file_path_list_eval_int_nat: respondentFilePathIntNat,
-          file_path_list_eval_sim_synth: respondentFilePathSimSynth,
-          file_path_list_eval_sim_gt: respondentFilePathSimGT,
+          file_path_list_int: respondentFilePathIntNat,
+          file_path_list_int_nat: respondentFilePathIntNat,
+          file_path_list_sim_eval: respondentFilePathSimEval,
+          file_path_list_sim_gt: respondentFilePathSimGT,
         },
       });
     } else {
@@ -874,9 +871,10 @@ async function main() {
         },
         data: {
           is_dummy: true,
-          file_path_list_eval_int_nat: respondentFilePathIntNat,
-          file_path_list_eval_sim_synth: respondentFilePathSimSynth,
-          file_path_list_eval_sim_gt: respondentFilePathSimGT,
+          file_path_list_int: respondentFilePathIntNat,
+          file_path_list_int_nat: respondentFilePathIntNat,
+          file_path_list_sim_eval: respondentFilePathSimEval,
+          file_path_list_sim_gt: respondentFilePathSimGT,
         },
       });
     }
@@ -886,6 +884,28 @@ async function main() {
   dfd.toCSV(dfAuth, {
     filePath: authLocalSavePath,
   });
+
+  const naturalnessItemList = [
+    { item: "非常に悪い" },
+    { item: "悪い" },
+    { item: "普通" },
+    { item: "良い" },
+    { item: "非常に良い" },
+  ];
+  const intelligibilityItemList = [
+    { item: "全く聞き取れなかった" },
+    { item: "ほとんど聞き取れなかった" },
+    { item: "ある程度聞き取れた" },
+    { item: "ほとんど聞き取れた" },
+    { item: "完全に聞き取れた" },
+  ];
+  const similarityItemList = [
+    { item: "全く同じ話者には聞こえなかった" },
+    { item: "あまり同じ話者に聞こえなかった" },
+    { item: "ある程度同じ話者に聞こえた" },
+    { item: "かなり同じ話者に聞こえた" },
+    { item: "完全に同じ話者に聞こえた" },
+  ];
 
   const filePathDummyList = getWavFilesInDirectory(localWavDirDummy!);
   for (const filePath of filePathDummyList) {
@@ -908,12 +928,39 @@ async function main() {
         model_id: -1,
         speaker_name: "dummy",
         sample_name: expName,
+        sample_utt: `これはダミー音声です。明瞭性は「${intId}: ${
+          intelligibilityItemList[intId - 1].item
+        }」を、自然性は「${natId}: ${
+          naturalnessItemList[natId - 1].item
+        }」を選択してください。`,
         sample_group_int_nat: -1,
         sample_group_sim: -1,
         exp_type: expType,
         kind: "dummy",
         is_dummy: true,
         naturalness_dummy_correct_answer_id: natId,
+        intelligibility_dummy_correct_answer_id: intId,
+        similarity_dummy_correct_answer_id: 1,
+      });
+    } else if (expName === "int") {
+      const intId = Number(
+        filePathParts[filePathParts.length - 1].split(".")[0].split("_")[1],
+      );
+      sampleMetaDataList.push({
+        file_path: randomizedFilePath,
+        model_name: "dummy",
+        model_id: -1,
+        speaker_name: "dummy",
+        sample_name: expName,
+        sample_utt: `これはダミー音声です。明瞭性は「${intId}: ${
+          intelligibilityItemList[intId - 1].item
+        }」を選択してください。`,
+        sample_group_int_nat: -1,
+        sample_group_sim: -1,
+        exp_type: expType,
+        kind: "dummy",
+        is_dummy: true,
+        naturalness_dummy_correct_answer_id: 1,
         intelligibility_dummy_correct_answer_id: intId,
         similarity_dummy_correct_answer_id: 1,
       });
@@ -927,6 +974,9 @@ async function main() {
         model_id: -1,
         speaker_name: "dummy",
         sample_name: expName,
+        sample_utt: `これはダミー音声です。類似性は「${simId}: ${
+          similarityItemList[simId - 1].item
+        }」を選択してください。`,
         sample_group_int_nat: -1,
         sample_group_sim: -1,
         exp_type: expType,
@@ -959,37 +1009,16 @@ async function main() {
     skipDuplicates: true,
   });
 
-  const naturalnessItemList = [
-    { item: "非常に悪い" },
-    { item: "悪い" },
-    { item: "普通" },
-    { item: "良い" },
-    { item: "非常に良い" },
-  ];
   await prisma.naturalnessItem.createMany({
     data: naturalnessItemList,
     skipDuplicates: true,
   });
 
-  const intelligibilityItemList = [
-    { item: "非常に悪い" },
-    { item: "悪い" },
-    { item: "普通" },
-    { item: "良い" },
-    { item: "非常に良い" },
-  ];
   await prisma.intelligibilityItem.createMany({
     data: intelligibilityItemList,
     skipDuplicates: true,
   });
 
-  const similarityItemList = [
-    { item: "非常に悪い" },
-    { item: "悪い" },
-    { item: "普通" },
-    { item: "良い" },
-    { item: "非常に良い" },
-  ];
   await prisma.similarityItem.createMany({
     data: similarityItemList,
     skipDuplicates: true,
