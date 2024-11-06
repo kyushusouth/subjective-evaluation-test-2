@@ -4,7 +4,7 @@
 
 "use client";
 
-import React from "react";
+import { useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { SampleMetaData, IntelligibilityItem } from "@prisma/client";
 import clsx from "clsx";
@@ -55,6 +55,22 @@ export default function Form({
     formState: { isValid },
   } = useFormContext<SchemaType>();
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlayed, setIsPlayed] = useState(false);
+
+  const handlePlay = () => {
+    if (isPlayed) {
+      if (!audioRef) {
+        // @ts-expect-error: audioRef.currentで出るメッセージは無視
+        audioRef.current.pause();
+        // @ts-expect-error: audioRef.currentで出るメッセージは無視
+        audioRef.current.currentTime = 0;
+      }
+    } else {
+      setIsPlayed(true);
+    }
+  };
+
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
       <div id="accordion-open" data-accordion="open" className="w-full">
@@ -91,10 +107,12 @@ export default function Form({
                 className="w-72 flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
               >
                 <audio
+                  ref={audioRef}
                   src={sampleUrl}
                   controls={!uttVisibles[sampleId]}
                   controlsList="nodownload"
                   className="w-full"
+                  onPlay={handlePlay}
                 />
                 <div>
                   <button
