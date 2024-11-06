@@ -6,7 +6,7 @@
 "use client";
 
 import { useFormContext } from "react-hook-form";
-import { useState, useEffect } from "react";
+// import { useState, useEffect } from "react";
 import { SampleMetaData, SimilarityItem } from "@prisma/client";
 import createSchema from "@/app/components/sim/schema";
 import {
@@ -29,6 +29,7 @@ export default function Form({
   pageNumber,
   lastPageNumber,
   dummySampleUrl,
+  dummySampleAnswer,
   domainName,
   bucketName,
 }: {
@@ -39,31 +40,30 @@ export default function Form({
   pageNumber: number;
   lastPageNumber: number;
   dummySampleUrl: string;
+  dummySampleAnswer: { id: number; item: string };
   domainName: string;
   bucketName: string;
 }) {
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
 
-  const methods = useFormContext<SchemaType>();
   const {
-    register,
     formState: { isValid },
-  } = methods;
+  } = useFormContext<SchemaType>();
 
-  const [randValobj, setRandValObj] = useState<{ [key: number]: number }>({});
+  // const [randValobj, setRandValObj] = useState<{ [key: number]: number }>({});
 
-  useEffect(() => {
-    if (!(pageNumber in randValobj)) {
-      const newRandVal = Math.random() < 0.5 ? 0 : 1;
-      setRandValObj((prevRandValobj) => ({
-        ...prevRandValobj,
-        [pageNumber]: newRandVal,
-      }));
-    }
-  }, [pageNumber, randValobj]);
+  // useEffect(() => {
+  //   if (!(pageNumber in randValobj)) {
+  //     const newRandVal = Math.random() < 0.5 ? 0 : 1;
+  //     setRandValObj((prevRandValobj) => ({
+  //       ...prevRandValobj,
+  //       [pageNumber]: newRandVal,
+  //     }));
+  //   }
+  // }, [pageNumber, randValobj]);
 
-  const currentRandVal = randValobj[pageNumber];
+  // const currentRandVal = randValobj[pageNumber];
 
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
@@ -78,7 +78,10 @@ export default function Form({
           sectionNumber={2}
           sectionTitle="ダミー音声について"
           ContentsComponent={
-            <DummySampleExplanation dummySampleUrl={dummySampleUrl} />
+            <DummySampleExplanation
+              dummySampleUrl={dummySampleUrl}
+              dummySampleAnswer={dummySampleAnswer}
+            />
           }
           isLast={true}
         />
@@ -87,34 +90,41 @@ export default function Form({
       <div>
         <ul className="flex flex-col justify-center items-center gap-10">
           {sampleMetaDataList.map((data) => {
-            const sampleSynthId = data[0].id;
-            const sampleSynthUrl = `${domainName}/${bucketName}/${data[0].file_path}`;
+            const sampleEvalId = data[0].id;
+            const sampleEvalUrl = `${domainName}/${bucketName}/${data[0].file_path}`;
             const sampleGTUrl = `${domainName}/${bucketName}/${data[1].file_path}`;
             return (
               <li
                 data-test-id="formItem"
-                key={sampleSynthId}
+                key={sampleEvalId}
                 className="flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
               >
-                <audio
-                  src={currentRandVal === 0 ? sampleSynthUrl : sampleGTUrl}
-                  controls
-                  controlsList="nodownload"
-                  className="w-full min-w-64"
-                />
-                <audio
-                  src={currentRandVal === 0 ? sampleGTUrl : sampleSynthUrl}
-                  controls
-                  controlsList="nodownload"
-                  className="w-full min-w-64"
-                />
+                <div className="flex flex-col justify-center items-center gap-2">
+                  <label htmlFor={`ground-truth-${sampleEvalId}`}>原音声</label>
+                  <audio
+                    id={`ground-truth-${sampleEvalId}`}
+                    src={sampleGTUrl}
+                    controls
+                    controlsList="nodownload"
+                    className="w-full min-w-64"
+                  />
+                </div>
+                <div className="flex flex-col justify-center items-center gap-2">
+                  <label htmlFor={`eval-${sampleEvalId}`}>評価対象音声</label>
+                  <audio
+                    id={`eval-${sampleEvalId}`}
+                    src={sampleEvalUrl}
+                    controls
+                    controlsList="nodownload"
+                    className="w-full min-w-64"
+                  />
+                </div>
                 <div className="flex flex-row justify-between items-center gap-x-16 min-w-64">
                   <RadioButton
                     label="類似性"
                     answerItem="similarity"
-                    sampleId={sampleSynthId}
+                    sampleId={sampleEvalId}
                     itemList={similarityItemList}
-                    register={register}
                   />
                 </div>
               </li>

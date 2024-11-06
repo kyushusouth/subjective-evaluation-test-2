@@ -4,10 +4,11 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useFormContext } from "react-hook-form";
 import { SampleMetaData, IntelligibilityItem } from "@prisma/client";
 import clsx from "clsx";
+import * as Yup from "yup";
 import createSchema from "@/app/components/int/schema";
 import {
   IntelligibilityExplanation,
@@ -15,11 +16,10 @@ import {
 } from "@/app/components/int/instructions";
 import {
   AccordionSection,
-  RadioButton,
   NextPrevButtons,
   ProgressPar,
 } from "@/app/components/common/formComponents";
-import * as Yup from "yup";
+import RadioButton from "@/app/components/int/radioButton";
 
 export default function Form({
   uttVisibles,
@@ -31,6 +31,7 @@ export default function Form({
   pageNumber,
   lastPageNumber,
   dummySampleUrl,
+  dummySampleAnswer,
   domainName,
   bucketName,
 }: {
@@ -43,6 +44,7 @@ export default function Form({
   pageNumber: number;
   lastPageNumber: number;
   dummySampleUrl: string;
+  dummySampleAnswer: { id: number; item: string };
   domainName: string;
   bucketName: string;
 }) {
@@ -66,7 +68,10 @@ export default function Form({
           sectionNumber={2}
           sectionTitle="ダミー音声について"
           ContentsComponent={
-            <DummySampleExplanation dummySampleUrl={dummySampleUrl} />
+            <DummySampleExplanation
+              dummySampleUrl={dummySampleUrl}
+              dummySampleAnswer={dummySampleAnswer}
+            />
           }
           // eslint-disable-next-line react/jsx-boolean-value
           isLast={true}
@@ -79,9 +84,6 @@ export default function Form({
             const sampleId = data.id;
             const sampleUrl = `${domainName}/${bucketName}/${data.file_path}`;
             const sampleUtt = data.sample_utt;
-            console.log(
-              `sampleId: ${sampleId}, uttVisible: ${uttVisibles[sampleId]}`,
-            );
             return (
               <li
                 data-test-id="formItem"
@@ -118,6 +120,7 @@ export default function Form({
                     answerItem="intelligibility"
                     sampleId={sampleId}
                     itemList={intelligibilityItemList}
+                    disabled={!uttVisibles[sampleId]}
                   />
                 </div>
               </li>

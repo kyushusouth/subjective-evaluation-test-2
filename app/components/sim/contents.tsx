@@ -1,6 +1,8 @@
+/* eslint-disable no-restricted-syntax */
+
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { SampleMetaData, SimilarityItem, Respondents } from "@prisma/client";
@@ -15,6 +17,7 @@ export default function Contents({
   respondent,
   numSamplePerPage,
   dummySampleUrl,
+  dummySampleAnswer,
   domainName,
   bucketName,
 }: {
@@ -23,21 +26,46 @@ export default function Contents({
   respondent: Respondents | undefined;
   numSamplePerPage: number;
   dummySampleUrl: string;
+  dummySampleAnswer: { id: number; item: string };
   domainName: string;
   bucketName: string;
 }) {
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
 
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [shouldSave, setShouldSave] = useState(true);
+  const [pageNumber, setPageNumber] = useState<number>(1);
   const methods = useForm<SchemaType>({
     mode: "onSubmit",
   });
-  const { handleSubmit } = methods;
+  const { handleSubmit, watch, reset } = methods;
+  const formValues = watch();
   const router = useRouter();
-  const [pageNumber, setPageNumber] = useState<number>(1);
   const lastPageNumber = Math.ceil(
     sampleMetaDataList.length / numSamplePerPage,
   );
+
+  useEffect(() => {
+    const savedData = localStorage.getItem(
+      "subjectiveEvaluationTestSimilarityFormValues",
+    );
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      reset(parsedData);
+    }
+
+    setIsLoaded(true);
+  }, [reset]);
+
+  useEffect(() => {
+    if (isLoaded && shouldSave) {
+      localStorage.setItem(
+        "subjectiveEvaluationTestSimilarityFormValues",
+        JSON.stringify(formValues),
+      );
+    }
+  }, [formValues, isLoaded, shouldSave]);
 
   const onNext = () => {
     setPageNumber((state) => state + 1);
@@ -51,7 +79,6 @@ export default function Contents({
 
   const onSubmit = async (data: SchemaType) => {
     const dataList = [];
-    // eslint-disable-next-line no-restricted-syntax
     for (const sampleMetaData of sampleMetaDataList) {
       const sampleId = Number(sampleMetaData[0].id);
       const similarity = Number(data[`similarity_${sampleId}`]);
@@ -61,6 +88,7 @@ export default function Contents({
         similarity_id: similarity,
       });
     }
+
     const response = await fetch("/api/answers_sim", {
       headers: {
         "Content-Type": "application/json",
@@ -68,8 +96,11 @@ export default function Contents({
       body: JSON.stringify(dataList),
       method: "POST",
     });
+
     const result = await response.json();
     if (result.success) {
+      setShouldSave(false);
+      localStorage.clear();
       router.push("/thanks");
     } else {
       router.push("/error");
@@ -94,6 +125,7 @@ export default function Contents({
             pageNumber={pageNumber}
             lastPageNumber={lastPageNumber}
             dummySampleUrl={dummySampleUrl}
+            dummySampleAnswer={dummySampleAnswer}
             domainName={domainName}
             bucketName={bucketName}
           />

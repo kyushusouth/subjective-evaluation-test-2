@@ -1,7 +1,7 @@
 import Contents from "@/app/components/int/contents";
 import {
   fetchSampleMetaDataListShuffledIntNat,
-  fetchDummySampleUrlIntNat,
+  fetchDummySampleExampleIntNat,
   fetchIntelligibilityList,
   fetchRespondent,
 } from "@/app/lib/data";
@@ -18,7 +18,8 @@ export default async function ContentsWrapper({
     await fetchSampleMetaDataListShuffledIntNat(undefined, expType, "int");
   const intelligibilityItemList = await fetchIntelligibilityList();
   const respondent = await fetchRespondent();
-  const dummySampleUrl = await fetchDummySampleUrlIntNat("int");
+  const { dummySampleUrl, dummySampleAnswer } =
+    await fetchDummySampleExampleIntNat("int");
 
   return (
     <Contents
@@ -27,6 +28,7 @@ export default async function ContentsWrapper({
       respondent={respondent!}
       numSamplePerPage={numSamplePerPage}
       dummySampleUrl={dummySampleUrl}
+      dummySampleAnswer={dummySampleAnswer}
       domainName={domainName!}
       bucketName={bucketName!}
     />

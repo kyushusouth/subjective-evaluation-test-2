@@ -1,3 +1,5 @@
+import { IntelligibilityItem } from "@prisma/client";
+
 export function IntelligibilityExplanation() {
   return (
     <p className="leading-relaxed">
@@ -5,13 +7,17 @@ export function IntelligibilityExplanation() {
       <span className="font-bold">
         話者の意図した発話内容をその通り聞き取ることができるか
       </span>
-      で評価するものとします。
+      を評価するものとします。
     </p>
   );
 }
 
 /* eslint-disable jsx-a11y/media-has-caption */
-export function ExperimentOverviewSection() {
+export function ExperimentOverviewSection({
+  intelligibilityItemList,
+}: {
+  intelligibilityItemList: IntelligibilityItem[];
+}) {
   return (
     <section className="space-y-4 text-base">
       <h2 className="text-lg">実験内容</h2>
@@ -36,11 +42,11 @@ export function ExperimentOverviewSection() {
 
       <p>五段階評価の項目は以下のとおりです。</p>
       <ol>
-        <li>1: 全く聞き取れなかった</li>
-        <li>2: ほとんど聞き取れなかった</li>
-        <li>3: ある程度聞き取れた</li>
-        <li>4: ほとんど聞き取れた</li>
-        <li>5: 完全に聞き取れた</li>
+        {intelligibilityItemList.map((item) => (
+          <li key={item.id}>
+            {item.id}: {item.item}
+          </li>
+        ))}
       </ol>
 
       <p className="leading-relaxed">
@@ -52,8 +58,10 @@ export function ExperimentOverviewSection() {
 
 export function DummySampleExplanation({
   dummySampleUrl,
+  dummySampleAnswer,
 }: {
   dummySampleUrl: string;
+  dummySampleAnswer: { id: number; item: string };
 }) {
   return (
     <p className="leading-relaxed">
@@ -70,18 +78,16 @@ export function DummySampleExplanation({
       <br />
       例として、下記の音声では、
       <span className="font-bold">
-        これはダミー音声です。明瞭性は「3:
-        ある程度聞き取れた」を選択してください。
+        {`これはダミー音声です。明瞭性は「${dummySampleAnswer.id}: ${dummySampleAnswer.item}」を選択してください。`}
       </span>
       と指定しています。
       <audio
         src={dummySampleUrl}
         controls
         controlsList="nodownload"
-        className="my-4 mx-auto"
+        className="w-full max-w-72 my-4 mx-auto"
       />
-      この場合、明瞭性は「3:
-      ある程度聞き取れた」を選択します。音声自体の明瞭性を評価するわけではないため、ご注意ください。
+      {`この場合、明瞭性は「${dummySampleAnswer.id}: ${dummySampleAnswer.item}」を選択します。音声自体の明瞭性を評価するわけではないため、ご注意ください。`}
       <br />
       <br />
       特に、
@@ -96,13 +102,18 @@ export function DummySampleExplanation({
 
 export function DummySampleExplanationSection({
   dummySampleUrl,
+  dummySampleAnswer,
 }: {
   dummySampleUrl: string;
+  dummySampleAnswer: { id: number; item: string };
 }) {
   return (
     <section className="space-y-4 text-base">
       <h2 className="text-lg">ダミー音声について</h2>
-      <DummySampleExplanation dummySampleUrl={dummySampleUrl} />
+      <DummySampleExplanation
+        dummySampleUrl={dummySampleUrl}
+        dummySampleAnswer={dummySampleAnswer}
+      />
     </section>
   );
 }

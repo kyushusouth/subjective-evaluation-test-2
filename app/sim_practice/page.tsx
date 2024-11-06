@@ -2,10 +2,13 @@
 /* eslint-disable no-restricted-syntax */
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { fetchDummySampleUrlSim, fetchRespondent } from "@/app/lib/data";
+import {
+  fetchRespondent,
+  fetchDummySampleExampleSim,
+  fetchSimilarityList,
+} from "@/app/lib/data";
 import {
   ExperimentOverviewSection,
-  SimilarityExplanationSection,
   DummySampleExplanationSection,
 } from "@/app/components/sim/instructions";
 
@@ -16,7 +19,9 @@ export default async function Page() {
     return null;
   }
 
-  const dummySampleUrl = await fetchDummySampleUrlSim();
+  const similarityItemList = await fetchSimilarityList();
+  const { dummySampleUrl, dummySampleAnswer } =
+    await fetchDummySampleExampleSim();
 
   return (
     <div className="my-10 flex flex-col gap-10">
@@ -29,11 +34,12 @@ export default async function Page() {
         </p>
       </section>
       <hr className="border-t border-gray-300" />
-      <ExperimentOverviewSection />
+      <ExperimentOverviewSection similarityItemList={similarityItemList} />
       <hr className="border-t border-gray-300" />
-      <SimilarityExplanationSection />
-      <hr className="border-t border-gray-300" />
-      <DummySampleExplanationSection dummySampleUrl={dummySampleUrl} />
+      <DummySampleExplanationSection
+        dummySampleUrl={dummySampleUrl}
+        dummySampleAnswer={dummySampleAnswer}
+      />
       <button
         type="button"
         className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded w-fit mx-auto"

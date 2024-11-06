@@ -1,14 +1,19 @@
 /* eslint-disable jsx-a11y/media-has-caption */
 /* eslint-disable no-restricted-syntax */
 import Link from "next/link";
-import { fetchDummySampleUrlIntNat } from "@/app/lib/data";
 import {
   ExperimentOverviewSection,
   DummySampleExplanationSection,
 } from "@/app/components/int/instructions";
+import {
+  fetchDummySampleExampleIntNat,
+  fetchIntelligibilityList,
+} from "../lib/data";
 
 export default async function Page() {
-  const dummySampleUrl = await fetchDummySampleUrlIntNat("int");
+  const intelligibilityItemList = await fetchIntelligibilityList();
+  const { dummySampleUrl, dummySampleAnswer } =
+    await fetchDummySampleExampleIntNat("int");
 
   return (
     <div className="my-10 flex flex-col gap-10">
@@ -21,9 +26,14 @@ export default async function Page() {
         </p>
       </section>
       <hr className="border-t border-gray-300" />
-      <ExperimentOverviewSection />
+      <ExperimentOverviewSection
+        intelligibilityItemList={intelligibilityItemList}
+      />
       <hr className="border-t border-gray-300" />
-      <DummySampleExplanationSection dummySampleUrl={dummySampleUrl} />
+      <DummySampleExplanationSection
+        dummySampleUrl={dummySampleUrl}
+        dummySampleAnswer={dummySampleAnswer}
+      />
       <button
         type="button"
         className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded w-fit mx-auto"

@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-props-no-spreading */
+
 import clsx from "clsx";
 import { useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -121,12 +123,15 @@ export function RadioButton({
       </label>
       <div className="flex flex-col">
         {itemList.map((item) => (
-          // eslint-disable-next-line jsx-a11y/label-has-associated-control
-          <label key={item.id} className="flex items-center">
+          <label
+            key={item.id}
+            htmlFor={`${answerItem}_${sampleId}_${item.id}`}
+            className="flex items-center"
+          >
             <input
+              id={`${answerItem}_${sampleId}_${item.id}`}
               type="radio"
               value={item.id}
-              // eslint-disable-next-line react/jsx-props-no-spreading
               {...register(`${answerItem}_${sampleId}`, {
                 required: true,
               })}

@@ -22,6 +22,7 @@ export default function Contents({
   respondent,
   numSamplePerPage,
   dummySampleUrl,
+  dummySampleAnswer,
   domainName,
   bucketName,
 }: {
@@ -30,6 +31,7 @@ export default function Contents({
   respondent: Respondents | undefined;
   numSamplePerPage: number;
   dummySampleUrl: string;
+  dummySampleAnswer: { id: number; item: string };
   domainName: string;
   bucketName: string;
 }) {
@@ -152,6 +154,7 @@ export default function Contents({
             pageNumber={pageNumber}
             lastPageNumber={lastPageNumber}
             dummySampleUrl={dummySampleUrl}
+            dummySampleAnswer={dummySampleAnswer}
             domainName={domainName}
             bucketName={bucketName}
           />

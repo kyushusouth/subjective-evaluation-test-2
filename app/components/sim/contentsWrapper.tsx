@@ -1,7 +1,7 @@
 import Contents from "@/app/components/sim/contents";
 import {
   fetchSampleMetaDataListShuffledSim,
-  fetchDummySampleUrlSim,
+  fetchDummySampleExampleSim,
   fetchSimilarityList,
   fetchRespondent,
 } from "@/app/lib/data";
@@ -13,14 +13,15 @@ export default async function ContentsWrapper({
 }) {
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
-  const numSamplePerPage = 5;
+  const numSamplePerPage = 1;
   const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffledSim(
     undefined,
     expType,
   );
   const similarityItemList = await fetchSimilarityList();
   const respondent = await fetchRespondent();
-  const dummySampleUrl = await fetchDummySampleUrlSim();
+  const { dummySampleUrl, dummySampleAnswer } =
+    await fetchDummySampleExampleSim();
 
   return (
     <Contents
@@ -29,6 +30,7 @@ export default async function ContentsWrapper({
       respondent={respondent!}
       numSamplePerPage={numSamplePerPage}
       dummySampleUrl={dummySampleUrl}
+      dummySampleAnswer={dummySampleAnswer}
       domainName={domainName!}
       bucketName={bucketName!}
     />

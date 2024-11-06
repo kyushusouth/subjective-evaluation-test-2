@@ -2,7 +2,11 @@
 /* eslint-disable no-restricted-syntax */
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { fetchDummySampleUrlIntNat, fetchRespondent } from "@/app/lib/data";
+import {
+  fetchRespondent,
+  fetchIntelligibilityList,
+  fetchDummySampleExampleIntNat,
+} from "@/app/lib/data";
 import {
   ExperimentOverviewSection,
   DummySampleExplanationSection,
@@ -18,7 +22,9 @@ export default async function Page() {
     return null;
   }
 
-  const dummySampleUrl = await fetchDummySampleUrlIntNat("int");
+  const intelligibilityItemList = await fetchIntelligibilityList();
+  const { dummySampleUrl, dummySampleAnswer } =
+    await fetchDummySampleExampleIntNat("int");
 
   return (
     <div className="my-10 flex flex-col gap-10">
@@ -33,9 +39,14 @@ export default async function Page() {
         </p>
       </section>
       <hr className="border-t border-gray-300" />
-      <ExperimentOverviewSection />
+      <ExperimentOverviewSection
+        intelligibilityItemList={intelligibilityItemList}
+      />
       <hr className="border-t border-gray-300" />
-      <DummySampleExplanationSection dummySampleUrl={dummySampleUrl} />
+      <DummySampleExplanationSection
+        dummySampleUrl={dummySampleUrl}
+        dummySampleAnswer={dummySampleAnswer}
+      />
       <button
         type="button"
         className="bg-slate-500 hover:bg-blue-700 text-white py-2 px-4 rounded w-fit mx-auto"

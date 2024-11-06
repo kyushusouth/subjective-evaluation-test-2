@@ -111,7 +111,7 @@ export default async function Index() {
         </p>
       </section>
 
-      <hr className="border-t border-gray-300" />
+      {/* <hr className="border-t border-gray-300" />
 
       <section className="space-y-4 text-base">
         <h2 className="text-lg">エラーが起きた時の対処方法</h2>
@@ -142,7 +142,7 @@ export default async function Index() {
             一方、提出処理が完了する前に生じた場合、リロードしてもメニューの状態が変わりません。この場合、誠に申し訳ありませんが、再度提出をよろしくお願い致します。
           </p>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

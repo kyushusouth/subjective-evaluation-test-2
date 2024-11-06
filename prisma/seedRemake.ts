@@ -755,7 +755,6 @@ async function main() {
   const numDummyUsers = 10;
   const isGTIncludedSim = true;
 
-  // sample_meta_dataに文章だけつければ解決する気がする
   console.log("makeDataFrames: main");
   const {
     sampleMetaDataList: sampleMetaDataListMain,
@@ -900,11 +899,11 @@ async function main() {
     { item: "完全に聞き取れた" },
   ];
   const similarityItemList = [
-    { item: "全く同じ話者には聞こえなかった" },
-    { item: "あまり同じ話者に聞こえなかった" },
-    { item: "ある程度同じ話者に聞こえた" },
-    { item: "かなり同じ話者に聞こえた" },
-    { item: "完全に同じ話者に聞こえた" },
+    { item: "全く似ていなかった" },
+    { item: "あまり似ていなかった" },
+    { item: "やや似ていた" },
+    { item: "かなり似ていた" },
+    { item: "同じ話者に聞こえた" },
   ];
 
   const filePathDummyList = getWavFilesInDirectory(localWavDirDummy!);
