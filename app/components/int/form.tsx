@@ -4,7 +4,6 @@
 
 "use client";
 
-import { useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { SampleMetaData, IntelligibilityItem } from "@prisma/client";
 import clsx from "clsx";
@@ -24,6 +23,8 @@ import RadioButton from "@/app/components/int/radioButton";
 export default function Form({
   uttVisibles,
   handleUttVisibles,
+  isPlayedSample,
+  handleIsPlayedSample,
   onNext,
   onPrev,
   sampleMetaDataList,
@@ -37,6 +38,8 @@ export default function Form({
 }: {
   uttVisibles: { [key: number]: boolean };
   handleUttVisibles: (sampleId: number) => void;
+  isPlayedSample: { [key: number]: boolean };
+  handleIsPlayedSample: (sampleId: number) => void;
   onNext: () => void;
   onPrev: () => void;
   sampleMetaDataList: SampleMetaData[];
@@ -54,22 +57,6 @@ export default function Form({
   const {
     formState: { isValid },
   } = useFormContext<SchemaType>();
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlayed, setIsPlayed] = useState(false);
-
-  const handlePlay = () => {
-    if (isPlayed) {
-      if (!audioRef) {
-        // @ts-expect-error: audioRef.currentで出るメッセージは無視
-        audioRef.current.pause();
-        // @ts-expect-error: audioRef.currentで出るメッセージは無視
-        audioRef.current.currentTime = 0;
-      }
-    } else {
-      setIsPlayed(true);
-    }
-  };
 
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
@@ -107,19 +94,23 @@ export default function Form({
                 className="w-72 flex flex-col justify-center items-center gap-4 p-6 bg-white border border-gray-200 rounded-lg shadow"
               >
                 <audio
-                  ref={audioRef}
                   src={sampleUrl}
                   controls={!uttVisibles[sampleId]}
                   controlsList="nodownload"
-                  className="w-full"
-                  onPlay={handlePlay}
+                  className={clsx("w-full", {
+                    "pointer-events-none opacity-50": isPlayedSample[sampleId],
+                  })}
+                  onEnded={() => handleIsPlayedSample(sampleId)}
                 />
                 <div>
                   <button
                     type="button"
-                    className={clsx("leading-relaxed", {
-                      hidden: uttVisibles[sampleId],
-                    })}
+                    className={clsx(
+                      "leading-relaxed bg-slate-500 text-white py-2 px-4 rounded hover:bg-blue-700",
+                      {
+                        hidden: uttVisibles[sampleId],
+                      },
+                    )}
                     onClick={() => handleUttVisibles(sampleId)}
                   >
                     発話内容を表示

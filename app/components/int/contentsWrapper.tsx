@@ -1,7 +1,7 @@
 import Contents from "@/app/components/int/contents";
 import {
-  fetchSampleMetaDataListShuffledIntNat,
-  fetchDummySampleExampleIntNat,
+  fetchSampleMetaDataListShuffledInt,
+  fetchDummySampleExampleInt,
   fetchIntelligibilityList,
   fetchRespondent,
 } from "@/app/lib/data";
@@ -14,12 +14,14 @@ export default async function ContentsWrapper({
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
   const numSamplePerPage = 1;
-  const sampleMetaDataListShuffled =
-    await fetchSampleMetaDataListShuffledIntNat(undefined, expType, "int");
+  const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffledInt(
+    undefined,
+    expType,
+  );
   const intelligibilityItemList = await fetchIntelligibilityList();
   const respondent = await fetchRespondent();
   const { dummySampleUrl, dummySampleAnswer } =
-    await fetchDummySampleExampleIntNat("int");
+    await fetchDummySampleExampleInt();
 
   return (
     <Contents

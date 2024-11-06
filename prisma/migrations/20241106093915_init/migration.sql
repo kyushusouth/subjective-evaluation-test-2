@@ -10,18 +10,13 @@ CREATE TABLE "Respondents" (
     "is_finished_info" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_int_practice" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_int_main" BOOLEAN NOT NULL DEFAULT false,
-    "is_finished_intnat_practice" BOOLEAN NOT NULL DEFAULT false,
-    "is_finished_intnat_main" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_sim_practice" BOOLEAN NOT NULL DEFAULT false,
     "is_finished_sim_main" BOOLEAN NOT NULL DEFAULT false,
     "is_invalid_int_practice" BOOLEAN NOT NULL DEFAULT false,
     "is_invalid_int_main" BOOLEAN NOT NULL DEFAULT false,
-    "is_invalid_intnat_practice" BOOLEAN NOT NULL DEFAULT false,
-    "is_invalid_intnat_main" BOOLEAN NOT NULL DEFAULT false,
     "is_invalid_sim_practice" BOOLEAN NOT NULL DEFAULT false,
     "is_invalid_sim_main" BOOLEAN NOT NULL DEFAULT false,
     "file_path_list_int" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "file_path_list_int_nat" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "file_path_list_sim_eval" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "file_path_list_sim_gt" TEXT[] DEFAULT ARRAY[]::TEXT[],
 
@@ -58,19 +53,10 @@ CREATE TABLE "SampleMetaData" (
     "exp_type" TEXT NOT NULL,
     "kind" TEXT NOT NULL,
     "is_dummy" BOOLEAN NOT NULL,
-    "naturalness_dummy_correct_answer_id" INTEGER NOT NULL,
     "intelligibility_dummy_correct_answer_id" INTEGER NOT NULL,
     "similarity_dummy_correct_answer_id" INTEGER NOT NULL,
 
     CONSTRAINT "SampleMetaData_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "NaturalnessItem" (
-    "id" SERIAL NOT NULL,
-    "item" TEXT NOT NULL,
-
-    CONSTRAINT "NaturalnessItem_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -87,18 +73,6 @@ CREATE TABLE "SimilarityItem" (
     "item" TEXT NOT NULL,
 
     CONSTRAINT "SimilarityItem_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "AnswersIntNat" (
-    "id" SERIAL NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "respondent_id" INTEGER NOT NULL,
-    "sample_meta_data_id" INTEGER NOT NULL,
-    "naturalness_id" INTEGER NOT NULL,
-    "intelligibility_id" INTEGER NOT NULL,
-
-    CONSTRAINT "AnswersIntNat_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -130,34 +104,16 @@ CREATE UNIQUE INDEX "Respondents_auth_id_key" ON "Respondents"("auth_id");
 CREATE UNIQUE INDEX "SampleMetaData_file_path_key" ON "SampleMetaData"("file_path");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "NaturalnessItem_item_key" ON "NaturalnessItem"("item");
-
--- CreateIndex
 CREATE UNIQUE INDEX "IntelligibilityItem_item_key" ON "IntelligibilityItem"("item");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SimilarityItem_item_key" ON "SimilarityItem"("item");
 
 -- AddForeignKey
-ALTER TABLE "SampleMetaData" ADD CONSTRAINT "SampleMetaData_naturalness_dummy_correct_answer_id_fkey" FOREIGN KEY ("naturalness_dummy_correct_answer_id") REFERENCES "NaturalnessItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "SampleMetaData" ADD CONSTRAINT "SampleMetaData_intelligibility_dummy_correct_answer_id_fkey" FOREIGN KEY ("intelligibility_dummy_correct_answer_id") REFERENCES "IntelligibilityItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SampleMetaData" ADD CONSTRAINT "SampleMetaData_similarity_dummy_correct_answer_id_fkey" FOREIGN KEY ("similarity_dummy_correct_answer_id") REFERENCES "SimilarityItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AnswersIntNat" ADD CONSTRAINT "AnswersIntNat_respondent_id_fkey" FOREIGN KEY ("respondent_id") REFERENCES "Respondents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AnswersIntNat" ADD CONSTRAINT "AnswersIntNat_sample_meta_data_id_fkey" FOREIGN KEY ("sample_meta_data_id") REFERENCES "SampleMetaData"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AnswersIntNat" ADD CONSTRAINT "AnswersIntNat_naturalness_id_fkey" FOREIGN KEY ("naturalness_id") REFERENCES "NaturalnessItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AnswersIntNat" ADD CONSTRAINT "AnswersIntNat_intelligibility_id_fkey" FOREIGN KEY ("intelligibility_id") REFERENCES "IntelligibilityItem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AnswersInt" ADD CONSTRAINT "AnswersInt_respondent_id_fkey" FOREIGN KEY ("respondent_id") REFERENCES "Respondents"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -51,20 +51,6 @@ export default function Form({
     formState: { isValid },
   } = useFormContext<SchemaType>();
 
-  // const [randValobj, setRandValObj] = useState<{ [key: number]: number }>({});
-
-  // useEffect(() => {
-  //   if (!(pageNumber in randValobj)) {
-  //     const newRandVal = Math.random() < 0.5 ? 0 : 1;
-  //     setRandValObj((prevRandValobj) => ({
-  //       ...prevRandValobj,
-  //       [pageNumber]: newRandVal,
-  //     }));
-  //   }
-  // }, [pageNumber, randValobj]);
-
-  // const currentRandVal = randValobj[pageNumber];
-
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
       <div id="accordion-open" data-accordion="open" className="w-full">

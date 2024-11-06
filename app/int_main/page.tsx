@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   fetchRespondent,
   fetchIntelligibilityList,
-  fetchDummySampleExampleIntNat,
+  fetchDummySampleExampleInt,
 } from "@/app/lib/data";
 import {
   ExperimentOverviewSection,
@@ -24,7 +24,7 @@ export default async function Page() {
 
   const intelligibilityItemList = await fetchIntelligibilityList();
   const { dummySampleUrl, dummySampleAnswer } =
-    await fetchDummySampleExampleIntNat("int");
+    await fetchDummySampleExampleInt();
 
   return (
     <div className="my-10 flex flex-col gap-10">

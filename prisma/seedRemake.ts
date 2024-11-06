@@ -223,7 +223,7 @@ function getModelNameKindPairs(
 
 async function generateSampleMetaData(
   filePathList: string[],
-  sampleGroupMapIntNat: Record<string, number>,
+  sampleGroupMapInt: Record<string, number>,
   sampleGroupMapSim: Record<string, number>,
   expType: string,
   modelNameKindPairlist: string[][],
@@ -241,7 +241,6 @@ async function generateSampleMetaData(
       exp_type: string;
       kind: string;
       is_dummy: boolean;
-      naturalness_dummy_correct_answer_id: number;
       intelligibility_dummy_correct_answer_id: number;
       similarity_dummy_correct_answer_id: number;
     }[];
@@ -260,7 +259,6 @@ async function generateSampleMetaData(
     exp_type: string;
     kind: string;
     is_dummy: boolean;
-    naturalness_dummy_correct_answer_id: number;
     intelligibility_dummy_correct_answer_id: number;
     similarity_dummy_correct_answer_id: number;
   }[] = [];
@@ -273,7 +271,7 @@ async function generateSampleMetaData(
     const modelName = filePathParts[filePathParts.length - 4];
     const speakerName = filePathParts[filePathParts.length - 3];
     const sampleName = filePathParts[filePathParts.length - 2];
-    if (!(sampleName in sampleGroupMapIntNat)) {
+    if (!(sampleName in sampleGroupMapInt)) {
       if (sampleName in sampleGroupMapSim) {
         throw new Error("Unexpected Error");
       }
@@ -285,7 +283,7 @@ async function generateSampleMetaData(
       throw new Error(`The shape of dfUttRow: ${dfUttRow.shape}`);
     }
     const sampleUtt = dfUttRow["text"].values[0];
-    const sampleGroupIntNat = sampleGroupMapIntNat[sampleName];
+    const sampleGroupInt = sampleGroupMapInt[sampleName];
     const sampleGroupSim = sampleGroupMapSim[sampleName];
     const kind = filePathParts[filePathParts.length - 1].split(".")[0];
     const randomizedFilePath = `${uuidv4()}.wav`;
@@ -305,12 +303,11 @@ async function generateSampleMetaData(
       speaker_name: speakerName,
       sample_name: sampleName,
       sample_utt: sampleUtt,
-      sample_group_int_nat: sampleGroupIntNat,
+      sample_group_int_nat: sampleGroupInt,
       sample_group_sim: sampleGroupSim,
       exp_type: expType,
       kind: kind,
       is_dummy: false,
-      naturalness_dummy_correct_answer_id: 1,
       intelligibility_dummy_correct_answer_id: 1,
       similarity_dummy_correct_answer_id: 1,
     });
@@ -319,7 +316,7 @@ async function generateSampleMetaData(
   return { sampleMetaDataList, srcDestFilePathList };
 }
 
-async function makeDataFrameIntNat(
+async function makeDataFrameInt(
   sampleMetaDataList: {
     file_path: string;
     model_name: string;
@@ -332,7 +329,6 @@ async function makeDataFrameIntNat(
     exp_type: string;
     kind: string;
     is_dummy: boolean;
-    naturalness_dummy_correct_answer_id: number;
     intelligibility_dummy_correct_answer_id: number;
     similarity_dummy_correct_answer_id: number;
   }[],
@@ -341,7 +337,7 @@ async function makeDataFrameIntNat(
   numDummyUsers: number,
 ): Promise<
   {
-    respondentFilePathListIntNat: { id: number; file_path_list: string[] }[];
+    respondentFilePathListInt: { id: number; file_path_list: string[] }[];
     authList: { respondent_id: number; email: string; password: string }[];
   }
 > {
@@ -355,7 +351,7 @@ async function makeDataFrameIntNat(
   const numTrial = numSpeaker * numModel * numAnsPerSample;
   const numTrialWithDummyUsers = numTrial + numDummyUsers;
   const passwordLength = 6;
-  const respondentFilePathListIntNat: {
+  const respondentFilePathListInt: {
     id: number;
     file_path_list: string[];
   }[] = [];
@@ -468,13 +464,13 @@ async function makeDataFrameIntNat(
       }
     }
 
-    respondentFilePathListIntNat.push({
+    respondentFilePathListInt.push({
       id: respondentId,
       file_path_list: selectedData.file_path,
     });
   }
 
-  return { respondentFilePathListIntNat, authList };
+  return { respondentFilePathListInt, authList };
 }
 
 function makeDataFrameSim(
@@ -490,7 +486,6 @@ function makeDataFrameSim(
     exp_type: string;
     kind: string;
     is_dummy: boolean;
-    naturalness_dummy_correct_answer_id: number;
     intelligibility_dummy_correct_answer_id: number;
     similarity_dummy_correct_answer_id: number;
   }[],
@@ -646,12 +641,11 @@ async function makeDataFrames(
       exp_type: string;
       kind: string;
       is_dummy: boolean;
-      naturalness_dummy_correct_answer_id: number;
       intelligibility_dummy_correct_answer_id: number;
       similarity_dummy_correct_answer_id: number;
     }[];
     srcDestFilePathList: string[][];
-    respondentFilePathListIntNat: { id: number; file_path_list: string[] }[];
+    respondentFilePathListInt: { id: number; file_path_list: string[] }[];
     respondentFilePathListSim: {
       id: number;
       file_path_eval_list: string[];
@@ -671,13 +665,13 @@ async function makeDataFrames(
   const modelNameKindPairList = getModelNameKindPairs(
     filePathList,
   );
-  const sampleGroupSizeListIntNat = getSampleGroupSizeList(
+  const sampleGroupSizeListInt = getSampleGroupSizeList(
     modelNameList.length,
     sampleNameList.length,
   );
-  const sampleGroupMapIntNat = assignSampleGroups(
+  const sampleGroupMapInt = assignSampleGroups(
     sampleNameList,
-    sampleGroupSizeListIntNat,
+    sampleGroupSizeListInt,
   );
   const sampleGroupSizeListSim = getSampleGroupSizeList(
     isGTIncludedSim ? modelNameList.length : modelNameList.length - 1,
@@ -690,15 +684,15 @@ async function makeDataFrames(
   const { sampleMetaDataList, srcDestFilePathList } =
     await generateSampleMetaData(
       filePathList,
-      sampleGroupMapIntNat,
+      sampleGroupMapInt,
       sampleGroupMapSim,
       expType,
       modelNameKindPairList,
     );
   const {
-    respondentFilePathListIntNat,
+    respondentFilePathListInt,
     authList,
-  } = await makeDataFrameIntNat(
+  } = await makeDataFrameInt(
     sampleMetaDataList,
     expType,
     numAnsPerSample,
@@ -713,7 +707,7 @@ async function makeDataFrames(
   return {
     sampleMetaDataList,
     srcDestFilePathList,
-    respondentFilePathListIntNat,
+    respondentFilePathListInt,
     respondentFilePathListSim,
     authList,
   };
@@ -759,7 +753,7 @@ async function main() {
   const {
     sampleMetaDataList: sampleMetaDataListMain,
     srcDestFilePathList: srcDestFilePathListMain,
-    respondentFilePathListIntNat: respondentFilePathListIntNatMain,
+    respondentFilePathListInt: respondentFilePathListIntMain,
     respondentFilePathListSim: respondentFilePathListSimMain,
     authList,
   } = await makeDataFrames(
@@ -774,7 +768,7 @@ async function main() {
   const {
     sampleMetaDataList: sampleMetaDataListPractice,
     srcDestFilePathList: srcDestFilePathListPractice,
-    respondentFilePathListIntNat: respondentFilePathListIntNatPractice,
+    respondentFilePathListInt: respondentFilePathListIntPractice,
     respondentFilePathListSim: respondentFilePathListSimPractice,
   } = await makeDataFrames(
     filePathListVal,
@@ -794,18 +788,17 @@ async function main() {
   console.log("update respondents");
   for (
     let respondentId = 1;
-    respondentId <= respondentFilePathListIntNatMain.length;
+    respondentId <= respondentFilePathListIntMain.length;
     respondentId += 1
   ) {
-    const respondentFilePathIntNatMain = respondentFilePathListIntNatMain
+    const respondentFilePathIntMain = respondentFilePathListIntMain
       .filter((
         value,
       ) => value.id === respondentId);
-    const respondentFilePathIntNatPractice =
-      respondentFilePathListIntNatPractice
-        .filter((
-          value,
-        ) => value.id === respondentId);
+    const respondentFilePathIntPractice = respondentFilePathListIntPractice
+      .filter((
+        value,
+      ) => value.id === respondentId);
     const respondentFilePathSimMain = respondentFilePathListSimMain.filter((
       value,
     ) => value.id === respondentId);
@@ -814,14 +807,14 @@ async function main() {
         value,
       ) => value.id === respondentId);
 
-    if (respondentFilePathIntNatMain.length !== 1) {
+    if (respondentFilePathIntMain.length !== 1) {
       throw new Error(
-        `respondentFilePathIntNatMain.length = ${respondentFilePathIntNatMain.length}`,
+        `respondentFilePathIntMain.length = ${respondentFilePathIntMain.length}`,
       );
     }
-    if (respondentFilePathIntNatPractice.length !== 1) {
+    if (respondentFilePathIntPractice.length !== 1) {
       throw new Error(
-        `respondentFilePathIntNatPractice.length = ${respondentFilePathIntNatPractice.length}`,
+        `respondentFilePathIntPractice.length = ${respondentFilePathIntPractice.length}`,
       );
     }
     if (respondentFilePathSimMain.length !== 1) {
@@ -835,9 +828,9 @@ async function main() {
       );
     }
 
-    const respondentFilePathIntNat = respondentFilePathIntNatMain[0]
+    const respondentFilePathInt = respondentFilePathIntMain[0]
       .file_path_list.concat(
-        respondentFilePathIntNatPractice[0].file_path_list,
+        respondentFilePathIntPractice[0].file_path_list,
       );
     const respondentFilePathSimEval = respondentFilePathSimMain[0]
       .file_path_eval_list.concat(
@@ -848,7 +841,7 @@ async function main() {
         respondentFilePathSimPractice[0].file_path_gt_list,
       );
     if (
-      respondentId <= respondentFilePathListIntNatMain.length - numDummyUsers
+      respondentId <= respondentFilePathListIntMain.length - numDummyUsers
     ) {
       console.log(`respondentId: ${respondentId} is not dummy.`);
       await prisma.respondents.update({
@@ -856,8 +849,7 @@ async function main() {
           id: respondentId,
         },
         data: {
-          file_path_list_int: respondentFilePathIntNat,
-          file_path_list_int_nat: respondentFilePathIntNat,
+          file_path_list_int: respondentFilePathInt,
           file_path_list_sim_eval: respondentFilePathSimEval,
           file_path_list_sim_gt: respondentFilePathSimGT,
         },
@@ -870,8 +862,7 @@ async function main() {
         },
         data: {
           is_dummy: true,
-          file_path_list_int: respondentFilePathIntNat,
-          file_path_list_int_nat: respondentFilePathIntNat,
+          file_path_list_int: respondentFilePathInt,
           file_path_list_sim_eval: respondentFilePathSimEval,
           file_path_list_sim_gt: respondentFilePathSimGT,
         },
@@ -884,13 +875,6 @@ async function main() {
     filePath: authLocalSavePath,
   });
 
-  const naturalnessItemList = [
-    { item: "非常に悪い" },
-    { item: "悪い" },
-    { item: "普通" },
-    { item: "良い" },
-    { item: "非常に良い" },
-  ];
   const intelligibilityItemList = [
     { item: "全く聞き取れなかった" },
     { item: "ほとんど聞き取れなかった" },
@@ -914,34 +898,7 @@ async function main() {
       filePathParts[filePathParts.length - 1].split(".")[0].split("_")[0];
     const randomizedFilePath = `${uuidv4()}.wav`;
 
-    if (expName === "intnat") {
-      const intId = Number(
-        filePathParts[filePathParts.length - 1].split(".")[0].split("_")[1],
-      );
-      const natId = Number(
-        filePathParts[filePathParts.length - 1].split(".")[0].split("_")[2],
-      );
-      sampleMetaDataList.push({
-        file_path: randomizedFilePath,
-        model_name: "dummy",
-        model_id: -1,
-        speaker_name: "dummy",
-        sample_name: expName,
-        sample_utt: `これはダミー音声です。明瞭性は「${intId}: ${
-          intelligibilityItemList[intId - 1].item
-        }」を、自然性は「${natId}: ${
-          naturalnessItemList[natId - 1].item
-        }」を選択してください。`,
-        sample_group_int_nat: -1,
-        sample_group_sim: -1,
-        exp_type: expType,
-        kind: "dummy",
-        is_dummy: true,
-        naturalness_dummy_correct_answer_id: natId,
-        intelligibility_dummy_correct_answer_id: intId,
-        similarity_dummy_correct_answer_id: 1,
-      });
-    } else if (expName === "int") {
+    if (expName === "int") {
       const intId = Number(
         filePathParts[filePathParts.length - 1].split(".")[0].split("_")[1],
       );
@@ -959,7 +916,6 @@ async function main() {
         exp_type: expType,
         kind: "dummy",
         is_dummy: true,
-        naturalness_dummy_correct_answer_id: 1,
         intelligibility_dummy_correct_answer_id: intId,
         similarity_dummy_correct_answer_id: 1,
       });
@@ -981,7 +937,6 @@ async function main() {
         exp_type: expType,
         kind: "dummy",
         is_dummy: true,
-        naturalness_dummy_correct_answer_id: 1,
         intelligibility_dummy_correct_answer_id: 1,
         similarity_dummy_correct_answer_id: simId,
       });
@@ -1005,11 +960,6 @@ async function main() {
   const audioDeviceList = [{ item: "ヘッドホン" }, { item: "イヤホン" }];
   await prisma.audioDeviceItem.createMany({
     data: audioDeviceList,
-    skipDuplicates: true,
-  });
-
-  await prisma.naturalnessItem.createMany({
-    data: naturalnessItemList,
     skipDuplicates: true,
   });
 

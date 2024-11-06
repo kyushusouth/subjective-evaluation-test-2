@@ -65,20 +65,6 @@ export async function fetchAudioDeviceItemList() {
   }
 }
 
-export async function fetchNaturalnessItemList() {
-  noStore();
-  try {
-    const naturalnessItemList = await prisma.naturalnessItem.findMany();
-    if (!naturalnessItemList.length) {
-      throw new Error("No naturalness items found.");
-    }
-    return naturalnessItemList;
-  } catch (error) {
-    console.error("Error in fetchNaturalnessItemList:", error);
-    throw new Error("Failed to fetch naturalness item list.");
-  }
-}
-
 export async function fetchIntelligibilityList() {
   noStore();
   try {
@@ -207,15 +193,14 @@ export async function fetchSampleMetaDataListShuffledSim(
 
     return shuffleArray(sampleMetaDataList);
   } catch (error) {
-    console.error("Error in fetchSampleMetaDataListShuffled:", error);
+    console.error("Error in fetchSampleMetaDataListShuffledSim:", error);
     throw new Error("Failed to fetch and shuffle sample meta data list.");
   }
 }
 
-export async function fetchSampleMetaDataListShuffledIntNat(
+export async function fetchSampleMetaDataListShuffledInt(
   numTake: number | undefined,
   expType: string,
-  sampleName: string,
 ) {
   noStore();
   try {
@@ -244,7 +229,7 @@ export async function fetchSampleMetaDataListShuffledIntNat(
           {
             OR: [
               {
-                file_path: { in: respondent.file_path_list_int_nat },
+                file_path: { in: respondent.file_path_list_int },
               },
               {
                 AND: [
@@ -252,7 +237,7 @@ export async function fetchSampleMetaDataListShuffledIntNat(
                     is_dummy: true,
                   },
                   {
-                    sample_name: sampleName,
+                    sample_name: "int",
                   },
                 ],
               },
@@ -268,38 +253,8 @@ export async function fetchSampleMetaDataListShuffledIntNat(
 
     return shuffleArray(sampleMetaDataList);
   } catch (error) {
-    console.error("Error in fetchSampleMetaDataListShuffled:", error);
+    console.error("Error in fetchSampleMetaDataListShuffledInt:", error);
     throw new Error("Failed to fetch and shuffle sample meta data list.");
-  }
-}
-
-export async function fetchDummySampleUrlSim() {
-  noStore();
-  try {
-    const domainName = process.env.GCS_DOMAIN_NAME;
-    const bucketName = process.env.GCS_BUCKET_NAME;
-
-    const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffledSim(
-      undefined,
-      "practice",
-    );
-    const sampleMetaDataDummyExample = sampleMetaDataListShuffled.filter(
-      (sampleMetaData) => sampleMetaData[0].is_dummy,
-    );
-
-    if (sampleMetaDataDummyExample?.length !== 1) {
-      throw new Error(
-        `sampleMetaDataDummyExample length: ${sampleMetaDataDummyExample?.length}`,
-      );
-    }
-
-    const dummySampleUrl = `${domainName}/${bucketName}/${
-      sampleMetaDataDummyExample[0][0]?.file_path
-    }`;
-    return dummySampleUrl;
-  } catch (error) {
-    console.error("Error in fetchDummySampleUrlSim:", error);
-    throw new Error("Failed to fetch dummySampleUrl.");
   }
 }
 
@@ -340,60 +295,21 @@ export async function fetchDummySampleExampleSim() {
 
     return { dummySampleUrl, dummySampleAnswer };
   } catch (error) {
-    console.error("Error in fetchDummySampleUrlIntNat:", error);
+    console.error("Error in fetchDummySampleExampleSim:", error);
     throw new Error("Failed to fetch dummySampleUrl.");
   }
 }
 
-export async function fetchDummySampleUrlIntNat(
-  sampleName: string,
-) {
+export async function fetchDummySampleExampleInt() {
   noStore();
   try {
     const domainName = process.env.GCS_DOMAIN_NAME;
     const bucketName = process.env.GCS_BUCKET_NAME;
 
-    const sampleMetaDataListShuffled =
-      await fetchSampleMetaDataListShuffledIntNat(
-        undefined,
-        "practice",
-        sampleName,
-      );
-
-    const sampleMetaDataDummyExample = sampleMetaDataListShuffled.filter(
-      (sampleMetaData) => sampleMetaData.is_dummy,
+    const sampleMetaDataListShuffled = await fetchSampleMetaDataListShuffledInt(
+      undefined,
+      "practice",
     );
-
-    if (sampleMetaDataDummyExample?.length !== 1) {
-      throw new Error(
-        `sampleMetaDataDummyExample length: ${sampleMetaDataDummyExample?.length}`,
-      );
-    }
-
-    const dummySampleUrl = `${domainName}/${bucketName}/${
-      sampleMetaDataDummyExample[0]?.file_path
-    }`;
-    return dummySampleUrl;
-  } catch (error) {
-    console.error("Error in fetchDummySampleUrlIntNat:", error);
-    throw new Error("Failed to fetch dummySampleUrl.");
-  }
-}
-
-export async function fetchDummySampleExampleIntNat(
-  sampleName: string,
-) {
-  noStore();
-  try {
-    const domainName = process.env.GCS_DOMAIN_NAME;
-    const bucketName = process.env.GCS_BUCKET_NAME;
-
-    const sampleMetaDataListShuffled =
-      await fetchSampleMetaDataListShuffledIntNat(
-        undefined,
-        "practice",
-        sampleName,
-      );
 
     const sampleMetaDataDummyExample = sampleMetaDataListShuffled.filter(
       (sampleMetaData) => sampleMetaData.is_dummy,
@@ -421,7 +337,7 @@ export async function fetchDummySampleExampleIntNat(
 
     return { dummySampleUrl, dummySampleAnswer };
   } catch (error) {
-    console.error("Error in fetchDummySampleUrlIntNat:", error);
+    console.error("Error in fetchDummySampleExampleInt:", error);
     throw new Error("Failed to fetch dummySampleUrl.");
   }
 }

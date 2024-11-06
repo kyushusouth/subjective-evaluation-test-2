@@ -6,14 +6,14 @@ import {
   DummySampleExplanationSection,
 } from "@/app/components/int/instructions";
 import {
-  fetchDummySampleExampleIntNat,
+  fetchDummySampleExampleInt,
   fetchIntelligibilityList,
 } from "../lib/data";
 
 export default async function Page() {
   const intelligibilityItemList = await fetchIntelligibilityList();
   const { dummySampleUrl, dummySampleAnswer } =
-    await fetchDummySampleExampleIntNat("int");
+    await fetchDummySampleExampleInt();
 
   return (
     <div className="my-10 flex flex-col gap-10">

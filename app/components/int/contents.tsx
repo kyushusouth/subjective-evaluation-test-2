@@ -44,6 +44,9 @@ export default function Contents({
   const [uttVisibles, setUttVisibles] = useState<{ [key: number]: boolean }>(
     {},
   );
+  const [isPlayedSample, setIsPlayedSample] = useState<{
+    [key: number]: boolean;
+  }>({});
   const methods = useForm<SchemaType>({
     mode: "onSubmit",
   });
@@ -56,8 +59,10 @@ export default function Contents({
 
   useEffect(() => {
     const uttVisiblesDefaultValue: { [key: number]: boolean } = {};
+    const isPlayedSampleDefaultValue: { [key: number]: boolean } = {};
     for (const sampleMetaData of sampleMetaDataList) {
       uttVisiblesDefaultValue[sampleMetaData.id] = false;
+      isPlayedSampleDefaultValue[sampleMetaData.id] = false;
     }
 
     const savedData = localStorage.getItem(
@@ -70,11 +75,13 @@ export default function Contents({
       for (const [sampleId, answer] of Object.entries(parsedData)) {
         if (answer) {
           uttVisiblesDefaultValue[Number(sampleId.split("_")[1])] = true;
+          isPlayedSampleDefaultValue[Number(sampleId.split("_")[1])] = true;
         }
       }
     }
 
     setUttVisibles(uttVisiblesDefaultValue);
+    setIsPlayedSample(isPlayedSampleDefaultValue);
     setIsLoaded(true);
   }, []);
 
@@ -90,6 +97,13 @@ export default function Contents({
   const handleUttVisibles = (sampleId: number) => {
     setUttVisibles({
       ...uttVisibles,
+      [sampleId]: true,
+    });
+  };
+
+  const handleIsPlayedSample = (sampleId: number) => {
+    setIsPlayedSample({
+      ...isPlayedSample,
       [sampleId]: true,
     });
   };
@@ -144,6 +158,8 @@ export default function Contents({
           <Form
             uttVisibles={uttVisibles}
             handleUttVisibles={handleUttVisibles}
+            isPlayedSample={isPlayedSample}
+            handleIsPlayedSample={handleIsPlayedSample}
             onNext={onNext}
             onPrev={onPrev}
             sampleMetaDataList={sampleMetaDataList.slice(
