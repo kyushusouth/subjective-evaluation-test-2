@@ -5,11 +5,7 @@ import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import createSchema from "@/app/components/int/schema";
 import * as Yup from "yup";
-import {
-  IntelligibilityItem,
-  NaturalnessItem,
-  SimilarityItem,
-} from "@prisma/client";
+import { IntelligibilityItem, SimilarityItem } from "@prisma/client";
 
 export function AccordionSection({
   sectionNumber,
@@ -109,7 +105,7 @@ export function RadioButton({
   label: string;
   answerItem: string;
   sampleId: number;
-  itemList: IntelligibilityItem[] | NaturalnessItem[] | SimilarityItem[];
+  itemList: IntelligibilityItem[] | SimilarityItem[];
 }) {
   const Schema = createSchema(1);
   type SchemaType = Yup.InferType<typeof Schema>;
