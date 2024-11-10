@@ -65,8 +65,8 @@ export default defineConfig({
       slowMo: 500,
     },
 
-    baseURL: "https://subjective-evaluation-test-2.vercel.app",
-    // baseURL: "http://localhost:3000",
+    // baseURL: "https://subjective-evaluation-test-2.vercel.app",
+    baseURL: "http://localhost:3000",
   },
 
   expect: {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
@@ -22,13 +23,53 @@ async function reset(respondentId: number) {
 			sex: "無回答",
 			audio_device: "無回答",
 			is_finished_info: false,
-			is_finished_intnat_practice: false,
-			is_finished_intnat_main: false,
+			is_finished_int_practice: false,
+			is_finished_int_main: false,
 			is_finished_sim_practice: false,
 			is_finished_sim_main: false,
-			is_invalid: false,
+			is_invalid_int_practice: false,
+			is_invalid_int_main: false,
+			is_invalid_sim_practice: false,
+			is_invalid_sim_main: false,
 		},
 	});
+}
+
+async function isAudioPlayableWaitEnd(
+	audio: HTMLAudioElement,
+): Promise<boolean> {
+	return new Promise((resolve) => {
+		const onError = () => {
+			audio.removeEventListener("ended", onEnded);
+			audio.removeEventListener("error", onError);
+			resolve(false);
+		};
+		const onEnded = () => {
+			audio.removeEventListener("ended", onEnded);
+			audio.removeEventListener("error", onError);
+			resolve(true);
+		};
+		try {
+			audio.play().then(() => {
+				audio.addEventListener("ended", onEnded);
+				audio.addEventListener("error", onError);
+			}).catch(() => {
+				resolve(false);
+			});
+		} catch (e) {
+			resolve(false);
+		}
+	});
+}
+
+async function checkIsAudioPlayableWaitEnd(
+	audio: Locator,
+) {
+	expect(audio).not.toBeNull();
+	const locatorIsPlayable = await audio.evaluate(
+		isAudioPlayableWaitEnd,
+	);
+	expect(locatorIsPlayable).toBe(true);
 }
 
 async function isAudioPlayable(audio: HTMLAudioElement): Promise<boolean> {
@@ -182,6 +223,36 @@ async function checkNextPrevButtons(
 	).toBeDisabled();
 }
 
+async function checkFormItemIsNotSelectable(
+	formItemList: Locator,
+	sampleId: number,
+	itemName: string,
+	checkIndexList: number[],
+) {
+	const formItem = formItemList.nth(sampleId);
+	for (const checkIndex of checkIndexList) {
+		await formItem
+			.locator(`input[name^="${itemName}_"]`)
+			.nth(checkIndex)
+			.isDisabled();
+	}
+}
+
+async function checkFormItemIsSelectable(
+	formItemList: Locator,
+	sampleId: number,
+	itemName: string,
+	checkIndexList: number[],
+) {
+	const formItem = formItemList.nth(sampleId);
+	for (const checkIndex of checkIndexList) {
+		await formItem
+			.locator(`input[name^="${itemName}_"]`)
+			.nth(checkIndex)
+			.isEnabled();
+	}
+}
+
 async function checkFormItem(
 	formItemList: Locator,
 	sampleId: number,
@@ -242,6 +313,7 @@ async function checkForm(
 	accordionList: string[],
 	numAudioSamplesPerFormItem: number,
 	answerItemsList: { [key: string]: string[] },
+	checkExpName: string,
 ) {
 	await page
 		.getByRole("button", {
@@ -278,15 +350,55 @@ async function checkForm(
 				audioId < numAudioSamplesPerFormItem;
 				audioId += 1
 			) {
-				const sampleIntNat = await page.locator(
-					`li:nth-child(${sampleId + 1}) > audio:nth-child(${audioId + 1})`,
-				);
-				await checkIsAudioPlayable(sampleIntNat);
+				if (checkExpName === "int") {
+					const audio = await page.locator(
+						`li:nth-child(${sampleId + 1}) > audio:nth-child(${audioId + 1})`,
+					);
+					await checkIsAudioPlayableWaitEnd(audio);
+					await expect(audio).toHaveClass(
+						/pointer-events-none opacity-50/,
+					);
+				} else if (checkExpName === "sim") {
+					const audio = await page.locator(
+						`li:nth-child(${sampleId + 1}) > div:nth-child(${
+							audioId + 1
+						}) > audio`,
+					);
+					await checkIsAudioPlayable(audio);
+				}
 			}
 
 			for (
 				const [answerName, answerItems] of Object.entries(answerItemsList)
 			) {
+				if (checkExpName === "int") {
+					await expect(page.locator(
+						`li:nth-child(${sampleId + 1}) > p`,
+					)).toBeHidden();
+					await expect(
+						page.getByRole("button", { name: "発話内容を表示" }),
+					).toBeEnabled();
+					await checkFormItemIsNotSelectable(
+						formItemList,
+						sampleId,
+						answerName,
+						Array.from({ length: answerItems.length }, (_, i) => i),
+					);
+					await page.getByRole("button", { name: "発話内容を表示" }).click();
+					await expect(page.locator(
+						`li:nth-child(${sampleId + 1}) > p`,
+					)).toBeVisible();
+					await expect(
+						page.getByRole("button", { name: "発話内容を表示" }),
+					).toBeHidden();
+				}
+
+				await checkFormItemIsSelectable(
+					formItemList,
+					sampleId,
+					answerName,
+					Array.from({ length: answerItems.length }, (_, i) => i),
+				);
 				await checkFormItem(
 					formItemList,
 					sampleId,
@@ -312,7 +424,7 @@ const records = parse(fs.readFileSync(authLocalSavePath), {
 	skip_empty_lines: true,
 });
 
-for (const record of records.slice(1, 2)) {
+for (const record of records.slice(0, 1)) {
 	const respondentId = Number(record.respondent_id);
 	const { email, password } = record;
 	const wrongEmail = "wrong@test.com";
@@ -324,28 +436,21 @@ for (const record of records.slice(1, 2)) {
 	const audioDevice = audioDeviceItemList[
 		generateRandomInteger(0, audioDeviceItemList.length - 1)
 	];
-	const naturalnessItemList = [
-		"1: 非常に悪い",
-		"2: 悪い",
-		"3: 普通",
-		"4: 良い",
-		"5: 非常に良い",
-	];
 	const intelligibilityItemList = [
-		"1: 非常に悪い",
-		"2: 悪い",
-		"3: 普通",
-		"4: 良い",
-		"5: 非常に良い",
+		"1: 全く聞き取れなかった",
+		"2: ほとんど聞き取れなかった",
+		"3: ある程度聞き取れた",
+		"4: ほとんど聞き取れた",
+		"5: 完全に聞き取れた",
 	];
 	const similarityItemList = [
-		"1: 非常に悪い",
-		"2: 悪い",
-		"3: 普通",
-		"4: 良い",
-		"5: 非常に良い",
+		"1: 全く似ていなかった",
+		"2: あまり似ていなかった",
+		"3: やや似ていた",
+		"4: かなり似ていた",
+		"5: 同じ話者に聞こえた",
 	];
-	const numSamplesPerPage = 5;
+	const numSamplesPerPage = 1;
 	const numTotalSamplesPractice = 8;
 	const numTotalPagesPractice = Math.ceil(
 		numTotalSamplesPractice / numSamplesPerPage,
@@ -358,18 +463,16 @@ for (const record of records.slice(1, 2)) {
 	test(`${respondentId}: Checking behaviour when not logged in`, async ({ page }) => {
 		const pathList: string[] = [
 			"/",
-			"/login",
 			"/info",
-			"/intnat_practice",
-			"/intnat_practice/exp",
-			"/intnat_main",
-			"/intnat_main/exp",
-			"/sim_practice",
-			"/sim_practice/exp",
+			"/int_main",
+			"/int_main/exp",
+			"/int_practice",
+			"/int_practice/exp",
+			"/login",
 			"/sim_main",
 			"/sim_main/exp",
-			"/thanks",
-			"/error",
+			"/sim_practice",
+			"/sim_practice/exp",
 		];
 		for (const path of pathList) {
 			await reliableGoto(page, path);
@@ -489,8 +592,8 @@ for (const record of records.slice(1, 2)) {
 		test("check NavBarDrawer", async ({ page }) => {
 			await navBarDrawerCurrentPage(page, "HOME");
 			await navBarDrawerIsSelectable(page, "アンケート");
-			await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
-			await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性・自然性）");
+			await navBarDrawerIsSelectable(page, "練習試行（明瞭性）");
+			await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性）");
 			await navBarDrawerIsNotSelectable(page, "練習試行（類似性）");
 			await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
 		});
@@ -543,28 +646,28 @@ for (const record of records.slice(1, 2)) {
 			await page.waitForURL("/");
 		});
 
-		test.describe("intnat_practice and intnat_main", () => {
+		test.describe("int_practice and int_main", () => {
 			const testConfigList = [
 				{
-					testName: "intnat_practice_1",
-					linkName: "練習試行（明瞭性・自然性）",
-					url: "/intnat_practice",
+					testName: "int_practice_1",
+					linkName: "練習試行（明瞭性）",
+					url: "/int_practice",
 					numTotalPages: numTotalPagesPractice,
 					numSampleLastPage: numTotalSamplesPractice %
 						numSamplesPerPage,
 				},
 				{
-					testName: "intnat_practice_2",
-					linkName: "練習試行（明瞭性・自然性）",
-					url: "/intnat_practice",
+					testName: "int_practice_2",
+					linkName: "練習試行（明瞭性）",
+					url: "/int_practice",
 					numTotalPages: numTotalPagesPractice,
 					numSampleLastPage: numTotalSamplesPractice %
 						numSamplesPerPage,
 				},
 				{
 					testName: "intnat_main",
-					linkName: "本番試行（明瞭性・自然性）",
-					url: "/intnat_main",
+					linkName: "本番試行（明瞭性）",
+					url: "/int_main",
 					numTotalPages: numTotalPages1,
 					numSampleLastPage: numTotalSamples1 % numSamplesPerPage,
 				},
@@ -579,51 +682,51 @@ for (const record of records.slice(1, 2)) {
 					await page.waitForURL(testConfig.url);
 
 					await navBarDrawerIsSelectable(page, "HOME");
-					if (testConfig.linkName === "練習試行（明瞭性・自然性）") {
-						await navBarDrawerCurrentPage(page, "練習試行（明瞭性・自然性）");
-						if (testConfig.testName === "intnat_practice_1") {
+					if (testConfig.linkName === "練習試行（明瞭性）") {
+						await navBarDrawerCurrentPage(page, "練習試行（明瞭性）");
+						if (testConfig.testName === "int_practice_1") {
 							await navBarDrawerIsNotSelectable(
 								page,
-								"本番試行（明瞭性・自然性）",
+								"本番試行（明瞭性）",
 							);
 						} else {
 							await navBarDrawerIsSelectable(
 								page,
-								"本番試行（明瞭性・自然性）",
+								"本番試行（明瞭性）",
 							);
 						}
-					} else if (testConfig.linkName === "本番試行（明瞭性・自然性）") {
-						await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
-						await navBarDrawerCurrentPage(page, "本番試行（明瞭性・自然性）");
+					} else if (testConfig.linkName === "本番試行（明瞭性）") {
+						await navBarDrawerIsSelectable(page, "練習試行（明瞭性）");
+						await navBarDrawerCurrentPage(page, "本番試行（明瞭性）");
 					}
 					await navBarDrawerIsNotSelectable(page, "練習試行（類似性）");
 					await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
 
-					const dummySampleIntNatFirst = await page.locator("audio");
-					await checkIsAudioPlayable(dummySampleIntNatFirst);
+					const dummySampleIntFirst = await page.locator("audio");
+					await checkIsAudioPlayable(dummySampleIntFirst);
 
 					await checkForm(
 						page,
 						testConfig,
 						numSamplesPerPage,
-						["明瞭性とは", "自然性とは", "ダミー音声について"],
+						["明瞭性とは", "ダミー音声について"],
 						1,
 						{
 							"intelligibility": intelligibilityItemList,
-							"naturalness": naturalnessItemList,
 						},
+						"int",
 					);
 
 					await navBarDrawerCurrentPage(page, "HOME");
-					await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
-					if (testConfig.linkName === "本番試行（明瞭性・自然性）") {
+					await navBarDrawerIsSelectable(page, "練習試行（明瞭性）");
+					if (testConfig.linkName === "本番試行（明瞭性）") {
 						await navBarDrawerIsNotSelectable(
 							page,
-							"本番試行（明瞭性・自然性）",
+							"本番試行（明瞭性）",
 						);
 						await navBarDrawerIsSelectable(page, "練習試行（類似性）");
 					} else {
-						await navBarDrawerIsSelectable(page, "本番試行（明瞭性・自然性）");
+						await navBarDrawerIsSelectable(page, "本番試行（明瞭性）");
 						await navBarDrawerIsNotSelectable(page, "練習試行（類似性）");
 					}
 					await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");
@@ -667,8 +770,8 @@ for (const record of records.slice(1, 2)) {
 					await page.waitForURL(testConfig.url);
 
 					await navBarDrawerIsSelectable(page, "HOME");
-					await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
-					await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性・自然性）");
+					await navBarDrawerIsSelectable(page, "練習試行（明瞭性）");
+					await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性）");
 					if (testConfig.linkName === "練習試行（類似性）") {
 						await navBarDrawerCurrentPage(page, "練習試行（類似性）");
 						if (testConfig.testName === "sim_practice_1") {
@@ -693,11 +796,12 @@ for (const record of records.slice(1, 2)) {
 						{
 							"similarity": similarityItemList,
 						},
+						"sim",
 					);
 
 					await navBarDrawerCurrentPage(page, "HOME");
-					await navBarDrawerIsSelectable(page, "練習試行（明瞭性・自然性）");
-					await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性・自然性）");
+					await navBarDrawerIsSelectable(page, "練習試行（明瞭性）");
+					await navBarDrawerIsNotSelectable(page, "本番試行（明瞭性）");
 					await navBarDrawerIsSelectable(page, "練習試行（類似性）");
 					if (testConfig.linkName === "本番試行（類似性）") {
 						await navBarDrawerIsNotSelectable(page, "本番試行（類似性）");

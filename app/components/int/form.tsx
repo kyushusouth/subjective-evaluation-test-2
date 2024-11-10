@@ -95,10 +95,11 @@ export default function Form({
               >
                 <audio
                   src={sampleUrl}
-                  controls={!uttVisibles[sampleId]}
+                  controls
                   controlsList="nodownload"
                   className={clsx("w-full", {
-                    "pointer-events-none opacity-50": isPlayedSample[sampleId],
+                    "pointer-events-none opacity-50":
+                      isPlayedSample[sampleId] || uttVisibles[sampleId],
                   })}
                   onEnded={() => handleIsPlayedSample(sampleId)}
                 />

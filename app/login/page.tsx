@@ -24,7 +24,7 @@ export default function Login({
   return (
     <div className="my-10 w-fit mx-auto">
       <form action={login}>
-        <div className="flex flex-col justify-center items-center gap-10">
+        <div className="max-w-72 flex flex-col justify-center items-center gap-10 mx-auto">
           <label htmlFor="email" className="w-full">
             メールアドレス
             <input
