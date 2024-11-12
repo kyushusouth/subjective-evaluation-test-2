@@ -22,7 +22,7 @@ export function ExperimentOverviewSection({
 }) {
   return (
     <section className="space-y-4 text-base">
-      <h2 className="text-lg">実験内容</h2>
+      <h2 className="text-lg text-center">実験内容</h2>
       <p className="leading-relaxed">
         実験で行っていただくのは、音声の類似性の評価になります。
       </p>
@@ -107,7 +107,7 @@ export function DummySampleExplanationSection({
 }) {
   return (
     <section className="space-y-4 text-base">
-      <h2 className="text-lg">ダミー音声について</h2>
+      <h2 className="text-lg text-center">ダミー音声について</h2>
       <DummySampleExplanation
         dummySampleUrl={dummySampleUrl}
         dummySampleAnswer={dummySampleAnswer}

@@ -5,7 +5,7 @@ export function IntelligibilityExplanation() {
     <p className="leading-relaxed">
       明瞭性は、
       <span className="font-bold">
-        話者の意図した発話内容をその通り聞き取ることができるか
+        話者の意図した発話内容を、一回の発話でどの程度聞き取ることができたか
       </span>
       を評価するものとします。
     </p>
@@ -28,15 +28,12 @@ export function ExperimentOverviewSection({
       <IntelligibilityExplanation />
 
       <p className="leading-relaxed">
-        各音声サンプルに対する評価の流れは、以下の三段階で構成されます。
+        各音声サンプルに対する評価の流れは、以下の二段階で構成されます。
       </p>
       <ol className="leading-relaxed list-decimal list-inside">
-        <li>提示された音声サンプルを聞き、その発話内容を聞き取る。</li>
+        <li>提示された音声サンプルを一回再生し、発話内容を聞き取る。</li>
         <li>
-          発話内容を聞き取ることができた、あるいはこれ以上聞き取ることができないと判断したら、本来の発話内容を確認する。
-        </li>
-        <li>
-          想定していた発話内容と本来の発話内容を照らし合わせ、音声の聞き取りやすさを五段階評価する。
+          本来の発話内容を確認し、想定していた発話内容と本来の発話内容を照らし合わせ、音声の聞き取りやすさを五段階評価する。
         </li>
       </ol>
 
@@ -50,7 +47,10 @@ export function ExperimentOverviewSection({
       </ol>
 
       <p className="leading-relaxed">
-        評価にあたり、音声は何度聞いていただいても構いません。
+        評価にあたり、音声は一度しか聞くことができません。
+        <span className="font-bold">
+          音声サンプルの再生を途中で停止したり、巻き戻したりすることは実装上可能ですが、実験の意図に反しますのでご遠慮ください。
+        </span>
       </p>
     </section>
   );

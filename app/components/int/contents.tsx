@@ -83,7 +83,7 @@ export default function Contents({
     setUttVisibles(uttVisiblesDefaultValue);
     setIsPlayedSample(isPlayedSampleDefaultValue);
     setIsLoaded(true);
-  }, []);
+  }, [reset, sampleMetaDataList]);
 
   useEffect(() => {
     if (isLoaded && shouldSave) {

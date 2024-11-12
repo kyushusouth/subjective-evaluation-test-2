@@ -5,21 +5,17 @@
 
 "use client";
 
-import { useFormContext } from "react-hook-form";
-// import { useState, useEffect } from "react";
 import { SampleMetaData, SimilarityItem } from "@prisma/client";
-import createSchema from "@/app/components/sim/schema";
 import {
   SimilarityExplanation,
   DummySampleExplanation,
 } from "@/app/components/sim/instructions";
 import {
   AccordionSection,
-  RadioButton,
-  NextPrevButtons,
   ProgressPar,
 } from "@/app/components/common/formComponents";
-import * as Yup from "yup";
+import RadioButton from "@/app/components/sim/radioButton";
+import NextPrevButton from "@/app/components/sim/nextPrevButton";
 
 export default function Form({
   onNext,
@@ -44,13 +40,6 @@ export default function Form({
   domainName: string;
   bucketName: string;
 }) {
-  const Schema = createSchema(sampleMetaDataList.length);
-  type SchemaType = Yup.InferType<typeof Schema>;
-
-  const {
-    formState: { isValid },
-  } = useFormContext<SchemaType>();
-
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
       <div id="accordion-open" data-accordion="open" className="w-full">
@@ -119,11 +108,11 @@ export default function Form({
         </ul>
       </div>
 
-      <NextPrevButtons
+      <NextPrevButton
         onNext={onNext}
         onPrev={onPrev}
         pageNumber={pageNumber}
-        isValid={isValid}
+        sampleMetaDataList={sampleMetaDataList}
       />
 
       <ProgressPar pageNumber={pageNumber} lastPageNumber={lastPageNumber} />
