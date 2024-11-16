@@ -7,7 +7,7 @@
 
 import { SampleMetaData, SimilarityItem } from "@prisma/client";
 import {
-  SimilarityExplanation,
+  ExperimentOverviewSection,
   DummySampleExplanation,
 } from "@/app/components/sim/instructions";
 import {
@@ -45,8 +45,12 @@ export default function Form({
       <div id="accordion-open" data-accordion="open" className="w-full">
         <AccordionSection
           sectionNumber={1}
-          sectionTitle="類似性とは"
-          ContentsComponent={<SimilarityExplanation />}
+          sectionTitle="実験内容"
+          ContentsComponent={
+            <ExperimentOverviewSection
+              similarityItemList={similarityItemList}
+            />
+          }
           isLast={false}
         />
         <AccordionSection

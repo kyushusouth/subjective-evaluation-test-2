@@ -7,7 +7,7 @@
 import { SampleMetaData, IntelligibilityItem } from "@prisma/client";
 import clsx from "clsx";
 import {
-  IntelligibilityExplanation,
+  ExperimentOverviewSection,
   DummySampleExplanation,
 } from "@/app/components/int/instructions";
 import {
@@ -53,8 +53,12 @@ export default function Form({
       <div id="accordion-open" data-accordion="open" className="w-full">
         <AccordionSection
           sectionNumber={1}
-          sectionTitle="明瞭性とは"
-          ContentsComponent={<IntelligibilityExplanation />}
+          sectionTitle="実験内容"
+          ContentsComponent={
+            <ExperimentOverviewSection
+              intelligibilityItemList={intelligibilityItemList}
+            />
+          }
           isLast={false}
         />
         <AccordionSection

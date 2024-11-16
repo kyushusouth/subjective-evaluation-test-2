@@ -28,12 +28,13 @@ export function ExperimentOverviewSection({
       <IntelligibilityExplanation />
 
       <p className="leading-relaxed">
-        各音声サンプルに対する評価の流れは、以下の二段階で構成されます。
+        各音声サンプルに対する評価の流れは、以下の三段階で構成されます。
       </p>
       <ol className="leading-relaxed list-decimal list-inside">
         <li>提示された音声サンプルを一回再生し、発話内容を聞き取る。</li>
+        <li>「発話内容を表示」ボタンを押し、本来の発話内容を表示する。</li>
         <li>
-          本来の発話内容を確認し、想定していた発話内容と本来の発話内容を照らし合わせ、音声の聞き取りやすさを五段階評価する。
+          想定していた発話内容と本来の発話内容を照らし合わせ、音声の聞き取りやすさを五段階評価する。
         </li>
       </ol>
 
