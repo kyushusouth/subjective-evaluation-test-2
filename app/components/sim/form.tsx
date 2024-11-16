@@ -85,6 +85,7 @@ export default function Form({
                     src={sampleGTUrl}
                     controls
                     controlsList="nodownload"
+                    preload="auto"
                     className="w-full min-w-64"
                   />
                 </div>
@@ -95,6 +96,7 @@ export default function Form({
                     src={sampleEvalUrl}
                     controls
                     controlsList="nodownload"
+                    preload="auto"
                     className="w-full min-w-64"
                   />
                 </div>

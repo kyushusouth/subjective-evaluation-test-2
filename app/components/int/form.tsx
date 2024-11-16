@@ -91,6 +91,7 @@ export default function Form({
                   src={sampleUrl}
                   controls
                   controlsList="nodownload"
+                  preload="auto"
                   className={clsx("w-full", {
                     "pointer-events-none opacity-50":
                       isPlayedSample[sampleId] || uttVisibles[sampleId],
