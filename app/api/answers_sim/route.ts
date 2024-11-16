@@ -15,7 +15,6 @@ export async function POST(request: Request) {
     const fromUrl = request.headers.get("referer")!;
     const fromUrlSplit = fromUrl.split("/");
     const pageName = fromUrlSplit[fromUrlSplit.length - 2];
-
     const expType = pageName.split("_")[1];
 
     const sampleMetaDataDummyList = await prisma.sampleMetaData.findMany({

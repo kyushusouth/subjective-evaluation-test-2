@@ -304,7 +304,7 @@ async function generateSampleMetaData(
   return { sampleMetaDataList, srcDestFilePathList };
 }
 
-async function makeDataFrameInt(
+async function selectSamplesInt(
   sampleMetaDataList: {
     file_path: string;
     model_name: string;
@@ -382,43 +382,28 @@ async function makeDataFrameInt(
     const respondentId = trial + 1;
 
     if (expType === "main") {
+      let email = "";
       if (trial < numTrial) {
-        const email = `user${respondentId}@test.com`;
-        const password = generateRandomString(passwordLength);
-        const { error: createUserError } = await supabase
-          .auth.admin.createUser({
-            email: email,
-            password: password,
-            email_confirm: true,
-          });
-        if (createUserError) {
-          console.error(`createUserError: ${createUserError}`);
-        }
-        authList.push({
-          respondent_id: respondentId,
-          email: email,
-          password: password,
-        });
-        console.log(respondentId, email, password);
+        email = `user${respondentId}@test.com`;
       } else {
-        const email = `dummy${respondentId}@test.com`;
-        const password = generateRandomString(passwordLength);
-        const { error: createUserError } = await supabase
-          .auth.admin.createUser({
-            email: email,
-            password: password,
-            email_confirm: true,
-          });
-        if (createUserError) {
-          console.error(`createUserError: ${createUserError}`);
-        }
-        authList.push({
-          respondent_id: respondentId,
+        email = `dummy${respondentId}@test.com`;
+      }
+      const password = generateRandomString(passwordLength);
+      const { error: createUserError } = await supabase
+        .auth.admin.createUser({
           email: email,
           password: password,
+          email_confirm: true,
         });
-        console.log(respondentId, email, password);
+      if (createUserError) {
+        console.error(`createUserError: ${createUserError}`);
       }
+      authList.push({
+        respondent_id: respondentId,
+        email: email,
+        password: password,
+      });
+      console.log(respondentId, email, password);
     }
 
     respondentFilePathListInt.push({
@@ -430,7 +415,7 @@ async function makeDataFrameInt(
   return { respondentFilePathListInt, authList };
 }
 
-function makeDataFrameSim(
+function selectSamplesSim(
   sampleMetaDataList: {
     file_path: string;
     model_name: string;
@@ -471,10 +456,10 @@ function makeDataFrameSim(
 
   for (let trial = 0; trial < numTrialWithDummyUsers; trial += 1) {
     const selectedData: {
-      file_path: string[];
+      file_path_eval: string[];
       file_path_gt: string[];
     } = {
-      file_path: [],
+      file_path_eval: [],
       file_path_gt: [],
     };
     const sampleNameListShuffled = shuffleArray(
@@ -521,7 +506,7 @@ function makeDataFrameSim(
         rows: [Math.floor(Math.random() * dfGTSampled.shape[0])],
       });
 
-      selectedData.file_path.push(dfCandSampled["file_path"].values[0]);
+      selectedData.file_path_eval.push(dfCandSampled["file_path"].values[0]);
       selectedData.file_path_gt.push(dfGTSampled["file_path"].values[0]);
     }
 
@@ -529,7 +514,7 @@ function makeDataFrameSim(
 
     respondentFilePathList.push({
       id: respondentId,
-      file_path_eval_list: selectedData.file_path,
+      file_path_eval_list: selectedData.file_path_eval,
       file_path_gt_list: selectedData.file_path_gt,
     });
   }
@@ -537,7 +522,7 @@ function makeDataFrameSim(
   return respondentFilePathList;
 }
 
-async function makeDataFrames(
+async function selectSamples(
   filePathList: string[],
   expType: string,
   numTrial: number,
@@ -589,13 +574,13 @@ async function makeDataFrames(
   const {
     respondentFilePathListInt,
     authList,
-  } = await makeDataFrameInt(
+  } = await selectSamplesInt(
     sampleMetaDataList,
     expType,
     numTrial,
     numDummyUsers,
   );
-  const respondentFilePathListSim = makeDataFrameSim(
+  const respondentFilePathListSim = selectSamplesSim(
     sampleMetaDataList,
     numTrial,
     numDummyUsers,
@@ -646,14 +631,14 @@ async function main() {
   const numDummyUsers = 50;
   const isGTIncludedSim = true;
 
-  console.log("makeDataFrames: main");
+  console.log("selectSamples: main");
   const {
     sampleMetaDataList: sampleMetaDataListMain,
     srcDestFilePathList: srcDestFilePathListMain,
     respondentFilePathListInt: respondentFilePathListIntMain,
     respondentFilePathListSim: respondentFilePathListSimMain,
     authList,
-  } = await makeDataFrames(
+  } = await selectSamples(
     filePathListTest,
     "main",
     numTrial,
@@ -661,13 +646,13 @@ async function main() {
     isGTIncludedSim,
   );
 
-  console.log("makeDataFrames: practice");
+  console.log("selectSamples: practice");
   const {
     sampleMetaDataList: sampleMetaDataListPractice,
     srcDestFilePathList: srcDestFilePathListPractice,
     respondentFilePathListInt: respondentFilePathListIntPractice,
     respondentFilePathListSim: respondentFilePathListSimPractice,
-  } = await makeDataFrames(
+  } = await selectSamples(
     filePathListVal,
     "practice",
     numTrial,
@@ -688,6 +673,7 @@ async function main() {
     respondentId <= respondentFilePathListIntMain.length;
     respondentId += 1
   ) {
+    console.log(`respondentId: ${respondentId}`);
     const respondentFilePathIntMain = respondentFilePathListIntMain
       .filter((
         value,
@@ -737,33 +723,52 @@ async function main() {
       .file_path_gt_list.concat(
         respondentFilePathSimPractice[0].file_path_gt_list,
       );
-    if (
-      respondentId <= respondentFilePathListIntMain.length - numDummyUsers
-    ) {
-      console.log(`respondentId: ${respondentId} is not dummy.`);
-      await prisma.respondents.update({
-        where: {
-          id: respondentId,
-        },
-        data: {
-          file_path_list_int: respondentFilePathInt,
-          file_path_list_sim_eval: respondentFilePathSimEval,
-          file_path_list_sim_gt: respondentFilePathSimGT,
-        },
-      });
-    } else {
-      console.log(`respondentId: ${respondentId} is dummy.`);
+
+    await prisma.respondents.update({
+      where: {
+        id: respondentId,
+      },
+      data: {
+        file_path_list_int: respondentFilePathInt,
+        file_path_list_sim_eval: respondentFilePathSimEval,
+        file_path_list_sim_gt: respondentFilePathSimGT,
+      },
+    });
+    if (respondentId > respondentFilePathListIntMain.length - numDummyUsers) {
       await prisma.respondents.update({
         where: {
           id: respondentId,
         },
         data: {
           is_dummy: true,
-          file_path_list_int: respondentFilePathInt,
-          file_path_list_sim_eval: respondentFilePathSimEval,
-          file_path_list_sim_gt: respondentFilePathSimGT,
         },
       });
+    }
+
+    const respondent = await prisma.respondents.findUnique({
+      where: {
+        id: respondentId,
+      },
+    });
+    if (!respondent) {
+      throw new Error("respondent was not found.");
+    }
+    for (let i = 0; i < respondentFilePathInt.length; i += 1) {
+      if (respondent.file_path_list_int[i] !== respondentFilePathInt[i]) {
+        throw new Error(`respondentFilePathInt is wrong order.`);
+      }
+    }
+    for (let i = 0; i < respondentFilePathSimEval.length; i += 1) {
+      if (
+        respondent.file_path_list_sim_eval[i] !== respondentFilePathSimEval[i]
+      ) {
+        throw new Error(`respondentFilePathSimEval is wrong order.`);
+      }
+    }
+    for (let i = 0; i < respondentFilePathSimGT.length; i += 1) {
+      if (respondent.file_path_list_sim_gt[i] !== respondentFilePathSimGT[i]) {
+        throw new Error(`respondentFilePathSimGT is wrong order.`);
+      }
     }
   }
 
@@ -791,8 +796,7 @@ async function main() {
   for (const filePath of filePathDummyList) {
     const filePathParts = filePath.split("/");
     const expType = filePathParts[filePathParts.length - 2];
-    const expName =
-      filePathParts[filePathParts.length - 1].split(".")[0].split("_")[0];
+    const expName = filePathParts[filePathParts.length - 1].split("_")[0];
     const randomizedFilePath = `${uuidv4()}.wav`;
 
     if (expName === "int") {
@@ -840,6 +844,7 @@ async function main() {
 
   console.log("copyFiles");
   copyFiles(localWavDirRandomized!, srcDestFilePathList);
+
   console.log("Upload files to GCS");
   execSync(`gsutil -m cp ${localWavDirRandomized}/*.wav gs://${bucketName}`);
 
@@ -850,9 +855,9 @@ async function main() {
     skipDuplicates: true,
   });
 
-  const audioDeviceList = [{ item: "ヘッドホン" }, { item: "イヤホン" }];
+  const audioDeviceItemList = [{ item: "ヘッドホン" }, { item: "イヤホン" }];
   await prisma.audioDeviceItem.createMany({
-    data: audioDeviceList,
+    data: audioDeviceItemList,
     skipDuplicates: true,
   });
 

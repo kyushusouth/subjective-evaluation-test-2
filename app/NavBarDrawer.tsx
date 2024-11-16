@@ -208,13 +208,11 @@ function Drawer({ respondent }: { respondent: Respondents | undefined }) {
                   },
                   {
                     "text-black hover:text-blue-700 hover:bg-gray-100":
-                      respondent.is_finished_int_main &&
                       !respondent.is_finished_sim_main &&
                       respondent.is_finished_sim_practice,
                   },
                   {
                     "text-gray-400 pointer-events-none":
-                      !respondent.is_finished_int_main ||
                       respondent.is_finished_sim_main ||
                       !respondent.is_finished_sim_practice,
                   },

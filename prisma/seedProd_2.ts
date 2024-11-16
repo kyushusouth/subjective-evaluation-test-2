@@ -9,6 +9,12 @@ const dfd = require("danfojs-node");
 
 const prisma = new PrismaClient();
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function main() {
   const supabaseUrlDev = process.env.SUPABASE_URL_DEV;
   const serviceRoleKeyDev = process.env.SUPABASE_SERVICE_ROLE_KEY_DEV;
@@ -120,6 +126,8 @@ async function main() {
         file_path_list_sim_gt: respondentData[0].file_path_list_sim_gt,
       },
     });
+
+    await sleep(3000);
   }
 
   console.log("create Data");

@@ -13,7 +13,7 @@
     "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed_2.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seedProd_2.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.2",

@@ -167,6 +167,7 @@ export async function fetchSampleMetaDataListShuffledSim(
 
     const sampleMetaDataList: SampleMetaData[][] = [];
 
+    // findManyで取得したサンプルはrespondent.file_path_listと順番が異なる。respondent.file_path_listの順番に出さないと、評価音声に対して正しい原音声ペアが割り当てられないので、ここで並び替える。
     for (
       let i = 0;
       i < respondent.file_path_list_sim_eval.length;
