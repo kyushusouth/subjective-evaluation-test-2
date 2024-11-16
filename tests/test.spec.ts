@@ -451,7 +451,7 @@ for (const record of records.slice(0, 1)) {
 		"5: 同じ話者に聞こえた",
 	];
 	const numSamplesPerPage = 1;
-	const numTotalSamplesPractice = 8;
+	const numTotalSamplesPractice = 6;
 	const numTotalPagesPractice = Math.ceil(
 		numTotalSamplesPractice / numSamplesPerPage,
 	);

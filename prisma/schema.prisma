@@ -9,27 +9,27 @@ generator client {
 }
 
 model Respondents {
-  id                          Int             @id @default(autoincrement())
-  auth_id                     String          @unique
-  is_dummy                    Boolean         @default(false)
-  created_at                  DateTime        @default(now())
-  age                         Int             @default(-1)
-  sex                         String          @default("無回答")
-  audio_device                String          @default("無回答")
-  is_finished_info            Boolean         @default(false)
-  is_finished_int_practice    Boolean         @default(false)
-  is_finished_int_main        Boolean         @default(false)
-  is_finished_sim_practice    Boolean         @default(false)
-  is_finished_sim_main        Boolean         @default(false)
-  is_invalid_int_practice     Boolean         @default(false)
-  is_invalid_int_main         Boolean         @default(false)
-  is_invalid_sim_practice     Boolean         @default(false)
-  is_invalid_sim_main         Boolean         @default(false)
-  file_path_list_int          String[]        @default([])
-  file_path_list_sim_eval     String[]        @default([])
-  file_path_list_sim_gt       String[]        @default([])
-  AnswersInt                  AnswersInt[]
-  AnswersSim                  AnswersSim[]
+  id                       Int          @id @default(autoincrement())
+  auth_id                  String       @unique
+  is_dummy                 Boolean      @default(false)
+  created_at               DateTime     @default(now())
+  age                      Int          @default(-1)
+  sex                      String       @default("無回答")
+  audio_device             String       @default("無回答")
+  is_finished_info         Boolean      @default(false)
+  is_finished_int_practice Boolean      @default(false)
+  is_finished_int_main     Boolean      @default(false)
+  is_finished_sim_practice Boolean      @default(false)
+  is_finished_sim_main     Boolean      @default(false)
+  is_invalid_int_practice  Boolean      @default(false)
+  is_invalid_int_main      Boolean      @default(false)
+  is_invalid_sim_practice  Boolean      @default(false)
+  is_invalid_sim_main      Boolean      @default(false)
+  file_path_list_int       String[]     @default([])
+  file_path_list_sim_eval  String[]     @default([])
+  file_path_list_sim_gt    String[]     @default([])
+  AnswersInt               AnswersInt[]
+  AnswersSim               AnswersSim[]
 }
 
 model SexItem {
@@ -50,8 +50,6 @@ model SampleMetaData {
   speaker_name                            String
   sample_name                             String
   sample_utt                              String
-  sample_group_int_nat                    Int
-  sample_group_sim                        Int
   exp_type                                String
   kind                                    String
   is_dummy                                Boolean

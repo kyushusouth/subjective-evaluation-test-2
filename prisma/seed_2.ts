@@ -8,7 +8,6 @@ import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import { v4 as uuidv4 } from "uuid";
-import { diffieHellman } from "crypto";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dfd = require("danfojs-node");
@@ -224,8 +223,7 @@ function getModelNameKindPairs(
 
 async function generateSampleMetaData(
   filePathList: string[],
-  sampleGroupMapInt: Record<string, number>,
-  sampleGroupMapSim: Record<string, number>,
+  sampleNameList: string[],
   expType: string,
   modelNameKindPairlist: string[][],
 ): Promise<
@@ -237,8 +235,6 @@ async function generateSampleMetaData(
       speaker_name: string;
       sample_name: string;
       sample_utt: string;
-      sample_group_int_nat: number;
-      sample_group_sim: number;
       exp_type: string;
       kind: string;
       is_dummy: boolean;
@@ -255,8 +251,6 @@ async function generateSampleMetaData(
     speaker_name: string;
     sample_name: string;
     sample_utt: string;
-    sample_group_int_nat: number;
-    sample_group_sim: number;
     exp_type: string;
     kind: string;
     is_dummy: boolean;
@@ -272,10 +266,7 @@ async function generateSampleMetaData(
     const modelName = filePathParts[filePathParts.length - 4];
     const speakerName = filePathParts[filePathParts.length - 3];
     const sampleName = filePathParts[filePathParts.length - 2];
-    if (!(sampleName in sampleGroupMapInt)) {
-      if (sampleName in sampleGroupMapSim) {
-        throw new Error("Unexpected Error");
-      }
+    if (!(sampleNameList.includes(sampleName))) {
       return;
     }
     const sampleUttNum = sampleName.split("_")[1];
@@ -284,8 +275,6 @@ async function generateSampleMetaData(
       throw new Error(`The shape of dfUttRow: ${dfUttRow.shape}`);
     }
     const sampleUtt = dfUttRow["text"].values[0];
-    const sampleGroupInt = sampleGroupMapInt[sampleName];
-    const sampleGroupSim = sampleGroupMapSim[sampleName];
     const kind = filePathParts[filePathParts.length - 1].split(".")[0];
     const randomizedFilePath = `${uuidv4()}.wav`;
 
@@ -304,8 +293,6 @@ async function generateSampleMetaData(
       speaker_name: speakerName,
       sample_name: sampleName,
       sample_utt: sampleUtt,
-      sample_group_int_nat: sampleGroupInt,
-      sample_group_sim: sampleGroupSim,
       exp_type: expType,
       kind: kind,
       is_dummy: false,
@@ -325,8 +312,6 @@ async function makeDataFrameInt(
     speaker_name: string;
     sample_name: string;
     sample_utt: string;
-    sample_group_int_nat: number;
-    sample_group_sim: number;
     exp_type: string;
     kind: string;
     is_dummy: boolean;
@@ -453,8 +438,6 @@ function makeDataFrameSim(
     speaker_name: string;
     sample_name: string;
     sample_utt: string;
-    sample_group_int_nat: number;
-    sample_group_sim: number;
     exp_type: string;
     kind: string;
     is_dummy: boolean;
@@ -569,8 +552,6 @@ async function makeDataFrames(
       speaker_name: string;
       sample_name: string;
       sample_utt: string;
-      sample_group_int_nat: number;
-      sample_group_sim: number;
       exp_type: string;
       kind: string;
       is_dummy: boolean;
@@ -598,27 +579,10 @@ async function makeDataFrames(
   const modelNameKindPairList = getModelNameKindPairs(
     filePathList,
   );
-  const sampleGroupSizeListInt = getSampleGroupSizeList(
-    modelNameList.length,
-    sampleNameList.length,
-  );
-  const sampleGroupMapInt = assignSampleGroups(
-    sampleNameList,
-    sampleGroupSizeListInt,
-  );
-  const sampleGroupSizeListSim = getSampleGroupSizeList(
-    isGTIncludedSim ? modelNameList.length : modelNameList.length - 1,
-    sampleNameList.length,
-  );
-  const sampleGroupMapSim = assignSampleGroups(
-    sampleNameList,
-    sampleGroupSizeListSim,
-  );
   const { sampleMetaDataList, srcDestFilePathList } =
     await generateSampleMetaData(
       filePathList,
-      sampleGroupMapInt,
-      sampleGroupMapSim,
+      sampleNameList,
       expType,
       modelNameKindPairList,
     );
@@ -678,7 +642,7 @@ async function main() {
 
   const filePathListTest = getWavFilesInDirectory(localWavDirTest!);
   const filePathListVal = getWavFilesInDirectory(localWavDirVal!);
-  const numTrial = 110;
+  const numTrial = 75;
   const numDummyUsers = 50;
   const isGTIncludedSim = true;
 
@@ -844,8 +808,6 @@ async function main() {
         sample_utt: `これはダミー音声です。明瞭性は「${intId}: ${
           intelligibilityItemList[intId - 1].item
         }」を選択してください。`,
-        sample_group_int_nat: -1,
-        sample_group_sim: -1,
         exp_type: expType,
         kind: "dummy",
         is_dummy: true,
@@ -865,8 +827,6 @@ async function main() {
         sample_utt: `これはダミー音声です。類似性は「${simId}: ${
           similarityItemList[simId - 1].item
         }」を選択してください。`,
-        sample_group_int_nat: -1,
-        sample_group_sim: -1,
         exp_type: expType,
         kind: "dummy",
         is_dummy: true,
