@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     if (!respondent) throw new Error("Respondent not found.");
 
     if (
-      (expType === "practice" && !respondent.is_finished_sim_practice) ||
+      (expType === "practice") ||
       (expType === "main" && !respondent.is_finished_sim_main)
     ) {
       await prisma.$transaction(async (tx) => {
