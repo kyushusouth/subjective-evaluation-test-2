@@ -14,10 +14,7 @@ import {
 
 export default async function Page() {
   const respondent = await fetchRespondent();
-  if (
-    !respondent?.is_finished_int_main ||
-    !respondent.is_finished_sim_practice
-  ) {
+  if (!respondent.is_finished_sim_practice || respondent.is_finished_sim_main) {
     redirect("/");
     return null;
   }
