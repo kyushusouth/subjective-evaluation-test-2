@@ -127,7 +127,7 @@ async function main() {
       },
     });
 
-    await sleep(3000);
+    await sleep(2000);
   }
 
   console.log("create Data");

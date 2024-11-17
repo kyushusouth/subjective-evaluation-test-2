@@ -46,34 +46,46 @@ export async function POST(request: Request) {
       }
     }
 
-    await prisma.$transaction(async (tx) => {
-      await tx.answersSim.createMany({
-        data: answerList,
-        skipDuplicates: true,
-      });
-
-      if (expType === "practice") {
-        await tx.respondents.update({
-          where: {
-            auth_id: user!.id,
-          },
-          data: {
-            is_finished_sim_practice: true,
-            is_invalid_sim_practice: isInvalid,
-          },
-        });
-      } else if (expType === "main") {
-        await tx.respondents.update({
-          where: {
-            auth_id: user!.id,
-          },
-          data: {
-            is_finished_sim_main: true,
-            is_invalid_sim_main: isInvalid,
-          },
-        });
-      }
+    const respondent = await prisma.respondents.findUnique({
+      where: {
+        auth_id: user!.id,
+      },
     });
+    if (!respondent) throw new Error("Respondent not found.");
+
+    if (
+      (expType === "practice" && !respondent.is_finished_sim_practice) ||
+      (expType === "main" && !respondent.is_finished_sim_main)
+    ) {
+      await prisma.$transaction(async (tx) => {
+        await tx.answersSim.createMany({
+          data: answerList,
+          skipDuplicates: true,
+        });
+
+        if (expType === "practice") {
+          await tx.respondents.update({
+            where: {
+              auth_id: user!.id,
+            },
+            data: {
+              is_finished_sim_practice: true,
+              is_invalid_sim_practice: isInvalid,
+            },
+          });
+        } else if (expType === "main") {
+          await tx.respondents.update({
+            where: {
+              auth_id: user!.id,
+            },
+            data: {
+              is_finished_sim_main: true,
+              is_invalid_sim_main: isInvalid,
+            },
+          });
+        }
+      });
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

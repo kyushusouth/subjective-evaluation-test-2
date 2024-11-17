@@ -424,7 +424,7 @@ const records = parse(fs.readFileSync(authLocalSavePath), {
 	skip_empty_lines: true,
 });
 
-for (const record of records.slice(0, 1)) {
+for (const record of records.slice(124, 125)) {
 	const respondentId = Number(record.respondent_id);
 	const { email, password } = record;
 	const wrongEmail = "wrong@test.com";
@@ -665,7 +665,7 @@ for (const record of records.slice(0, 1)) {
 						numSamplesPerPage,
 				},
 				{
-					testName: "intnat_main",
+					testName: "int_main",
 					linkName: "本番試行（明瞭性）",
 					url: "/int_main",
 					numTotalPages: numTotalPages1,
@@ -709,7 +709,7 @@ for (const record of records.slice(0, 1)) {
 						page,
 						testConfig,
 						numSamplesPerPage,
-						["明瞭性とは", "ダミー音声について"],
+						["実験内容", "ダミー音声について"],
 						1,
 						{
 							"intelligibility": intelligibilityItemList,
@@ -791,7 +791,7 @@ for (const record of records.slice(0, 1)) {
 						page,
 						testConfig,
 						numSamplesPerPage,
-						["類似性とは", "ダミー音声について"],
+						["実験内容", "ダミー音声について"],
 						2,
 						{
 							"similarity": similarityItemList,

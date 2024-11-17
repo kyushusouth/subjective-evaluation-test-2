@@ -627,7 +627,7 @@ async function main() {
 
   const filePathListTest = getWavFilesInDirectory(localWavDirTest!);
   const filePathListVal = getWavFilesInDirectory(localWavDirVal!);
-  const numTrial = 75;
+  const numTrial = 150;
   const numDummyUsers = 50;
   const isGTIncludedSim = true;
 

@@ -12,19 +12,28 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    await prisma.$transaction(async (tx) => {
-      await tx.respondents.update({
-        where: {
-          auth_id: user?.id,
-        },
-        data: {
-          age: Number(data.age),
-          sex: String(data.sex),
-          audio_device: String(data.audio_device),
-          is_finished_info: true,
-        },
-      });
+    const respondent = await prisma.respondents.findUnique({
+      where: {
+        auth_id: user!.id,
+      },
     });
+    if (!respondent) throw new Error("Respondent not found.");
+
+    if (!respondent.is_finished_info) {
+      await prisma.$transaction(async (tx) => {
+        await tx.respondents.update({
+          where: {
+            auth_id: user?.id,
+          },
+          data: {
+            age: Number(data.age),
+            sex: String(data.sex),
+            audio_device: String(data.audio_device),
+            is_finished_info: true,
+          },
+        });
+      });
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
