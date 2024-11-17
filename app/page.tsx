@@ -1,4 +1,59 @@
-export default async function Index() {
+/* eslint-disable no-restricted-syntax */
+
+"use client";
+
+import clsx from "clsx";
+import { useEffect, useState } from "react";
+
+export default function Index() {
+  const [isSaved, setIsSaved] = useState<{ [key: string]: boolean }>({});
+  const [hasData, setHasData] = useState(false);
+  const checkList: Record<string, string> = {
+    subjectiveEvaluationTestIntelligibilityFormValues_practice:
+      "練習試行（明瞭性）",
+    subjectiveEvaluationTestIntelligibilityFormValues_main:
+      "本番試行（明瞭性）",
+    subjectiveEvaluationTestSimilarityFormValues_practice: "練習試行（類似性）",
+    subjectiveEvaluationTestSimilarityFormValues_main: "本番試行（類似性）",
+  };
+
+  useEffect(() => {
+    const isSavedDefaultValue: { [key: string]: boolean } = {};
+    let hasAnyData = false;
+    for (const key of Object.keys(checkList)) {
+      const savedData = localStorage.getItem(key);
+      if (savedData) {
+        isSavedDefaultValue[key] = true;
+        hasAnyData = true;
+      }
+    }
+    setIsSaved(isSavedDefaultValue);
+    setHasData(hasAnyData);
+  }, []);
+
+  const handleLocalStorageClear = (key: string) => {
+    if (key === "all") {
+      localStorage.clear();
+    } else {
+      localStorage.removeItem(key);
+    }
+
+    const updatedIsSaved = { ...isSaved };
+    if (key === "all") {
+      Object.keys(checkList).forEach((k) => {
+        updatedIsSaved[k] = false;
+      });
+    } else {
+      updatedIsSaved[key] = false;
+    }
+    setIsSaved(updatedIsSaved);
+
+    const hasAnyData = Object.keys(checkList).some(
+      (k) => localStorage.getItem(k) !== null,
+    );
+    setHasData(hasAnyData);
+  };
+
   return (
     <div className="my-10 flex flex-col gap-10">
       <section className="space-y-2 text-base">
@@ -113,38 +168,45 @@ export default async function Index() {
         </p>
       </section>
 
-      {/* <hr className="border-t border-gray-300" />
+      <hr className="border-t border-gray-300" />
 
       <section className="space-y-4 text-base">
-        <h2 className="text-lg">エラーが起きた時の対処方法</h2>
+        <h2 className="text-lg">ローカルストレージについて</h2>
         <p className="leading-relaxed">
-          サーバーの不調により、エラーが起きる場合がございます。この場合、「エラーが発生しました。」と表示されるページに遷移しますので、ご承知おきください。
+          ネットワークやサーバーの不調により、回答結果の提出時にエラーが起こる可能性がございます。これに対し、本実験ではブラウザのローカルストレージという機能を利用し、回答結果を保存させていただくことで、提出に失敗しても回答結果がそのまま残るよう実装しております。そのため、提出に失敗した場合は、以前の回答結果のまま再度提出をお願い致します。
         </p>
-        <div>
-          <p className="leading-relaxed">
-            エラーが発生した場合には、必ず以下の手順で対応してください。
-          </p>
-          <ol className="leading-relaxed list-decimal list-inside">
-            <li>一度ページを閉じて、再度ホームページにアクセスする。</li>
-            <li>ページをリロードする。</li>
-          </ol>
-        </div>
-        <div>
-          <p className="leading-relaxed">
-            アンケートや練習試行、本番試行の提出中に生じたエラーについて、以下の二つのパターンが考えられます。
-          </p>
-          <ol className="leading-relaxed list-decimal list-inside">
-            <li>提出処理が完了した後で生じた場合。</li>
-            <li>提出処理が完了する前に生じた場合。</li>
-          </ol>
-          <br />
-          <p className="leading-relaxed">
-            提出処理が完了した後で生じた場合、リロードすることでメニューの状態が更新されます。例えば、アンケートや本番試行は選択不可能になります。一度目の練習試行を終えた後であれば、本番試行が選択可能になっています。この場合、提出は正常に完了しておりますので、問題ございません。
-            <br />
-            一方、提出処理が完了する前に生じた場合、リロードしてもメニューの状態が変わりません。この場合、誠に申し訳ありませんが、再度提出をよろしくお願い致します。
-          </p>
-        </div>
-      </section> */}
+        <p className="leading-relaxed">
+          また、提出成功時にはローカルストレージをクリアするよう実装しておりますが、例外的に失敗する可能性もございます。以下のボタンが選択可能になっている場合にはデータが残っておりますので、手動で削除をお願い致します。
+        </p>
+        <ul className="flex flex-col gap-3 items-center mx-auto">
+          {Object.keys(checkList).map((key) => (
+            <li key={key}>
+              <button
+                type="button"
+                className={clsx("bg-slate-500 text-white py-2 px-4 rounded", {
+                  "hover:bg-blue-700": isSaved[key],
+                  "cursor-not-allowed bg-slate-500/50": !isSaved[key],
+                })}
+                onClick={() => handleLocalStorageClear(key)}
+              >
+                {checkList[key]}のデータを削除
+              </button>
+            </li>
+          ))}
+          <li key="all">
+            <button
+              type="button"
+              className={clsx("bg-slate-500 text-white py-2 px-4 rounded", {
+                "hover:bg-blue-700": hasData,
+                "cursor-not-allowed bg-slate-500/50": !hasData,
+              })}
+              onClick={() => handleLocalStorageClear("all")}
+            >
+              全データを削除
+            </button>
+          </li>
+        </ul>
+      </section>
     </div>
   );
 }

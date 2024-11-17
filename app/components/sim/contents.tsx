@@ -20,6 +20,7 @@ export default function Contents({
   dummySampleAnswer,
   domainName,
   bucketName,
+  localStorageKey,
 }: {
   sampleMetaDataList: SampleMetaData[][];
   similarityItemList: SimilarityItem[];
@@ -29,6 +30,7 @@ export default function Contents({
   dummySampleAnswer: { id: number; item: string };
   domainName: string;
   bucketName: string;
+  localStorageKey: string;
 }) {
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
@@ -47,25 +49,20 @@ export default function Contents({
   );
 
   useEffect(() => {
-    const savedData = localStorage.getItem(
-      "subjectiveEvaluationTestSimilarityFormValues",
-    );
+    const savedData = localStorage.getItem(localStorageKey);
     if (savedData) {
       const parsedData = JSON.parse(savedData);
       reset(parsedData);
     }
 
     setIsLoaded(true);
-  }, [reset]);
+  }, [localStorageKey, reset]);
 
   useEffect(() => {
     if (isLoaded && shouldSave) {
-      localStorage.setItem(
-        "subjectiveEvaluationTestSimilarityFormValues",
-        JSON.stringify(formValues),
-      );
+      localStorage.setItem(localStorageKey, JSON.stringify(formValues));
     }
-  }, [formValues, isLoaded, shouldSave]);
+  }, [formValues, isLoaded, localStorageKey, shouldSave]);
 
   const onNext = () => {
     setPageNumber((state) => state + 1);

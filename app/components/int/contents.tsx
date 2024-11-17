@@ -25,6 +25,7 @@ export default function Contents({
   dummySampleAnswer,
   domainName,
   bucketName,
+  localStorageKey,
 }: {
   sampleMetaDataList: SampleMetaData[];
   intelligibilityItemList: IntelligibilityItem[];
@@ -34,6 +35,7 @@ export default function Contents({
   dummySampleAnswer: { id: number; item: string };
   domainName: string;
   bucketName: string;
+  localStorageKey: string;
 }) {
   const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
@@ -65,9 +67,7 @@ export default function Contents({
       isPlayedSampleDefaultValue[sampleMetaData.id] = false;
     }
 
-    const savedData = localStorage.getItem(
-      "subjectiveEvaluationTestIntelligibilityFormValues",
-    );
+    const savedData = localStorage.getItem(localStorageKey);
     if (savedData) {
       const parsedData = JSON.parse(savedData);
       reset(parsedData);
@@ -83,16 +83,13 @@ export default function Contents({
     setUttVisibles(uttVisiblesDefaultValue);
     setIsPlayedSample(isPlayedSampleDefaultValue);
     setIsLoaded(true);
-  }, [reset, sampleMetaDataList]);
+  }, [localStorageKey, reset, sampleMetaDataList]);
 
   useEffect(() => {
     if (isLoaded && shouldSave) {
-      localStorage.setItem(
-        "subjectiveEvaluationTestIntelligibilityFormValues",
-        JSON.stringify(formValues),
-      );
+      localStorage.setItem(localStorageKey, JSON.stringify(formValues));
     }
-  }, [formValues, isLoaded, shouldSave]);
+  }, [formValues, isLoaded, localStorageKey, shouldSave]);
 
   const handleUttVisibles = (sampleId: number) => {
     setUttVisibles({

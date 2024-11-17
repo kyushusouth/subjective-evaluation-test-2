@@ -11,6 +11,7 @@ export default async function ContentsWrapper({
 }: {
   expType: string;
 }) {
+  const localStorageKey = `subjectiveEvaluationTestIntelligibilityFormValues_${expType}`;
   const domainName = process.env.GCS_DOMAIN_NAME;
   const bucketName = process.env.GCS_BUCKET_NAME;
   const numSamplePerPage = 1;
@@ -33,6 +34,7 @@ export default async function ContentsWrapper({
       dummySampleAnswer={dummySampleAnswer}
       domainName={domainName!}
       bucketName={bucketName!}
+      localStorageKey={localStorageKey}
     />
   );
 }
