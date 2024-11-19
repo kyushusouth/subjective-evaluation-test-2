@@ -138,7 +138,7 @@ export default function Contents({
     const result = await response.json();
     if (result.success) {
       setShouldSave(false);
-      localStorage.clear();
+      localStorage.removeItem(localStorageKey);
       router.push("/thanks");
     } else {
       router.push("/error");
