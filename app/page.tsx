@@ -67,6 +67,8 @@ export default function Index() {
           <br />
           <br />
           以下、実験項目の説明を記載しておりますので、ご確認の上進めていただきますようよろしくお願い致します。
+          <br />
+          また、全ての実験を一度に終える必要はなく、各段階ごとに実施していただければ問題ありません。
         </p>
       </section>
 
@@ -85,6 +87,7 @@ export default function Index() {
 
       <section className="space-y-4 text-base">
         <h2 className="text-lg">アンケートの回答</h2>
+        <p className="leading-relaxed">所要時間: 1分程度</p>
         <p className="leading-relaxed">
           アンケートでは、性別・年齢など回答者様の基本情報をお答えいただきます。
           <br />
@@ -102,6 +105,7 @@ export default function Index() {
 
       <section className="space-y-4 text-base">
         <h2 className="text-lg">練習試行（明瞭性）</h2>
+        <p className="leading-relaxed">所要時間: 5分程度</p>
         <p className="leading-relaxed">
           練習試行（明瞭性）は、本番試行（明瞭性）の前に行っていただく練習のための実験となります。
           <br />
@@ -117,6 +121,7 @@ export default function Index() {
 
       <section className="space-y-4 text-base">
         <h2 className="text-lg">本番試行（明瞭性）</h2>
+        <p className="leading-relaxed">所要時間: 15分程度</p>
         <p className="leading-relaxed">
           本番試行（明瞭性）は、練習試行（明瞭性）の後に行っていただく本番の実験になります。
           <br />
@@ -136,6 +141,7 @@ export default function Index() {
 
       <section className="space-y-4 text-base">
         <h2 className="text-lg">練習試行（類似性）</h2>
+        <p className="leading-relaxed">所要時間: 5分程度</p>
         <p className="leading-relaxed">
           練習試行（類似性）は、本番試行（類似性）の前に行っていただく練習のための実験となります。
           <br />
@@ -155,6 +161,7 @@ export default function Index() {
 
       <section className="space-y-4 text-base">
         <h2 className="text-lg">本番試行（類似性）</h2>
+        <p className="leading-relaxed">所要時間: 15分程度</p>
         <p className="leading-relaxed">
           本番試行（類似性）は、練習試行（類似性）の後に行っていただく本番の実験になります。
           <br />
