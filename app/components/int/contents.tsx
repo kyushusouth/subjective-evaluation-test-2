@@ -37,7 +37,7 @@ export default function Contents({
   bucketName: string;
   localStorageKey: string;
 }) {
-  const Schema = createSchema(sampleMetaDataList.length);
+  const Schema = createSchema(sampleMetaDataList);
   type SchemaType = Yup.InferType<typeof Schema>;
 
   const [isLoaded, setIsLoaded] = useState(false);
@@ -150,7 +150,7 @@ export default function Contents({
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
         {pageNumber === lastPageNumber + 1 ? (
-          <Confirm onPrev={onPrev} sampleMetaDataList={sampleMetaDataList} />
+          <Confirm onPrev={onPrev} Schema={Schema} />
         ) : (
           <Form
             uttVisibles={uttVisibles}
@@ -170,6 +170,7 @@ export default function Contents({
             dummySampleAnswer={dummySampleAnswer}
             domainName={domainName}
             bucketName={bucketName}
+            Schema={Schema}
           />
         )}
       </form>

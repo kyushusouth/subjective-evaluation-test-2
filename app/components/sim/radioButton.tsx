@@ -1,6 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { useFormContext } from "react-hook-form";
-import createSchema from "@/app/components/sim/schema";
 import * as Yup from "yup";
 import { SimilarityItem } from "@prisma/client";
 
@@ -9,13 +8,23 @@ export default function RadioButton({
   answerItem,
   sampleId,
   itemList,
+  Schema,
 }: {
   label: string;
   answerItem: string;
   sampleId: number;
   itemList: SimilarityItem[];
+  Schema: Yup.ObjectSchema<
+    {
+      [x: string]: string | undefined;
+    },
+    Yup.AnyObject,
+    {
+      [x: string]: undefined;
+    },
+    ""
+  >;
 }) {
-  const Schema = createSchema(1);
   type SchemaType = Yup.InferType<typeof Schema>;
 
   const { register } = useFormContext<SchemaType>();

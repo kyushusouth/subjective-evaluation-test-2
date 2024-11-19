@@ -3,18 +3,24 @@
 /* eslint-disable no-restricted-syntax */
 import { useFormContext } from "react-hook-form";
 import clsx from "clsx";
-import { SampleMetaData } from "@prisma/client";
-import createSchema from "@/app/components/sim/schema";
 import * as Yup from "yup";
 
 export default function Confirm({
   onPrev,
-  sampleMetaDataList,
+  Schema,
 }: {
   onPrev: () => void;
-  sampleMetaDataList: SampleMetaData[][];
+  Schema: Yup.ObjectSchema<
+    {
+      [x: string]: string | undefined;
+    },
+    Yup.AnyObject,
+    {
+      [x: string]: undefined;
+    },
+    ""
+  >;
 }) {
-  const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
 
   const methods = useFormContext<SchemaType>();

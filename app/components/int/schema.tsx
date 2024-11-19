@@ -1,9 +1,11 @@
+/* eslint-disable no-restricted-syntax */
+import { SampleMetaData } from "@prisma/client";
 import * as Yup from "yup";
 
-const createSchema = (numSamples: number) => {
-  const obj: Record<string, Yup.NumberSchema> = {};
-  for (let i = 1; i <= numSamples; i += 1) {
-    obj[`intelligibility_${i}`] = Yup.number().required();
+const createSchema = (sampleMetaDataList: SampleMetaData[]) => {
+  const obj: Record<string, Yup.StringSchema> = {};
+  for (const sampleMetaData of sampleMetaDataList) {
+    obj[`intelligibility_${sampleMetaData.id}`] = Yup.string().required();
   }
   return Yup.object().shape(obj);
 };

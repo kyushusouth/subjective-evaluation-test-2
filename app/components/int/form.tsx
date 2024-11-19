@@ -5,6 +5,7 @@
 "use client";
 
 import { SampleMetaData, IntelligibilityItem } from "@prisma/client";
+import * as Yup from "yup";
 import clsx from "clsx";
 import {
   ExperimentOverviewSection,
@@ -32,6 +33,7 @@ export default function Form({
   dummySampleAnswer,
   domainName,
   bucketName,
+  Schema,
 }: {
   uttVisibles: { [key: number]: boolean };
   handleUttVisibles: (sampleId: number) => void;
@@ -47,6 +49,16 @@ export default function Form({
   dummySampleAnswer: { id: number; item: string };
   domainName: string;
   bucketName: string;
+  Schema: Yup.ObjectSchema<
+    {
+      [x: string]: string | undefined;
+    },
+    Yup.AnyObject,
+    {
+      [x: string]: undefined;
+    },
+    ""
+  >;
 }) {
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
@@ -126,6 +138,7 @@ export default function Form({
                     sampleId={sampleId}
                     itemList={intelligibilityItemList}
                     disabled={!uttVisibles[sampleId]}
+                    Schema={Schema}
                   />
                 </div>
               </li>
@@ -138,7 +151,7 @@ export default function Form({
         onNext={onNext}
         onPrev={onPrev}
         pageNumber={pageNumber}
-        sampleMetaDataList={sampleMetaDataList}
+        Schema={Schema}
       />
 
       <ProgressPar pageNumber={pageNumber} lastPageNumber={lastPageNumber} />

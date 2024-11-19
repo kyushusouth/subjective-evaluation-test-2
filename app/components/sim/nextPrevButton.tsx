@@ -1,21 +1,27 @@
 import clsx from "clsx";
 import { useFormContext } from "react-hook-form";
-import createSchema from "@/app/components/sim/schema";
 import * as Yup from "yup";
-import { SampleMetaData } from "@prisma/client";
 
 export default function NextPrevButton({
   onNext,
   onPrev,
   pageNumber,
-  sampleMetaDataList,
+  Schema,
 }: {
   onNext: () => void;
   onPrev: () => void;
   pageNumber: number;
-  sampleMetaDataList: SampleMetaData[][];
+  Schema: Yup.ObjectSchema<
+    {
+      [x: string]: string | undefined;
+    },
+    Yup.AnyObject,
+    {
+      [x: string]: undefined;
+    },
+    ""
+  >;
 }) {
-  const Schema = createSchema(sampleMetaDataList.length);
   type SchemaType = Yup.InferType<typeof Schema>;
 
   const {
