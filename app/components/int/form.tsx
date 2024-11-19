@@ -110,20 +110,18 @@ export default function Form({
                   })}
                   onEnded={() => handleIsPlayedSample(sampleId)}
                 />
-                <div>
-                  <button
-                    type="button"
-                    className={clsx(
-                      "leading-relaxed bg-slate-500 text-white py-2 px-4 rounded hover:bg-blue-700",
-                      {
-                        hidden: uttVisibles[sampleId],
-                      },
-                    )}
-                    onClick={() => handleUttVisibles(sampleId)}
-                  >
-                    発話内容を表示
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className={clsx(
+                    "leading-relaxed bg-slate-500 text-white py-2 px-4 rounded hover:bg-blue-700",
+                    {
+                      hidden: uttVisibles[sampleId],
+                    },
+                  )}
+                  onClick={() => handleUttVisibles(sampleId)}
+                >
+                  発話内容を表示
+                </button>
                 <p
                   className={clsx("leading-relaxed", {
                     hidden: !uttVisibles[sampleId],

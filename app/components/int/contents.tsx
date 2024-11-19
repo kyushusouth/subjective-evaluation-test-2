@@ -29,7 +29,7 @@ export default function Contents({
 }: {
   sampleMetaDataList: SampleMetaData[];
   intelligibilityItemList: IntelligibilityItem[];
-  respondent: Respondents | undefined;
+  respondent: Respondents;
   numSamplePerPage: number;
   dummySampleUrl: string;
   dummySampleAnswer: { id: number; item: string };
@@ -121,7 +121,7 @@ export default function Contents({
       const sampleId = Number(sampleMetaData.id);
       const intelligibility = Number(data[`intelligibility_${sampleId}`]);
       dataList.push({
-        respondent_id: respondent?.id,
+        respondent_id: respondent.id,
         sample_meta_data_id: sampleId,
         intelligibility_id: intelligibility,
       });

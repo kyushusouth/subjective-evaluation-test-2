@@ -33,7 +33,9 @@ export default function Index() {
 
   const handleLocalStorageClear = (key: string) => {
     if (key === "all") {
-      localStorage.clear();
+      for (const k of Object.keys(checkList)) {
+        localStorage.removeItem(k);
+      }
     } else {
       localStorage.removeItem(key);
     }

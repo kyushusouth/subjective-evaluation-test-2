@@ -16,7 +16,6 @@ export default async function Page() {
   const respondent = await fetchRespondent();
   if (!respondent.is_finished_int_main) {
     redirect("/");
-    return null;
   }
 
   const similarityItemList = await fetchSimilarityList();

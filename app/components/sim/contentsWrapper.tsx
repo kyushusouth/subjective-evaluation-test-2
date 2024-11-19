@@ -28,7 +28,7 @@ export default async function ContentsWrapper({
     <Contents
       sampleMetaDataList={sampleMetaDataListShuffled}
       similarityItemList={similarityItemList}
-      respondent={respondent!}
+      respondent={respondent}
       numSamplePerPage={numSamplePerPage}
       dummySampleUrl={dummySampleUrl}
       dummySampleAnswer={dummySampleAnswer}

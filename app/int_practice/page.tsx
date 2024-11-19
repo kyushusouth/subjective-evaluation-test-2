@@ -8,7 +8,7 @@ import {
 import {
   fetchDummySampleExampleInt,
   fetchIntelligibilityList,
-} from "../lib/data";
+} from "@/app/lib/data";
 
 export default async function Page() {
   const intelligibilityItemList = await fetchIntelligibilityList();

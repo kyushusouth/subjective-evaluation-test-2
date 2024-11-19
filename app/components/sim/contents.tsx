@@ -24,7 +24,7 @@ export default function Contents({
 }: {
   sampleMetaDataList: SampleMetaData[][];
   similarityItemList: SimilarityItem[];
-  respondent: Respondents | undefined;
+  respondent: Respondents;
   numSamplePerPage: number;
   dummySampleUrl: string;
   dummySampleAnswer: { id: number; item: string };
@@ -80,7 +80,7 @@ export default function Contents({
       const sampleId = Number(sampleMetaData[0].id);
       const similarity = Number(data[`similarity_${sampleId}`]);
       dataList.push({
-        respondent_id: respondent?.id,
+        respondent_id: respondent.id,
         sample_meta_data_id: sampleId,
         similarity_id: similarity,
       });

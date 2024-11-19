@@ -11,9 +11,8 @@ export default async function Page() {
   const audioDeviceItemList = await fetchAudioDeviceItemList();
   const respondent = await fetchRespondent();
 
-  if (respondent?.is_finished_info) {
+  if (respondent.is_finished_info) {
     redirect("/");
-    return null;
   }
 
   return (
