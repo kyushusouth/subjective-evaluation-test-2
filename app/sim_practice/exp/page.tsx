@@ -8,6 +8,5 @@ export default async function Page() {
     redirect("/");
     return null;
   }
-  console.log("sim_practice/exp.ts");
   return <ContentsWrapper expType="practice" />;
 }

@@ -40,7 +40,6 @@ export default function Form({
   domainName: string;
   bucketName: string;
 }) {
-  console.log("form.ts");
   return (
     <div className="my-10 flex flex-col justify-center items-center gap-10">
       <div id="accordion-open" data-accordion="open" className="w-full">
