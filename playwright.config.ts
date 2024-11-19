@@ -61,12 +61,12 @@ export default defineConfig({
 
     testIdAttribute: "data-test-id",
 
-    launchOptions: {
-      slowMo: 300,
-    },
+    // launchOptions: {
+    //   slowMo: 100,
+    // },
 
-    // baseURL: "https://subjective-evaluation-test-2.vercel.app",
-    baseURL: "http://localhost:3000",
+    baseURL: "https://subjective-evaluation-test-2.vercel.app",
+    // baseURL: "http://localhost:3000",
   },
 
   expect: {

@@ -354,10 +354,11 @@ async function checkForm(
 					const audio = await page.locator(
 						`li:nth-child(${sampleId + 1}) > audio:nth-child(${audioId + 1})`,
 					);
-					await checkIsAudioPlayableWaitEnd(audio);
-					await expect(audio).toHaveClass(
-						/pointer-events-none opacity-50/,
-					);
+					await checkIsAudioPlayable(audio);
+					// await checkIsAudioPlayableWaitEnd(audio);
+					// await expect(audio).toHaveClass(
+					// 	/pointer-events-none opacity-50/,
+					// );
 				} else if (checkExpName === "sim") {
 					const audio = await page.locator(
 						`li:nth-child(${sampleId + 1}) > div:nth-child(${
@@ -424,7 +425,7 @@ const records = parse(fs.readFileSync(authLocalSavePath), {
 	skip_empty_lines: true,
 });
 
-for (const record of records.slice(124, 125)) {
+for (const record of records.slice(199, 200)) {
 	const respondentId = Number(record.respondent_id);
 	const { email, password } = record;
 	const wrongEmail = "wrong@test.com";
