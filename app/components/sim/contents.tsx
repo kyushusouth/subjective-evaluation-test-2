@@ -103,6 +103,7 @@ export default function Contents({
       router.push("/error");
     }
   };
+  console.log("contents.ts");
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading

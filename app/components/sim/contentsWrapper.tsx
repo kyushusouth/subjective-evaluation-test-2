@@ -23,6 +23,7 @@ export default async function ContentsWrapper({
   const respondent = await fetchRespondent();
   const { dummySampleUrl, dummySampleAnswer } =
     await fetchDummySampleExampleSim();
+  console.log("contentsWrapper.ts");
 
   return (
     <Contents
